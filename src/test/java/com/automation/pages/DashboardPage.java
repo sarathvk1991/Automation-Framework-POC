@@ -13,7 +13,7 @@ import org.openqa.selenium.WebDriver;
  */
 public class DashboardPage extends BasePage {
 
-    private static final By PAGE_HEADING = By.cssSelector("h1.dashboard-title");
+    private static final By PAGE_HEADING = By.cssSelector("span.title");
 
     public DashboardPage(WebDriver driver) {
         super(driver);

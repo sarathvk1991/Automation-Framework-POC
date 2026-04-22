@@ -20,12 +20,11 @@ public class LoginPage extends BasePage {
     // Static because selectors are fixed per build; final because they must never change at runtime.
     // Update these to match the actual application under test.
 
-    private static final By USERNAME_FIELD = By.id("username");
+    private static final By USERNAME_FIELD = By.id("user-name");
     private static final By PASSWORD_FIELD = By.id("password");
-    private static final By LOGIN_BUTTON   = By.cssSelector("button[type='submit']");
-    private static final By ERROR_MESSAGE  = By.cssSelector("[data-testid='login-error']");
-    private static final By PAGE_HEADING   = By.cssSelector("h1.login-title");
-    private static final By FORGOT_PASSWORD_LINK = By.linkText("Forgot password?");
+    private static final By LOGIN_BUTTON   = By.id("login-button");
+    private static final By ERROR_MESSAGE  = By.cssSelector("[data-test='error']");
+    private static final By PAGE_HEADING   = By.cssSelector(".login_logo");
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
@@ -101,10 +100,6 @@ public class LoginPage extends BasePage {
         type(PASSWORD_FIELD, password);
         click(LOGIN_BUTTON);
         return this;
-    }
-
-    public void clickForgotPassword() {
-        click(FORGOT_PASSWORD_LINK);
     }
 
     // ── Queries ───────────────────────────────────────────────────────────────

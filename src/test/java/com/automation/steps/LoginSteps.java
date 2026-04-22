@@ -20,14 +20,6 @@ public class LoginSteps {
         loginPage = new LoginPage(DriverFactory.getDriver());
     }
 
-    @Given("the user has failed to log in {int} consecutive times with username {string}")
-    public void theUserHasFailedToLogIn(int times, String username) {
-        // Submits the form with a known-bad password to build up the failure count.
-        for (int i = 0; i < times; i++) {
-            loginPage.loginExpectingFailure(username, "WrongPass@123");
-        }
-    }
-
     // ── When ──────────────────────────────────────────────────────────────────
 
     /**
@@ -40,15 +32,6 @@ public class LoginSteps {
         loginPage.enterUsername(username)
                  .enterPassword(password)
                  .clickLogin();
-    }
-
-    @When("the user clicks the {string} link")
-    public void theUserClicksLink(String linkText) {
-        // Extend this switch when more navigational links are added.
-        switch (linkText) {
-            case "Forgot password?" -> loginPage.clickForgotPassword();
-            default -> throw new IllegalArgumentException("No action mapped for link: " + linkText);
-        }
     }
 
     // ── Then ──────────────────────────────────────────────────────────────────
@@ -74,17 +57,4 @@ public class LoginSteps {
                 "Expected to remain on the login page after a failed login attempt.");
     }
 
-    @Then("the login button should be disabled")
-    public void theLoginButtonShouldBeDisabled() {
-        Assertions.assertFalse(loginPage.isLoginButtonEnabled(),
-                "Expected the login button to be disabled when credentials are empty.");
-    }
-
-    @Then("the user should be on the forgot password page")
-    public void theUserShouldBeOnTheForgotPasswordPage() {
-        // TODO: replace with ForgotPasswordPage.isAt() once ForgotPasswordPage is created.
-        String currentUrl = DriverFactory.getDriver().getCurrentUrl();
-        Assertions.assertTrue(currentUrl.contains("forgot-password"),
-                "Expected URL to contain 'forgot-password' but was: " + currentUrl);
-    }
 }

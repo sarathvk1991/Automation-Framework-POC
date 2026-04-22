@@ -11,14 +11,8 @@ Feature: User Authentication — Login
 
   @smoke
   Scenario: Successful login with valid credentials
-    When the user logs in with username "john.doe@example.com" and password "SecurePass@123"
+    When the user logs in with username "standard_user" and password "secret_sauce"
     Then the user should land on the dashboard
-
-  # ── Field validation ─────────────────────────────────────────────────────────
-
-  @regression
-  Scenario: Login button is disabled when both fields are empty
-    Then the login button should be disabled
 
   # ── Invalid credentials ──────────────────────────────────────────────────────
 
@@ -29,32 +23,25 @@ Feature: User Authentication — Login
     And the user should remain on the login page
 
     Examples:
-      | username              | password        | error_message                    |
-      | john.doe@example.com  | WrongPass@123   | Invalid username or password.    |
-      | unknown@example.com   | SecurePass@123  | Invalid username or password.    |
-      | john.doe@example.com  |                 | Password is required.            |
-      |                       | SecurePass@123  | Username is required.            |
-      |                       |                 | Username is required.            |
+      | username      | password     | error_message                                                                  |
+      | standard_user | wrong_pass   | Epic sadface: Username and password do not match any user in this service      |
+      | unknown_user  | secret_sauce | Epic sadface: Username and password do not match any user in this service      |
+      | standard_user |              | Epic sadface: Password is required                                             |
+      |               | secret_sauce | Epic sadface: Username is required                                             |
+      |               |              | Epic sadface: Username is required                                             |
 
   # ── Account lockout ───────────────────────────────────────────────────────────
 
   @negative @regression
-  Scenario: Account is locked after repeated failed login attempts
-    Given the user has failed to log in 4 consecutive times with username "john.doe@example.com"
-    When the user logs in with username "john.doe@example.com" and password "WrongPass@123"
-    Then the login error "Your account has been locked. Please contact support." should be displayed
-
-  # ── Navigation ───────────────────────────────────────────────────────────────
-
-  @regression
-  Scenario: User navigates to the forgot password page
-    When the user clicks the "Forgot password?" link
-    Then the user should be on the forgot password page
+  Scenario: Locked-out user cannot log in
+    When the user logs in with username "locked_out_user" and password "secret_sauce"
+    Then the login error "Epic sadface: Sorry, this user has been locked out." should be displayed
+    And the user should remain on the login page
 
   # ── Recovery ─────────────────────────────────────────────────────────────────
 
   @regression
   Scenario: Successful login after a prior failed attempt clears the error
-    When the user logs in with username "john.doe@example.com" and password "WrongPass@123"
-    And the user logs in with username "john.doe@example.com" and password "SecurePass@123"
+    When the user logs in with username "standard_user" and password "wrong_pass"
+    And the user logs in with username "standard_user" and password "secret_sauce"
     Then the user should land on the dashboard
