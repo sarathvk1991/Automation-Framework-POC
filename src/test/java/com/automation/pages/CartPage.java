@@ -9,9 +9,10 @@ import java.util.List;
 
 public class CartPage extends BasePage {
 
-    private static final By PAGE_TITLE     = By.cssSelector("span.title");
-    private static final By CART_ITEM      = By.cssSelector(".cart_item");
-    private static final By CART_ITEM_NAME = By.cssSelector(".cart_item .inventory_item_name");
+    private static final By PAGE_TITLE      = By.cssSelector("span.title");
+    private static final By CART_ITEM       = By.cssSelector(".cart_item");
+    private static final By CART_ITEM_NAME  = By.cssSelector(".cart_item .inventory_item_name");
+    private static final By CHECKOUT_BUTTON = By.cssSelector("[data-test='checkout']");
 
     public CartPage(WebDriver driver) {
         super(driver);
@@ -43,5 +44,13 @@ public class CartPage extends BasePage {
 
     public boolean isCartEmpty() {
         return driver.findElements(CART_ITEM).isEmpty();
+    }
+
+    /**
+     * Clicks the Checkout button and returns the resulting CheckoutPage.
+     */
+    public CheckoutPage clickCheckout() {
+        click(CHECKOUT_BUTTON);
+        return new CheckoutPage(driver);
     }
 }
