@@ -15,6 +15,8 @@ public class InventoryPage extends BasePage {
     private static final By PRODUCT_NAMES       = By.cssSelector(".inventory_item_name");
     private static final By PRODUCT_PRICES      = By.cssSelector(".inventory_item_price");
     private static final By PAGE_TITLE          = By.cssSelector("span.title");
+    private static final By CART_ICON           = By.cssSelector("[data-test='shopping-cart-link']");
+    private static final By CART_BADGE          = By.cssSelector(".shopping_cart_badge");
 
     public InventoryPage(WebDriver driver) {
         super(driver);
@@ -80,5 +82,37 @@ public class InventoryPage extends BasePage {
             }
         }
         return true;
+    }
+
+    /**
+     * Clicks the "Add to cart" button for the product whose visible name exactly matches
+     * {@code productName}. Uses XPath to locate the button relative to the product name
+     * text so no slug transformation is needed — robust across all SauceDemo product names.
+     */
+    public void addProductToCart(String productName) {
+        By button = By.xpath(
+            "//div[contains(@class,'inventory_item_name') and normalize-space()='" + productName + "']" +
+            "/ancestor::div[@data-test='inventory-item']" +
+            "//button[contains(@data-test,'add-to-cart')]"
+        );
+        click(button);
+    }
+
+    /**
+     * Returns the current cart badge count as a String.
+     * Returns "0" when the badge element is absent (empty cart).
+     * Uses findElements to avoid NoSuchElementException without a timed wait.
+     */
+    public String getCartCount() {
+        List<WebElement> badges = driver.findElements(CART_BADGE);
+        return badges.isEmpty() ? "0" : badges.get(0).getText();
+    }
+
+    /**
+     * Clicks the cart icon and returns the resulting CartPage.
+     */
+    public CartPage clickCartIcon() {
+        click(CART_ICON);
+        return new CartPage(driver);
     }
 }
