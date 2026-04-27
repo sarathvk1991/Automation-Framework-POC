@@ -2,6 +2,7 @@ package com.automation.base;
 
 import com.automation.utils.ConfigReader;
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -91,6 +92,12 @@ public class DriverFactory {
         return switch (browser) {
             case CHROME -> {
                 ChromeOptions options = new ChromeOptions();
+                // NONE strategy: driver.get() returns as soon as Chrome acknowledges the
+                // navigation command, without waiting for the load event. This prevents the
+                // Selenium JDK HTTP client from holding the ChromeDriver connection open for
+                // its 3-minute read timeout on congested WSL2 machines. Every page method
+                // already uses explicit waits, so nothing is lost by not blocking here.
+                options.setPageLoadStrategy(PageLoadStrategy.NONE);
                 if (headless) {
                     // --headless=new is the Chromium headless mode introduced in Chrome 112.
                     // --window-size is required because maximize() is a no-op without a real

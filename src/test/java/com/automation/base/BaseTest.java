@@ -4,7 +4,6 @@ import com.automation.utils.ConfigReader;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
-import org.openqa.selenium.WebDriver;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,27 +34,9 @@ public class BaseTest {
 
         String baseUrl = ConfigReader.get("base.url");
         if (baseUrl != null && !baseUrl.isBlank()) {
-            navigateWithRetry(baseUrl);
+            DriverFactory.getDriver().get(baseUrl);
+            log.info("Navigated to base URL: {}", baseUrl);
         }
-    }
-
-    /**
-     * Navigates to the base URL and retries once if Chrome returned an error page.
-     *
-     * On WSL2 the hypervisor NAT bridge can become congested mid-run: driver.get()
-     * completes (the load event fired on a Chrome error page) but the real site
-     * content was never received. Checking the page title catches this — Chrome error
-     * pages have blank or "ERR_*" titles, whereas valid app pages have real titles.
-     */
-    private void navigateWithRetry(String url) {
-        WebDriver driver = DriverFactory.getDriver();
-        driver.get(url);
-        String title = driver.getTitle();
-        if (title == null || title.isBlank() || title.startsWith("net::ERR") || title.contains("not available") || title.contains("refused")) {
-            log.warn("Navigation to {} returned error title '{}', retrying...", url, title);
-            driver.get(url);
-        }
-        log.info("Navigated to base URL: {}", url);
     }
 
     /**
