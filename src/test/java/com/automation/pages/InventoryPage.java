@@ -4,6 +4,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 
 import java.util.List;
@@ -86,16 +87,25 @@ public class InventoryPage extends BasePage {
 
     /**
      * Clicks the "Add to cart" button for the product whose visible name exactly matches
-     * {@code productName}. Uses XPath to locate the button relative to the product name
-     * text so no slug transformation is needed — robust across all SauceDemo product names.
+     * {@code productName}, then waits for the button to change to "Remove".
+     *
+     * SauceDemo updates the button label via JS after the XHR add-to-cart request
+     * completes. Without this wait, headless CI can navigate to the cart before the
+     * DOM mutation fires, resulting in an empty cart and a false "product not found" failure.
      */
     public void addProductToCart(String productName) {
-        By button = By.xpath(
+        By addButton = By.xpath(
             "//div[contains(@class,'inventory_item_name') and normalize-space()='" + productName + "']" +
             "/ancestor::div[@data-test='inventory-item']" +
             "//button[contains(@data-test,'add-to-cart')]"
         );
-        click(button);
+        click(addButton);
+        By removeButton = By.xpath(
+            "//div[contains(@class,'inventory_item_name') and normalize-space()='" + productName + "']" +
+            "/ancestor::div[@data-test='inventory-item']" +
+            "//button[contains(@data-test,'remove')]"
+        );
+        wait.until(ExpectedConditions.presenceOfElementLocated(removeButton));
     }
 
     /**

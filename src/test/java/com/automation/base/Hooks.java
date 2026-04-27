@@ -79,6 +79,11 @@ public class Hooks {
             return;
         }
         try {
+            log.warn("Failure URL : {}", driver.getCurrentUrl());
+        } catch (Exception e) {
+            log.warn("Could not read current URL: {}", e.getMessage());
+        }
+        try {
             byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
             scenario.attach(screenshot, "image/png", scenario.getName() + " — failure");
             saveScreenshotToDisk(scenario.getName(), screenshot);

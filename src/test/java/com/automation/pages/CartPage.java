@@ -30,9 +30,12 @@ public class CartPage extends BasePage {
 
     /**
      * Returns the visible name text of every item currently in the cart.
-     * Returns an empty list when the cart is empty — never throws.
+     * Waits for the cart page title before reading items so that navigation from
+     * the inventory page has fully settled — prevents false "not found" results in
+     * headless CI where findElements() is called before the cart DOM renders.
      */
     public List<String> getCartItems() {
+        waitForVisibility(PAGE_TITLE);
         return driver.findElements(CART_ITEM_NAME).stream()
                 .map(WebElement::getText)
                 .toList();
@@ -43,6 +46,7 @@ public class CartPage extends BasePage {
     }
 
     public boolean isCartEmpty() {
+        waitForVisibility(PAGE_TITLE);
         return driver.findElements(CART_ITEM).isEmpty();
     }
 

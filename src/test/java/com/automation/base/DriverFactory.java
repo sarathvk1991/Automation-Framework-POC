@@ -92,8 +92,16 @@ public class DriverFactory {
             case CHROME -> {
                 ChromeOptions options = new ChromeOptions();
                 if (headless) {
-                    // --headless=new is the Chromium headless mode introduced in Chrome 112
-                    options.addArguments("--headless=new", "--no-sandbox", "--disable-dev-shm-usage");
+                    // --headless=new is the Chromium headless mode introduced in Chrome 112.
+                    // --window-size is required because maximize() is a no-op without a real
+                    // display; headless Chrome otherwise defaults to 800x600, pushing elements
+                    // below the fold and causing click/visibility timeouts in CI.
+                    options.addArguments(
+                        "--headless=new",
+                        "--no-sandbox",
+                        "--disable-dev-shm-usage",
+                        "--window-size=1920,1080"
+                    );
                 }
                 WebDriverManager.chromedriver().setup();
                 yield new ChromeDriver(options);
