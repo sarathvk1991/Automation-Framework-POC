@@ -3,6 +3,7 @@ package com.automation.pages;
 import com.automation.utils.ConfigReader;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -46,14 +47,10 @@ public abstract class BasePage {
 
     // ── Actions ───────────────────────────────────────────────────────────────
 
-    /**
-     * Clears an input field and types the given text.
-     * Using clear() before sendKeys() prevents stale characters from prior test runs.
-     */
     protected void type(By locator, String text) {
         WebElement element = waitForVisibility(locator);
-        element.clear();
-        element.sendKeys(text);
+        element.click();
+        element.sendKeys(Keys.chord(Keys.CONTROL, "a"), text);
     }
 
     protected void click(By locator) {
