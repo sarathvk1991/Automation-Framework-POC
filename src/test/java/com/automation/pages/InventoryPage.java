@@ -90,11 +90,9 @@ public class InventoryPage extends BasePage {
      * Clicks the "Add to cart" button for the product whose visible name exactly matches
      * {@code productName}, then waits for the button to change to "Remove".
      *
-     * On Linux headless Chrome, inventory items below the fold pass Selenium's
-     * "clickable" check but the click event doesn't land — same issue as the
-     * Continue and Finish buttons. scrollIntoView ensures the button is centred in
-     * the viewport before the click fires. The subsequent wait for the "Remove"
-     * button confirms the state update committed before any caller navigates away.
+     * On Linux headless Chrome, native btn.click() doesn't land even after the
+     * element passes the clickability check. Both scrollIntoView and a JS click
+     * are required to reliably trigger the state change on all platforms.
      */
     public void addProductToCart(String productName) {
         By addButton = By.xpath(
@@ -104,7 +102,7 @@ public class InventoryPage extends BasePage {
         );
         WebElement btn = waitForClickability(addButton);
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", btn);
-        btn.click();
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", btn);
         By removeButton = By.xpath(
             "//div[contains(@class,'inventory_item_name') and normalize-space()='" + productName + "']" +
             "/ancestor::div[@data-test='inventory-item']" +
