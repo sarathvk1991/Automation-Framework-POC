@@ -54,8 +54,9 @@ public class CheckoutPage extends BasePage {
      */
     public void clickContinue() {
         WebElement btn = waitForClickability(CONTINUE_BUTTON);
-        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", btn);
-        btn.click();
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript("arguments[0].scrollIntoView({block:'center'});", btn);
+        js.executeScript("arguments[0].click();", btn);
     }
 
     // ── Queries ───────────────────────────────────────────────────────────────
