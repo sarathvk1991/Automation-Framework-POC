@@ -94,13 +94,27 @@ public class DriverFactory {
                 if (headless) {
                     // --headless=new is the Chromium headless mode introduced in Chrome 112.
                     // --window-size is required because maximize() is a no-op without a real
-                    // display; headless Chrome otherwise defaults to 800x600, pushing elements
+                    // display; headless Chrome otherwise defaults to 800×600, pushing elements
                     // below the fold and causing click/visibility timeouts in CI.
+                    // The background-networking / first-run / sync flags stop Chrome from making
+                    // outbound calls on startup (update checks, phoning home, Safe Browsing
+                    // downloads). On WSL2, those calls compete with test traffic over the same
+                    // hypervisor NAT bridge and are the primary cause of the 30–60 s page-load
+                    // delays observed mid-run.
                     options.addArguments(
                         "--headless=new",
                         "--no-sandbox",
                         "--disable-dev-shm-usage",
-                        "--window-size=1920,1080"
+                        "--window-size=1920,1080",
+                        "--disable-gpu",
+                        "--disable-background-networking",
+                        "--disable-default-apps",
+                        "--disable-extensions",
+                        "--disable-sync",
+                        "--no-first-run",
+                        "--no-default-browser-check",
+                        "--metrics-recording-only",
+                        "--mute-audio"
                     );
                 }
                 WebDriverManager.chromedriver().setup();
