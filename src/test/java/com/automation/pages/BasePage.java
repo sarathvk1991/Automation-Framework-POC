@@ -3,7 +3,6 @@ package com.automation.pages;
 import com.automation.utils.ConfigReader;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -49,8 +48,14 @@ public abstract class BasePage {
 
     protected void type(By locator, String text) {
         WebElement element = waitForVisibility(locator);
-        element.click();
-        element.sendKeys(Keys.chord(Keys.CONTROL, "a"), text);
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript(
+            "var setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set;" +
+            "setter.call(arguments[0], arguments[1]);" +
+            "arguments[0].dispatchEvent(new Event('input', { bubbles: true }));" +
+            "arguments[0].dispatchEvent(new Event('change', { bubbles: true }));",
+            element, text
+        );
     }
 
     protected void click(By locator) {
