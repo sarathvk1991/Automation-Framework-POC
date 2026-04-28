@@ -5,6 +5,7 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
@@ -43,14 +44,25 @@ public class BaseTest {
             driver.get(baseUrl);
             log.info("Navigated to base URL: {}", baseUrl);
 
-            // pageLoadStrategy NONE makes driver.get() return before the DOM is ready.
-            // Wait here for document.readyState so the first step doesn't burn its
-            // element-wait budget on a page that is still loading over WSL2's NAT bridge.
-            int waitSecs = ConfigReader.getInt("explicit.wait", 60);
-            new WebDriverWait(driver, Duration.ofSeconds(waitSecs))
-                .until(d -> "complete".equals(
-                    ((JavascriptExecutor) d).executeScript("return document.readyState")));
-            log.info("Page DOM ready.");
+            // pageLoadStrategy NONE: driver.get() returns before the page is ready.
+            // WSL2's NAT bridge can transiently block a Chrome navigation for 60+ s while
+            // the very next scenario loads in under 2 s. One refresh is enough to cancel
+            // the stalled connection and get a fresh TCP slot past the congestion window.
+            for (int attempt = 1; attempt <= 2; attempt++) {
+                if (attempt > 1) {
+                    log.warn("Page load stalled on attempt 1 — refreshing navigation");
+                    driver.navigate().refresh();
+                }
+                try {
+                    new WebDriverWait(driver, Duration.ofSeconds(30))
+                        .until(d -> "complete".equals(
+                            ((JavascriptExecutor) d).executeScript("return document.readyState")));
+                    log.info("Page DOM ready.");
+                    break;
+                } catch (TimeoutException te) {
+                    if (attempt == 2) throw te;
+                }
+            }
         }
     }
 
