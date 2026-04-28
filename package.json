@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "lint:gherkin": "gherkin-lint \"src/test/resources/features/*.feature\"",
+    "lint:gherkin:bad": "gherkin-lint \"src/test/resources/features/bad_examples\""
+  },
+  "devDependencies": {
+    "gherkin-lint": "4.2.4"
+  }
+}
