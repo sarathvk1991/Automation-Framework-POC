@@ -53,6 +53,10 @@ public class DriverFactory {
 
         int implicitWaitSecs = ConfigReader.getInt("implicit.wait", 10);
         driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(implicitWaitSecs));
+        // A frozen WSL2 renderer can hold executeScript() open for the full 30 s default
+        // before Chrome raises ScriptTimeoutException. 5 s is still 5000× longer than
+        // document.readyState needs on a live renderer, so there are no false positives.
+        driver.manage().timeouts().scriptTimeout(Duration.ofSeconds(5));
         driver.manage().window().maximize();
 
         driverThreadLocal.set(driver);

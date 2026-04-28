@@ -5,6 +5,7 @@ import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.ScriptTimeoutException;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -59,7 +60,7 @@ public class BaseTest {
                             ((JavascriptExecutor) d).executeScript("return document.readyState")));
                     log.info("Page DOM ready.");
                     break;
-                } catch (TimeoutException te) {
+                } catch (TimeoutException | ScriptTimeoutException te) {
                     if (attempt == 2) throw te;
                 }
             }
