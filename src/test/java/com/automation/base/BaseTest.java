@@ -4,8 +4,13 @@ import com.automation.utils.ConfigReader;
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
 import io.cucumber.java.Scenario;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.time.Duration;
 
 /**
  * Cucumber lifecycle hooks that bracket every scenario with browser setup and teardown.
@@ -34,8 +39,18 @@ public class BaseTest {
 
         String baseUrl = ConfigReader.get("base.url");
         if (baseUrl != null && !baseUrl.isBlank()) {
-            DriverFactory.getDriver().get(baseUrl);
+            WebDriver driver = DriverFactory.getDriver();
+            driver.get(baseUrl);
             log.info("Navigated to base URL: {}", baseUrl);
+
+            // pageLoadStrategy NONE makes driver.get() return before the DOM is ready.
+            // Wait here for document.readyState so the first step doesn't burn its
+            // element-wait budget on a page that is still loading over WSL2's NAT bridge.
+            int waitSecs = ConfigReader.getInt("explicit.wait", 60);
+            new WebDriverWait(driver, Duration.ofSeconds(waitSecs))
+                .until(d -> "complete".equals(
+                    ((JavascriptExecutor) d).executeScript("return document.readyState")));
+            log.info("Page DOM ready.");
         }
     }
 
