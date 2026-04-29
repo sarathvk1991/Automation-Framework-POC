@@ -1,80 +1,50 @@
-# =============================================================================
-# INTENTIONALLY NON-COMPLIANT — POC GHERKIN LINT DEMONSTRATION
-#
-# This file is tagged @wip at the Feature level so it is completely excluded
-# from the main RunCucumberTest runner (filter: "not @wip"). It exists solely
-# to demonstrate Gherkin quality violations that a linter would flag.
-#
-# Gherkin Issues Demonstrated:
-#   [G1]  No feature-level description (missing As a / I want / So that)
-#   [G2]  Vague, non-descriptive scenario names ("test login", "login works")
-#   [G3]  Implementation details in step text (CSS selectors, element IDs, URLs)
-#   [G4]  No Background — login steps copy-pasted into every scenario
-#   [G5]  Duplicate scenarios (identical steps, only the name differs)
-#   [G6]  Scenario starts with When — no Given context established
-#   [G7]  One step combines multiple actions (login + navigate + assert)
-#   [G8]  Monster scenario mixing login, cart, and checkout concerns
-#   [G9]  Inconsistent tag casing (@bad_login vs @BadLogin vs @BAD_LOGIN vs @SMOKE)
-#   [G10] Coverage gaps — only happy path, all negative/boundary cases missing
-# =============================================================================
+# Intentional bad Gherkin examples for lint failure demo
+@wip @BAD_EXAMPLE @regression
+Feature: Login Bad Feature
+# [LINT] name-length: Feature name exceeds 70-char maximum
 
-@wip @BAD_EXAMPLE
-Feature: login
-# ← [G1] No description. Good files have "As a... / I want... / So that..."
+  # ── Violation: no-homogenous-tags ───────────────────────────────────────────
+  # @regression appears on every scenario below. It should be on the Feature.
 
-  # ── [G2] Vague name ── [G3] Steps expose element IDs ── [G4] No Background ──
+  # ── Violation: no-unnamed-scenarios ─────────────────────────────────────────
+  Scenario: Log in with valid credentials
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in
 
-  @bad_login @smoke
-  Scenario: test login
-    Given I navigate to url "https://www.saucedemo.com"
-    When I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    Then element with css ".inventory_list" is visible
+  # ── Violation: no-dupe-scenario-names (first occurrence) ────────────────────
+  Scenario: Login test
+    Given I am on the login page
+    When I enter valid credentials
+    Then I should be logged in
 
-  # ── [G5] Duplicate — identical steps to "test login", only name changed ──────
+  # ── Violation: no-dupe-scenario-names (duplicate) ───────────────────────────
+  Scenario: Login test with invalid credentials
+    Given I am on the login page
+    When I enter wrong credentials
+    Then I should see an error message
 
-  @BadLogin
-  Scenario: login works
-    Given I navigate to url "https://www.saucedemo.com"
-    When I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    Then element with css ".inventory_list" is visible
+  # ── Violation: no-duplicate-tags (@smoke twice) ─────────────────────────────
+  # ── Violation: name-length (Scenario name exceeds 90-char maximum) ───────────
+  @smoke
+  Scenario: User logs in and navigates to inventory page
+    Given I navigate to the application
+    When I log in as a standard user
+    And I add an item to the cart
+    And I proceed to checkout
+    Then the order confirmation is displayed
 
-  # ── [G6] No Given ── [G7] One step does everything ──────────────────────────
+  # ── Violation: no-partially-commented-tag-lines ──────────────────────────────
+  @wip
+  Scenario: Empty login scenario
+    Given I am on the login page
 
-  @bad_login
-  Scenario: check thing after doing login
-    When I login as "standard_user" with "secret_sauce" and verify dashboard loads and check title
-    Then page title is "Swag Labs"
-
-  # ── [G8] Monster scenario ── [G9] Mixed tag casing ──────────────────────────
-
-  @BAD_EXAMPLE @regression @bad_login @SMOKE
-  Scenario: user logs in and goes to inventory and adds item to cart and navigates to cart and proceeds to checkout all in one test
-    Given I navigate to url "https://www.saucedemo.com"
-    When I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    Then element with css ".inventory_list" is visible
-    When I click xpath "//button[@data-test='add-to-cart-sauce-labs-backpack']"
-    And I click css "[data-test='shopping-cart-link']"
-    Then element with css ".shopping_cart_badge" has text "1"
-    When I click css "[data-test='checkout']"
-    And I enter text "John" in field with id "first-name"
-    And I enter text "Doe" in field with id "last-name"
-    And I enter text "12345" in field with id "postal-code"
-    And I click element with id "continue"
-    Then element with css ".summary_total_label" is visible
-
-  # ── [G10] COVERAGE GAPS (intentionally omitted to demo missing coverage) ─────
-  #
-  #   ✗ Negative: login with wrong password
-  #   ✗ Negative: login with empty username
-  #   ✗ Negative: login with empty password
-  #   ✗ Negative: login with both fields empty
-  #   ✗ Negative: locked_out_user cannot access the system
-  #   ✗ Boundary: maximum-length username / password
-  #   ✗ Security: SQL injection characters in input fields
-  #   ✗ UX: error message clears after correcting credentials
+  # ── Violation: no-scenario-outlines-without-examples ────────────────────────
+  Scenario Outline: Login with different user types
+    Given user enters "<username>" and "<password>"
+    When user submits the login form
+    Then user should see the inventory page
+    Examples:
+      | username      | password     |
+      | standard_user | secret_sauce |
+      | problem_user  | secret_sauce |

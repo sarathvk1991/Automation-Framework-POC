@@ -1,92 +1,53 @@
-# =============================================================================
-# INTENTIONALLY NON-COMPLIANT — POC GHERKIN LINT DEMONSTRATION
-#
-# Tagged @wip — excluded from RunCucumberTest runner (filter: "not @wip").
-#
-# Gherkin Issues Demonstrated:
-#   [G1]  No feature-level description
-#   [G2]  Scenario names describe UI actions not business outcomes
-#   [G3]  Steps expose CSS selectors, element IDs, and hardcoded test data
-#   [G4]  No Background — full login+cart sequence repeated in every scenario
-#   [G5]  Monster scenario — entire E2E flow in a single scenario
-#   [G6]  Scenario uses Then followed by When (out of logical order)
-#   [G7]  Inconsistent tags (@CHECKOUT vs @checkout vs @Checkout)
-#   [G8]  Coverage gaps — only happy path, no negative or boundary scenarios
-# =============================================================================
+# Intentional bad Gherkin examples for lint failure demo
+@wip @BAD_EXAMPLE @e2e
+Feature: Checkout Bad Feature
+# [LINT] name-length: Feature name exceeds 70-char maximum
 
-@wip @BAD_EXAMPLE
-Feature: checkout
-# ← [G1] No description. Reader cannot tell what business value is being validated.
+  # ── Violation: no-homogenous-tags ───────────────────────────────────────────
+  # @e2e appears on every scenario below. It should be on the Feature.
 
-  # ── [G5] Monster E2E scenario ── [G3] Selectors and data in steps ───────────
+  # ── Violation: no-unnamed-scenarios ─────────────────────────────────────────
+  Scenario: View checkout form
+    Given I have an item in my cart
+    When I proceed to checkout
+    Then I should see the checkout form
 
-  @CHECKOUT @smoke
-  Scenario: fill in checkout form and click continue and finish and see confirmation
-  # ← [G2] Name describes UI clicks, not the business outcome (order placement)
-    Given I navigate to url "https://www.saucedemo.com"
-    And I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    When I click xpath "//button[@data-test='add-to-cart-sauce-labs-backpack']"
-    And I click css "[data-test='shopping-cart-link']"
-    And I click css "[data-test='checkout']"
-    And I enter text "John" in field with id "first-name"
-    And I enter text "Doe" in field with id "last-name"
-    And I enter text "12345" in field with id "postal-code"
-    And I click css "[data-test='continue']"
-    Then element with css ".summary_total_label" is visible
-    When I click css "[data-test='finish']"
-    Then element with css ".complete-header" is visible
+  # ── Violation: no-dupe-scenario-names (first occurrence) ────────────────────
+  Scenario: Complete checkout
+    Given I have an item in my cart
+    When I fill in the checkout form
+    And I confirm the order
+    Then I should see the order confirmation
 
-  # ── [G4] Full login+cart repeated ── [G6] Then before When ──────────────────
+  # ── Violation: no-dupe-scenario-names (duplicate) ───────────────────────────
+  Scenario: Complete checkout with two items
+    Given I have two items in my cart
+    When I fill in the checkout form
+    And I confirm the order
+    Then I should see the order confirmation
 
-  @checkout @regression
-  Scenario: checkout with two products and confirm order complete page shown
-    Given I navigate to url "https://www.saucedemo.com"
-    And I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    When I click xpath "//button[@data-test='add-to-cart-sauce-labs-backpack']"
-    And I click xpath "//button[@data-test='add-to-cart-sauce-labs-bolt-t-shirt']"
-    And I click css "[data-test='shopping-cart-link']"
-    And I click css "[data-test='checkout']"
-    Then I am on the checkout info page
-    When I enter text "Jane" in field with id "first-name"
-    And I enter text "Smith" in field with id "last-name"
-    And I enter text "67890" in field with id "postal-code"
-    And I click css "[data-test='continue']"
-    Then element with css ".summary_total_label" is visible
-    Then I click css "[data-test='finish']"
-    And element with css ".complete-header" is visible
+  # ── Violation: no-duplicate-tags (@smoke twice) ─────────────────────────────
+  # ── Violation: name-length (Scenario name exceeds 90-char maximum) ───────────
+  @smoke
+  Scenario: User submits checkout form and verifies order confirmation
+    Given I am logged in as a standard user
+    When I add a product to the cart
+    And I proceed to checkout
+    And I fill in first name, last name, and postal code
+    And I click continue and then finish
+    Then I should see the order confirmation page
 
-  # ── [G7] All three tag variants used inconsistently ─────────────────────────
+  # ── Violation: no-partially-commented-tag-lines ──────────────────────────────
+  @wip
+  Scenario: Empty checkout scenario
+    Given I have an item in my cart
 
-  @Checkout @CHECKOUT @checkout
-  Scenario: check order summary page
-  # ← [G2] "check order summary page" says what, not why or what outcome passes
-    Given I navigate to url "https://www.saucedemo.com"
-    And I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    When I click xpath "//button[@data-test='add-to-cart-sauce-labs-onesie']"
-    And I click css "[data-test='shopping-cart-link']"
-    And I click css "[data-test='checkout']"
-    And I enter text "Bob" in field with id "first-name"
-    And I enter text "Jones" in field with id "last-name"
-    And I enter text "00000" in field with id "postal-code"
-    And I click css "[data-test='continue']"
-    Then element with css ".summary_subtotal_label" is visible
-    And element with css ".summary_tax_label" is visible
-    And element with css ".summary_total_label" is visible
-
-  # ── [G8] COVERAGE GAPS (intentionally omitted to demo missing coverage) ─────
-  #
-  #   ✗ Negative: clicking Continue with all fields empty
-  #   ✗ Negative: clicking Continue with only First Name missing
-  #   ✗ Negative: clicking Continue with only Last Name missing
-  #   ✗ Negative: clicking Continue with only Postal Code missing
-  #   ✗ Negative: attempting checkout with an empty cart
-  #   ✗ Boundary: postal code with special characters
-  #   ✗ Boundary: extremely long first/last name values
-  #   ✗ Feature: clicking Cancel on the checkout form returns to cart
-  #   ✗ Feature: order total matches sum of item prices plus tax
+  # ── Violation: no-scenario-outlines-without-examples ────────────────────────
+  Scenario Outline: Checkout fails with missing fields
+    Given I have an item in my cart
+    When I leave "<field>" empty and submit the checkout form
+    Then I should see a validation error
+    Examples:
+      | field       |
+      | first name  |
+      | postal code |

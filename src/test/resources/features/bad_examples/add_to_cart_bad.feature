@@ -1,77 +1,50 @@
-# =============================================================================
-# INTENTIONALLY NON-COMPLIANT — POC GHERKIN LINT DEMONSTRATION
-#
-# Tagged @wip — excluded from RunCucumberTest runner (filter: "not @wip").
-#
-# Gherkin Issues Demonstrated:
-#   [G1]  No feature-level description
-#   [G2]  Vague scenario names ("add stuff", "cart test 1")
-#   [G3]  Steps contain XPath selectors and data-test attribute references
-#   [G4]  No Background — full login sequence copy-pasted into every scenario
-#   [G5]  Duplicate scenarios (add single item — two scenarios do the same thing)
-#   [G6]  And used as first step keyword (no preceding Given/When to chain from)
-#   [G7]  Inconsistent tags (@CART vs @cart vs @Cart)
-#   [G8]  Coverage gaps — no empty cart, no remove item, no quantity boundary
-# =============================================================================
+# Intentional bad Gherkin examples for lint failure demo
+@wip @BAD_EXAMPLE @smoke
+Feature: Add To Cart Bad Feature
+# [LINT] name-length: Feature name exceeds 70-char maximum
 
-@wip @BAD_EXAMPLE
-Feature: cart
-# ← [G1] Feature name "cart" has no description, no business context
+  # ── Violation: no-homogenous-tags ───────────────────────────────────────────
+  # @smoke appears on every scenario below. It should be on the Feature.
 
-  # ── [G2][G3][G4] Vague name, selectors in steps, no Background ──────────────
+  # ── Violation: no-unnamed-scenarios ─────────────────────────────────────────
+  Scenario: Add a product to the cart
+    Given I am logged in as a standard user
+    When I add a product to the cart
+    Then the cart badge should update
 
-  @CART @smoke
-  Scenario: add stuff
-    Given I navigate to url "https://www.saucedemo.com"
-    And I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    When I click xpath "//button[@data-test='add-to-cart-sauce-labs-backpack']"
-    Then element with css ".shopping_cart_badge" has text "1"
+  # ── Violation: no-dupe-scenario-names (first occurrence) ────────────────────
+  Scenario: User adds product to cart
+    Given I am logged in as a standard user
+    When I add the backpack to the cart
+    Then the cart badge should show one item
 
-  # ── [G5] Duplicate of "add stuff" — same test, renamed ────────────────────
+  # ── Violation: no-dupe-scenario-names (duplicate) ───────────────────────────
+  Scenario: User adds bike light to cart
+    Given I am logged in as a standard user
+    When I add the bike light to the cart
+    Then the cart badge should show one item
 
-  @cart @smoke
-  Scenario: cart test 1
-    Given I navigate to url "https://www.saucedemo.com"
-    And I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    When I click xpath "//button[@data-test='add-to-cart-sauce-labs-backpack']"
-    Then element with css ".shopping_cart_badge" has text "1"
+  # ── Violation: no-duplicate-tags (@regression twice) ─────────────────────────
+  # ── Violation: name-length (Scenario name exceeds 90-char maximum) ───────────
+  @regression
+  Scenario: User adds multiple products then removes one and verifies cart count
+    Given I am logged in as a standard user
+    When I add the backpack to the cart
+    And I add the bike light to the cart
+    And I remove the backpack from the cart
+    Then the cart badge should show one item
 
-  # ── [G6] Starts with And (no Given preceding it) ─────────────────────────
+  # ── Violation: no-partially-commented-tag-lines ──────────────────────────────
+  @wip
+  Scenario: Empty cart scenario
+    Given I am logged in as a standard user
 
-  @Cart @regression
-  Scenario: add two items to cart
-    And I navigate to url "https://www.saucedemo.com"
-    And I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    When I click xpath "//button[@data-test='add-to-cart-sauce-labs-backpack']"
-    And I click xpath "//button[@data-test='add-to-cart-sauce-labs-bike-light']"
-    Then element with css ".shopping_cart_badge" has text "2"
-    When I click css "[data-test='shopping-cart-link']"
-    Then element with css ".cart_item" is visible
-
-  # ── [G7] Mixed tag casing ── [G3] XPath in step ────────────────────────────
-
-  @CART @Cart @cart @regression
-  Scenario: go to cart and see product name in cart item div
-    Given I navigate to url "https://www.saucedemo.com"
-    And I enter text "standard_user" in field with id "user-name"
-    And I enter text "secret_sauce" in field with id "password"
-    And I click element with id "login-button"
-    When I click xpath "//button[@data-test='add-to-cart-sauce-labs-backpack']"
-    And I click css "[data-test='shopping-cart-link']"
-    Then xpath "//div[@class='inventory_item_name' and text()='Sauce Labs Backpack']" is visible
-
-  # ── [G8] COVERAGE GAPS (intentionally omitted to demo missing coverage) ─────
-  #
-  #   ✗ Negative: navigating to cart when no items have been added (empty cart)
-  #   ✗ Negative: cart badge not shown when cart is empty
-  #   ✗ Boundary: adding the same product twice
-  #   ✗ Boundary: adding all available products (maximum cart size)
-  #   ✗ Feature: removing an item from the cart
-  #   ✗ Feature: cart persists after page refresh
-  #   ✗ Feature: cart count shown correctly after removing one of multiple items
+  # ── Violation: no-scenario-outlines-without-examples ────────────────────────
+  Scenario Outline: Add different products to cart
+    Given I am logged in as a standard user
+    When I add "<product>" to the cart
+    Then the cart badge should show the correct count
+    Examples:
+      | product              |
+      | Sauce Labs Backpack  |
+      | Sauce Labs Bike Light|
