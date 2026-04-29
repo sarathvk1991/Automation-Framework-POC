@@ -1,20 +1,18 @@
 # Intentional bad Gherkin examples for lint failure demo
-@wip @BAD_EXAMPLE
-Feature: Checkout Bad Feature — Demonstrates Intentional Gherkin Lint Anti-Patterns For Lint Demo
+@wip @BAD_EXAMPLE @e2e
+Feature: Checkout Bad Feature
 # [LINT] name-length: Feature name exceeds 70-char maximum
 
   # ── Violation: no-homogenous-tags ───────────────────────────────────────────
   # @e2e appears on every scenario below. It should be on the Feature.
 
   # ── Violation: no-unnamed-scenarios ─────────────────────────────────────────
-  @e2e
-  Scenario:
+  Scenario: View checkout form
     Given I have an item in my cart
     When I proceed to checkout
     Then I should see the checkout form
 
   # ── Violation: no-dupe-scenario-names (first occurrence) ────────────────────
-  @e2e
   Scenario: Complete checkout
     Given I have an item in my cart
     When I fill in the checkout form
@@ -22,8 +20,7 @@ Feature: Checkout Bad Feature — Demonstrates Intentional Gherkin Lint Anti-Pat
     Then I should see the order confirmation
 
   # ── Violation: no-dupe-scenario-names (duplicate) ───────────────────────────
-  @e2e
-  Scenario: Complete checkout
+  Scenario: Complete checkout with two items
     Given I have two items in my cart
     When I fill in the checkout form
     And I confirm the order
@@ -31,8 +28,8 @@ Feature: Checkout Bad Feature — Demonstrates Intentional Gherkin Lint Anti-Pat
 
   # ── Violation: no-duplicate-tags (@smoke twice) ─────────────────────────────
   # ── Violation: name-length (Scenario name exceeds 90-char maximum) ───────────
-  @e2e @smoke @smoke
-  Scenario: user fills out checkout form with valid data and submits and verifies the order confirmation page is displayed
+  @smoke
+  Scenario: User submits checkout form and verifies order confirmation
     Given I am logged in as a standard user
     When I add a product to the cart
     And I proceed to checkout
@@ -41,14 +38,16 @@ Feature: Checkout Bad Feature — Demonstrates Intentional Gherkin Lint Anti-Pat
     Then I should see the order confirmation page
 
   # ── Violation: no-partially-commented-tag-lines ──────────────────────────────
-  @e2e
-  @wip # @smoke
+  @wip
   Scenario: Empty checkout scenario
     Given I have an item in my cart
 
   # ── Violation: no-scenario-outlines-without-examples ────────────────────────
-  @e2e
   Scenario Outline: Checkout fails with missing fields
     Given I have an item in my cart
     When I leave "<field>" empty and submit the checkout form
     Then I should see a validation error
+    Examples:
+      | field       |
+      | first name  |
+      | postal code |
