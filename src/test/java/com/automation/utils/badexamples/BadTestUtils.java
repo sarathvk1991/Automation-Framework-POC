@@ -4,17 +4,22 @@ package com.automation.utils.badexamples;
 // INTENTIONALLY NON-COMPLIANT — POC SONARQUBE DEMONSTRATION
 //
 // SonarQube Issues Demonstrated:
-//   [S3]  Thread.sleep() used as the primary wait strategy
+//   [S3]  Intentional hard waits in waitForTwoSeconds / pauseForTwoSeconds — java:S2925
 //   [S4]  Generic Exception caught everywhere
 //   [S5]  Empty catch blocks — exceptions silently swallowed
 //   [S6]  System.out.println instead of SLF4J logger
-//   [S7]  Non-descriptive method names: wait1(), wait2(), doWait(), pause()
+//   [S7]  Non-descriptive method names: getEl(), findEl(), clickAndGetText()
 //   [S8]  Non-descriptive variables: x, tmp, t
 //   [S9]  Returning null instead of throwing meaningful exceptions
-//   [S10] Massively duplicated method bodies across wait1/wait2/doWait/pause
-//   [S12] Magic numbers throughout (1000, 2000, 3000, 5000)
+//   [S10] Massively duplicated method bodies:
+//           waitForTwoSeconds / pauseForTwoSeconds — identical wait methods
+//           getDefaultUserName / fetchDefaultUserName — same hardcoded return
+//           getDefaultPassword / fetchDefaultPassword — same hardcoded return
+//           generateRandomEmail / createRandomEmail — same UUID logic
+//           read_config / readConfig / GetConfig — three identical config readers
+//           getEl / findEl — two identical element finders
 //   [S14] Utility class has public constructor (should be private)
-//   [S15] Inconsistent naming: camelCase mixed with under_score style
+//   [S15] Inconsistent naming: camelCase, under_score, and PascalCase mixed
 // =============================================================================
 
 import org.openqa.selenium.By;
@@ -22,6 +27,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
 import java.util.Properties;
+import java.util.UUID;
 import java.io.InputStream;
 
 public class BadTestUtils {
@@ -30,54 +36,78 @@ public class BadTestUtils {
     public BadTestUtils() {}
 
     // ══════════════════════════════════════════════════════════════════════════
-    // [S10] DUPLICATED WAIT METHODS — four methods that do the same thing
+    // [S10] DUPLICATED WAIT METHODS — same logic, two names
     // ══════════════════════════════════════════════════════════════════════════
 
-    // [S7] "wait1" — wait for how long? in what unit? why?
-    // [S3] Uses Thread.sleep instead of WebDriverWait
-    public static void wait1() {
+    // [S3]  Hard wait instead of WebDriverWait — intentional java:S2925 demo
+    // [S10] waitForTwoSeconds and pauseForTwoSeconds are identical
+    public static void waitForTwoSeconds() {
         try {
-            Thread.sleep(1000); // [S12] magic number
+            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
         } catch (Exception e) { // [S4]
-            // [S5] Empty — InterruptedException silently swallowed
+            // [S5] InterruptedException silently swallowed
         }
     }
 
-    // [S10] Identical to wait1() except for the sleep duration — should be a parameter
-    // [S7] "wait2" — different from wait1 only in name and magic number
-    public static void wait2() {
+    // [S10] Exact duplicate of waitForTwoSeconds() — different name, identical body
+    // [S3]  Second intentional hard wait — java:S2925
+    public static void pauseForTwoSeconds() {
         try {
-            Thread.sleep(2000); // [S12]
+            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
         } catch (Exception e) { // [S4]
             // [S5]
         }
     }
 
-    // [S10] Third duplicate — doWait() does exactly what wait1() and wait2() do
-    // [S7] "doWait" is marginally better but still non-descriptive
-    public static void doWait() {
-        try {
-            Thread.sleep(3000); // [S12]
-        } catch (Exception e) { // [S4]
-            System.out.println("Sleep interrupted"); // [S6]
-        }
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATED CREDENTIAL ACCESSORS — hardcoded data returned twice each
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S2] Hardcoded "standard_user" — should come from config.properties
+    // [S10] getDefaultUserName() and fetchDefaultUserName() are identical
+    public static String getDefaultUserName() {
+        return "standard_user"; // [S2] hardcoded test data
     }
 
-    // [S10] Fourth duplicate — pause() again does the same thing
-    // [S15] "pause" uses a different naming style from wait1/wait2/doWait
-    public static void pause() {
-        try {
-            Thread.sleep(5000); // [S12]
-        } catch (Exception e) { // [S4]
-            e.printStackTrace(); // [S6] stdout
-        }
+    // [S10] Exact duplicate of getDefaultUserName()
+    public static String fetchDefaultUserName() {
+        return "standard_user"; // [S2] hardcoded test data — duplicate return
+    }
+
+    // [S2] Hardcoded "secret_sauce" — credential in source code
+    // [S10] getDefaultPassword() and fetchDefaultPassword() are identical
+    public static String getDefaultPassword() {
+        return "secret_sauce"; // [S2] hardcoded credential
+    }
+
+    // [S10] Exact duplicate of getDefaultPassword()
+    public static String fetchDefaultPassword() {
+        return "secret_sauce"; // [S2] hardcoded credential — duplicate return
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // [S10] DUPLICATED CONFIG READERS
+    // [S10] DUPLICATED EMAIL GENERATORS
     // ══════════════════════════════════════════════════════════════════════════
 
-    // [S10] read_config() and readConfig() below are identical — different name style
+    // [S10] generateRandomEmail() and createRandomEmail() are identical
+    public static String generateRandomEmail() {
+        String tmp = UUID.randomUUID().toString().substring(0, 8); // [S8] 'tmp'
+        System.out.println("Generated email: " + tmp + "@test.com"); // [S6]
+        return tmp + "@test.com";
+    }
+
+    // [S10] Exact duplicate of generateRandomEmail()
+    public static String createRandomEmail() {
+        String tmp = UUID.randomUUID().toString().substring(0, 8); // [S8] 'tmp'
+        System.out.println("Generated email: " + tmp + "@test.com"); // [S6]
+        return tmp + "@test.com";
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATED CONFIG READERS — three methods, identical body
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S10] read_config() and readConfig() and GetConfig() are identical
     // [S15] Underscore naming in a Java method (violates Java convention)
     // [S9]  Returns null on failure
     public static String read_config(String key) { // [S15] underscore method name
@@ -126,16 +156,15 @@ public class BadTestUtils {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // [S10] DUPLICATED ELEMENT FINDERS
+    // [S10] DUPLICATED ELEMENT FINDERS — two methods, identical body
     // ══════════════════════════════════════════════════════════════════════════
 
     // [S7] "getEl" — abbreviation, non-descriptive
-    // [S3] Thread.sleep before every find
     // [S8] variables x, t
+    // [S12] Direct element access without wait
     public static WebElement getEl(WebDriver driver, String css) {
         try {
-            Thread.sleep(1000); // [S3][S12]
-            WebElement x = driver.findElement(By.cssSelector(css)); // [S8]
+            WebElement x = driver.findElement(By.cssSelector(css)); // [S8][S12]
             return x;
         } catch (Exception e) { // [S4]
             System.out.println("Element not found: " + css); // [S6]
@@ -147,8 +176,7 @@ public class BadTestUtils {
     // [S7] "findEl" — barely better than "getEl"
     public static WebElement findEl(WebDriver driver, String css) {
         try {
-            Thread.sleep(1000);
-            WebElement x = driver.findElement(By.cssSelector(css));
+            WebElement x = driver.findElement(By.cssSelector(css)); // [S12]
             return x;
         } catch (Exception e) { // [S4]
             System.out.println("Element not found: " + css);
@@ -160,45 +188,21 @@ public class BadTestUtils {
     // EXTRA ANTI-PATTERNS
     // ══════════════════════════════════════════════════════════════════════════
 
-    // [S11] One method handles: wait + find + click + wait + find + read
-    // [S3]  Multiple Thread.sleep calls
+    // [S11] One method handles: click + read — two concerns
     // [S8]  Variables: t, x, tmp
+    // [S12] Both element accesses are direct — no wait
+    // [S9]  Returns empty string instead of throwing on failure
     public static String clickAndGetText(WebDriver driver, String clickCss, String readCss) {
         try {
-            Thread.sleep(1000); // [S3]
-            WebElement t = driver.findElement(By.cssSelector(clickCss)); // [S8]
+            WebElement t = driver.findElement(By.cssSelector(clickCss)); // [S8][S12]
             t.click();
-            Thread.sleep(2000); // [S3][S12] arbitrary delay after click
-            WebElement x = driver.findElement(By.cssSelector(readCss)); // [S8]
+            WebElement x = driver.findElement(By.cssSelector(readCss)); // [S8][S12]
             String tmp = x.getText(); // [S8]
             System.out.println("Got text: " + tmp); // [S6]
             return tmp;
         } catch (Exception e) { // [S4]
             System.out.println("clickAndGetText failed"); // [S6] no exception detail
             return ""; // [S9] empty string hides failure from caller
-        }
-    }
-
-    // [S7] "hardSleep" — at least descriptive, but still an anti-pattern
-    // [S3] Unconditional Thread.sleep with a configurable duration
-    // [S12] Caller is expected to pass magic numbers (e.g. hardSleep(3000))
-    public static void hardSleep(int ms) {
-        try {
-            Thread.sleep(ms); // [S3]
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Sleep interrupted after " + ms + "ms"); // [S6]
-        }
-    }
-
-    // [S10] Identical to hardSleep but named differently
-    // [S15] "sleep_ms" uses underscore naming — inconsistent convention
-    public static void sleep_ms(int ms) { // [S15]
-        try {
-            Thread.sleep(ms); // [S3]
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Sleep interrupted after " + ms + "ms");
         }
     }
 }

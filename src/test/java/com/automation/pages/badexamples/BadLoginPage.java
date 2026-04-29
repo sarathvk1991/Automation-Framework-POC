@@ -9,7 +9,7 @@ package com.automation.pages.badexamples;
 // SonarQube Issues Demonstrated:
 //   [S1]  No base class — WebDriver boilerplate copy-pasted (violates DRY)
 //   [S2]  Locators hardcoded inline in every method instead of constants
-//   [S3]  Thread.sleep() used for synchronisation instead of explicit waits
+//   [S3]  Intentional hard wait in doIt() — java:S2925
 //   [S4]  Generic Exception caught — masks real failures
 //   [S5]  Empty catch blocks — exceptions silently swallowed
 //   [S6]  System.out.println instead of SLF4J logger
@@ -18,7 +18,7 @@ package com.automation.pages.badexamples;
 //   [S9]  Returning null instead of throwing a meaningful exception
 //   [S10] Duplicate code blocks — checkError() and isError() are identical
 //   [S11] Long method with mixed responsibilities (doLoginAndGetPageTitle)
-//   [S12] Magic numbers (Thread.sleep(2000), Thread.sleep(500))
+//   [S12] Flaky direct element access without explicit wait (most methods)
 // =============================================================================
 
 import org.openqa.selenium.By;
@@ -37,17 +37,15 @@ public class BadLoginPage {
     // ── [S7] Non-descriptive method name ─────────────────────────────────────
 
     // [S7] "doIt" communicates nothing about what action is performed
-    // [S3] Thread.sleep used instead of WebDriverWait
+    // [S3] Hard wait used instead of WebDriverWait — intentional java:S2925 demo
     // [S5] Exception swallowed silently
     // [S2] By.id("user-name") hardcoded here and repeated in every other method
     public void doIt() {
         try {
-            Thread.sleep(2000); // [S3][S12] Magic sleep
+            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
             driver.findElement(By.id("user-name")).sendKeys("standard_user"); // [S2]
-            Thread.sleep(1000); // [S12]
-            driver.findElement(By.id("password")).sendKeys("secret_sauce"); // [S2]
-            Thread.sleep(500);  // [S12]
-            driver.findElement(By.id("login-button")).click(); // [S2]
+            driver.findElement(By.id("password")).sendKeys("secret_sauce");   // [S2]
+            driver.findElement(By.id("login-button")).click();                // [S2]
         } catch (Exception e) { // [S4]
             // [S5] Exception silently swallowed — test will appear to pass
         }
@@ -58,10 +56,10 @@ public class BadLoginPage {
     // [S7] "abc" is meaningless
     // [S8] parameter named "x" — caller cannot tell what to pass
     // [S2] By.id("user-name") repeated (not a constant)
+    // [S12] Direct element access with no explicit wait — flaky in slow CI
     public void abc(String x) {
         try {
-            Thread.sleep(3000); // [S3][S12]
-            WebElement y = driver.findElement(By.id("user-name")); // [S8] var 'y'
+            WebElement y = driver.findElement(By.id("user-name")); // [S8] var 'y' [S12]
             y.clear();
             y.sendKeys(x);
         } catch (Exception e) { // [S4]
@@ -73,10 +71,10 @@ public class BadLoginPage {
 
     // [S7] "click1" gives no indication of what is being clicked
     // [S2] By.id("login-button") repeated again (already used in doIt)
+    // [S12] Direct click without wait — may fail if page not ready
     public void click1() {
         try {
-            Thread.sleep(1000); // [S3][S12]
-            driver.findElement(By.id("login-button")).click(); // [S2]
+            driver.findElement(By.id("login-button")).click(); // [S2][S12]
         } catch (Exception e) { // [S4]
             e.printStackTrace(); // [S6] stack trace to stdout
         }
@@ -89,8 +87,7 @@ public class BadLoginPage {
     // [S8] parameter "x", variable "tmp"
     public void setUsername(String x) {
         try {
-            Thread.sleep(2000); // [S3][S12]
-            WebElement tmp = driver.findElement(By.id("user-name")); // [S8] 'tmp'
+            WebElement tmp = driver.findElement(By.id("user-name")); // [S8] 'tmp' [S12]
             tmp.clear();
             tmp.sendKeys(x);
         } catch (Exception e) { // [S4]
@@ -104,21 +101,17 @@ public class BadLoginPage {
     //       Single Responsibility Principle violation — four concerns in one method.
     // [S9]  Returns null on failure instead of throwing
     // [S8]  Variables x, y, tmp throughout
+    // [S12] All four element interactions are direct — no explicit wait
     public String doLoginAndGetPageTitle(String username, String password) {
         try {
-            Thread.sleep(2000); // [S3]
             driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL in page object
-            Thread.sleep(1000); // [S3]
-            WebElement x = driver.findElement(By.id("user-name")); // [S8]
+            WebElement x = driver.findElement(By.id("user-name")); // [S8][S12]
             x.clear();
             x.sendKeys(username);
-            Thread.sleep(500); // [S3][S12]
-            WebElement y = driver.findElement(By.id("password")); // [S8]
+            WebElement y = driver.findElement(By.id("password")); // [S8][S12]
             y.clear();
             y.sendKeys(password);
-            Thread.sleep(500);
-            driver.findElement(By.id("login-button")).click(); // [S2] 4th repetition
-            Thread.sleep(2000);
+            driver.findElement(By.id("login-button")).click(); // [S2][S12]
             String tmp = driver.getTitle(); // [S8]
             // [S11] Mixed concern: navigation check embedded inside login method
             if (!driver.getCurrentUrl().contains("inventory")) {
@@ -135,10 +128,10 @@ public class BadLoginPage {
 
     // [S10] checkError() and isError() below are identical — SonarQube flags duplicated blocks
     // [S8] variables x, tmp
+    // [S12] Direct element access without wait
     public boolean checkError() {
         try {
-            Thread.sleep(1000); // [S3]
-            WebElement x = driver.findElement(By.cssSelector("[data-test='error']")); // [S8]
+            WebElement x = driver.findElement(By.cssSelector("[data-test='error']")); // [S8][S12]
             String tmp = x.getText(); // [S8]
             if (tmp != null && !tmp.isEmpty()) {
                 return true;
@@ -152,8 +145,7 @@ public class BadLoginPage {
     // [S10] Exact duplicate of checkError() — different name, identical body
     public boolean isError() {
         try {
-            Thread.sleep(1000); // [S3]
-            WebElement x = driver.findElement(By.cssSelector("[data-test='error']")); // [S8]
+            WebElement x = driver.findElement(By.cssSelector("[data-test='error']")); // [S8][S12]
             String tmp = x.getText(); // [S8]
             if (tmp != null && !tmp.isEmpty()) {
                 return true;
@@ -167,8 +159,7 @@ public class BadLoginPage {
     // [S10] Third copy of the same null/empty check pattern
     public String getError() {
         try {
-            Thread.sleep(1000);
-            WebElement x = driver.findElement(By.cssSelector("[data-test='error']"));
+            WebElement x = driver.findElement(By.cssSelector("[data-test='error']")); // [S12]
             String tmp = x.getText();
             if (tmp != null && !tmp.isEmpty()) {
                 return tmp;
