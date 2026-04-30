@@ -380,7 +380,6 @@ function normalizeLineForDuplication(line) {
 }
 
 const report = {
-  rules,
   issues
 };
 
