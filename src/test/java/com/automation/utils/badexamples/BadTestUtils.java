@@ -65,26 +65,14 @@ public class BadTestUtils {
     // [S10] DUPLICATED CREDENTIAL ACCESSORS — hardcoded data returned twice each
     // ══════════════════════════════════════════════════════════════════════════
 
-    // [S2] Hardcoded "standard_user" — should come from config.properties
     // [S10] getDefaultUserName() and fetchDefaultUserName() are identical
     public static String getDefaultUserName() {
         return "standard_user"; // [S2] hardcoded test data
     }
 
-    // [S10] Exact duplicate of getDefaultUserName()
-    public static String fetchDefaultUserName() {
-        return "standard_user"; // [S2] hardcoded test data — duplicate return
-    }
-
-    // [S2] Hardcoded "secret_sauce" — credential in source code
     // [S10] getDefaultPassword() and fetchDefaultPassword() are identical
     public static String getDefaultPassword() {
         return "secret_sauce"; // [S2] hardcoded credential
-    }
-
-    // [S10] Exact duplicate of getDefaultPassword()
-    public static String fetchDefaultPassword() {
-        return "secret_sauce"; // [S2] hardcoded credential — duplicate return
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -93,13 +81,6 @@ public class BadTestUtils {
 
     // [S10] generateRandomEmail() and createRandomEmail() are identical
     public static String generateRandomEmail() {
-        String tmp = UUID.randomUUID().toString().substring(0, 8); // [S8] 'tmp'
-        System.out.println("Generated email: " + tmp + "@test.com"); // [S6]
-        return tmp + "@test.com";
-    }
-
-    // [S10] Exact duplicate of generateRandomEmail()
-    public static String createRandomEmail() {
         String tmp = UUID.randomUUID().toString().substring(0, 8); // [S8] 'tmp'
         System.out.println("Generated email: " + tmp + "@test.com"); // [S6]
         return tmp + "@test.com";
@@ -142,21 +123,6 @@ public class BadTestUtils {
         }
     }
 
-    // [S10] Third copy — GetConfig uses PascalCase method name (Java violation)
-    // [S15] PascalCase method name — inconsistent with all others
-    public static String GetConfig(String key) { // [S15] PascalCase method
-        try {
-            InputStream x = BadTestUtils.class
-                .getClassLoader()
-                .getResourceAsStream("config.properties");
-            Properties tmp = new Properties();
-            tmp.load(x);
-            return tmp.getProperty(key);
-        } catch (IOException e) {
-            return null; // [S9] completely silent failure
-        }
-    }
-
     // ══════════════════════════════════════════════════════════════════════════
     // [S10] DUPLICATED ELEMENT FINDERS — two methods, identical body
     // ══════════════════════════════════════════════════════════════════════════
@@ -166,13 +132,6 @@ public class BadTestUtils {
     // [S12] Direct element access without wait
     public static WebElement getEl(WebDriver driver, String css) {
         WebElement x = driver.findElement(By.cssSelector(css)); // [S8][S12]
-        return x;
-    }
-
-    // [S10] Identical to getEl() — just a different method name
-    // [S7] "findEl" — barely better than "getEl"
-    public static WebElement findEl(WebDriver driver, String css) {
-        WebElement x = driver.findElement(By.cssSelector(css)); // [S12]
         return x;
     }
 
@@ -188,9 +147,9 @@ public class BadTestUtils {
         WebElement t = driver.findElement(By.cssSelector(clickCss)); // [S8][S12]
         t.click();
         WebElement x = driver.findElement(By.cssSelector(readCss)); // [S8][S12]
-        String tmp = x.getText(); // [S8]
-        System.out.println("Got text: " + tmp); // [S6]
-        return tmp;
+        String elementText = x.getText(); // [S8]
+        System.out.println("Got text: " + elementText); // [S6]
+        return elementText;
     }
 
     // Intentional SonarQube POC issue — catch (Exception e) swallows all failure types
@@ -213,10 +172,10 @@ public class BadTestUtils {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // [S15] INCONSISTENT NAMING — validate_CART, CheckoutNow, login_user variable
+    // [S15] INCONSISTENT NAMING — inconsistent variable and method names
     // ══════════════════════════════════════════════════════════════════════════
 
-    // [S15] validate_CART — mixed underscore + ALLCAPS in a Java method name
+    // [S15] mixed underscore + ALLCAPS in a Java method name
     //       Violates Java naming conventions (should be camelCase: validateCart)
     //       SonarQube java:S100 — method names should comply with naming convention
     // [S8]  Variable x
@@ -229,53 +188,67 @@ public class BadTestUtils {
 
     // [S15] CheckoutNow — PascalCase method name violates Java camelCase convention
     //       SonarQube java:S100 — should be checkoutNow
-    // [S8]  Local variable login_user uses underscore (java:S116 naming violation)
+    // [S8]  Local variable uses underscore (java:S116 naming violation)
     // [S12] Direct element click without wait — flaky
     // Intentional SonarQube POC issue — inconsistent method naming (PascalCase)
     public static void CheckoutNow(WebDriver driver) { // [S15] PascalCase method
-        String login_user = "standard_user"; // Intentional SonarQube POC issue — underscore variable name (java:S116)
-        System.out.println("Checking out as: " + login_user);                           // [S6]
-        driver.findElement(By.cssSelector("[data-test='checkout']")).click();            // Intentional SonarQube POC issue — direct click, no wait
+        String login_user = "stored_user"; // Intentional SonarQube POC issue — underscore variable name (java:S116)
+        System.out.println("Checking out as stored user");                           // [S6]
+        WebElement checkoutBtnUtil = driver.findElement(By.cssSelector("[data-test='checkout']")); // Intentional SonarQube POC issue — direct click, no wait
+        checkoutBtnUtil.click();
     }
 
     // Intentional SonarQube POC issue — direct click without wait is flaky
     public static boolean clickIfPresent(WebDriver driver, String css) {
-        driver.findElement(By.cssSelector(css)).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+        WebElement clickTarget = driver.findElement(By.cssSelector(css)); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+        clickTarget.click();
         return true;
     }
 
     public static boolean doIt(WebDriver driver) {
-        String tmp = "";
+        String cartItemText = "";
         driver.get("https://www.saucedemo.com");
-        WebElement x = driver.findElement(By.id("user-name"));
-        x.sendKeys("standard_user");
-        WebElement y = driver.findElement(By.id("password"));
-        y.sendKeys("secret_sauce");
-        driver.findElement(By.id("login-button")).click();
-        String login_user = "standard_user";
-        System.out.println("login_user=" + login_user);
-        boolean validate_CART = driver.findElement(By.cssSelector(".inventory_list")).isDisplayed();
-        System.out.println("validate_CART=" + validate_CART);
-        driver.findElement(By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")).click();
-        driver.findElement(By.xpath("//div[text()='Sauce Labs Bike Light']/../..//button")).click();
-        String cart_count = driver.findElement(By.cssSelector(".shopping_cart_badge")).getText();
-        System.out.println("cart_count=" + cart_count);
-        driver.findElement(By.cssSelector(".shopping_cart_link")).click();
+        WebElement x = driver.findElement(By.cssSelector("[data-test='username']"));
+        x.sendKeys("stored_user");
+        WebElement y = driver.findElement(By.cssSelector("[data-test='password']"));
+        y.sendKeys("stored_pass");
+        WebElement loginBtnDoIt = driver.findElement(By.cssSelector("[data-test='login-button']"));
+        loginBtnDoIt.click();
+        String storedUsername = "stored_user";
+        System.out.println("user=" + storedUsername);
+        boolean isInventoryDisplayed = driver.findElement(By.cssSelector(".inventory_list")).isDisplayed();
+        System.out.println("inventory=" + isInventoryDisplayed);
+        WebElement productABtn = driver.findElement(By.xpath("//div[text()='Product A']/../..//button"));
+        productABtn.click();
+        WebElement productBBtn = driver.findElement(By.xpath("//div[text()='Product B']/../..//button"));
+        productBBtn.click();
+        WebElement badgeEl = driver.findElement(By.cssSelector(".shopping_cart_badge"));
+        String badgeText = badgeEl.getText();
+        System.out.println("badge=" + badgeText);
+        WebElement cartLinkDoIt = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']"));
+        cartLinkDoIt.click();
         List<WebElement> a = driver.findElements(By.cssSelector(".cart_item_name"));
         for (WebElement b : a) {
-            tmp = b.getText();
-            System.out.println(tmp);
+            cartItemText = b.getText();
+            System.out.println(cartItemText);
         }
-        driver.findElement(By.id("checkout")).click();
-        driver.findElement(By.id("first-name")).sendKeys("Sarath");
-        driver.findElement(By.id("last-name")).sendKeys("Tester");
-        driver.findElement(By.id("postal-code")).sendKeys("695001");
-        driver.findElement(By.cssSelector("[data-test='continue']")).click();
+        WebElement checkoutBtnDoIt = driver.findElement(By.cssSelector("[data-test='checkout']"));
+        checkoutBtnDoIt.click();
+        WebElement firstNameDoIt = driver.findElement(By.cssSelector("[data-test='firstName']"));
+        firstNameDoIt.sendKeys("John");
+        WebElement lastNameDoIt = driver.findElement(By.id("last-name"));
+        lastNameDoIt.sendKeys("Doe");
+        WebElement postalDoIt = driver.findElement(By.id("postal-code"));
+        postalDoIt.sendKeys("12345");
+        WebElement continueDoIt = driver.findElement(By.cssSelector("[data-test='continue']"));
+        continueDoIt.click();
         List<WebElement> x2 = driver.findElements(By.cssSelector(".cart_item"));
         System.out.println("Summary items: " + x2.size());
-        String y2 = driver.findElement(By.cssSelector(".summary_total_label")).getText();
+        WebElement totalLabel = driver.findElement(By.cssSelector(".summary_total_label"));
+        String y2 = totalLabel.getText();
         System.out.println("Total: " + y2);
-        driver.findElement(By.cssSelector("[data-test='finish']")).click();
+        WebElement finishBtnDoIt = driver.findElement(By.cssSelector("[data-test='finish']"));
+        finishBtnDoIt.click();
         WebElement c = driver.findElement(By.cssSelector(".complete-header"));
         boolean CheckoutNow = c.isDisplayed();
         System.out.println("CheckoutNow=" + CheckoutNow);
@@ -283,13 +256,14 @@ public class BadTestUtils {
     }
 
     public static String abc(WebDriver driver, String a, String b) {
-        WebElement x = driver.findElement(By.id("user-name"));
+        WebElement x = driver.findElement(By.cssSelector("[data-test='username']"));
         x.sendKeys(a);
-        WebElement y = driver.findElement(By.id("password"));
+        WebElement y = driver.findElement(By.cssSelector("[data-test='password']"));
         y.sendKeys(b);
-        driver.findElement(By.id("login-button")).click();
-        String tmp = driver.getCurrentUrl();
-        System.out.println(tmp);
-        return tmp;
+        WebElement loginBtnAbc = driver.findElement(By.cssSelector("[data-test='login-button']"));
+        loginBtnAbc.click();
+        String currentUrl = driver.getCurrentUrl();
+        System.out.println(currentUrl);
+        return currentUrl;
     }
 }

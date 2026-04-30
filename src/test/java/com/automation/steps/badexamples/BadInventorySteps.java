@@ -17,6 +17,7 @@ package com.automation.steps.badexamples;
 // =============================================================================
 
 import com.automation.base.DriverFactory;
+import com.automation.pages.badexamples.BadInventoryPage;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
@@ -29,6 +30,7 @@ import java.util.List;
 
 public class BadInventorySteps {
 
+    // INTENTIONAL BAD EXAMPLE
     // [S11] Step selects AND validates — two concerns in a @When step
     // [S2]  Locator string hardcoded; visible text hardcoded in caller
     // [S8]  Variables x, tmp
@@ -42,6 +44,7 @@ public class BadInventorySteps {
         System.out.println("Selected: " + optionText + " from " + css); // [S6]
     }
 
+    // INTENTIONAL BAD EXAMPLE
     // [S10] Duplicate of price-collection logic also present in BadInventoryPage
     // [S8]  Variables x, y, result, prev
     // [S9]  No assertion thrown — sort failure only logged
@@ -72,12 +75,10 @@ public class BadInventorySteps {
     // [S12] Direct element access without wait
     @Then("css {string} is present in DOM")
     public void cssIsPresentInDom(String css) {
-        WebElement x = DriverFactory.getDriver() // [S8][S12]
-            .findElement(By.cssSelector(css));
-        System.out.println("Found: " + x.isDisplayed()); // [S6]
-        // [S11] Also reads title — mixed concern inside a presence check
-        String tmp = DriverFactory.getDriver().getTitle(); // [S8]
-        System.out.println("Page title: " + tmp); // [S6]
+        BadInventoryPage inventoryPage = new BadInventoryPage(DriverFactory.getDriver());
+        System.out.println("Found: " + inventoryPage.isElementPresent(css));
+        String tmp = inventoryPage.getPageTitle();
+        System.out.println("Page title: " + tmp);
     }
 
     // [S10] Duplicate of BadLoginSteps.iClickCss — same method body, different class
@@ -85,39 +86,36 @@ public class BadInventorySteps {
     // [S12] Direct click without wait
     @When("I click css2 {string}")
     public void iClickCss2(String css) {
-        WebElement y = DriverFactory.getDriver() // [S8][S12]
-            .findElement(By.cssSelector(css));
-        y.click();
+        new BadInventoryPage(DriverFactory.getDriver()).clickByCss(css);
     }
 
     // [S10] Duplicate of BadLoginSteps.iClickXpath — same body
     // [S12] Direct click without wait
     @When("I click xpath2 {string}")
     public void iClickXpath2(String xpath) {
-        WebDriver driver = DriverFactory.getDriver();
-        WebElement x = driver.findElement(By.xpath(xpath)); // [S8][S12]
-        x.click();
+        new BadInventoryPage(DriverFactory.getDriver()).clickByXpath(xpath);
     }
 
     // [S10] Duplicate of BadLoginSteps.elementWithCssIsVisible — same body
     // [S12] Direct element access without wait
     @Then("element with css2 {string} is visible")
     public void elementWithCss2IsVisible(String css) {
-        WebElement tmp = DriverFactory.getDriver() // [S8][S12]
-            .findElement(By.cssSelector(css));
-        System.out.println("Visible: " + tmp.isDisplayed()); // [S6]
+        System.out.println("Visible: " + new BadInventoryPage(DriverFactory.getDriver()).isElementVisible(css));
     }
 
-    // [S2]  Hardcoded "standard_user" / "secret_sauce" — test data in step code
+    // INTENTIONAL BAD EXAMPLE
     // [S3]  Hard wait after login click — intentional java:S2925 demo
     // [S11] Step manufactures its own credentials instead of taking from scenario
     // [S12] All element interactions direct — no explicit wait
     @When("I am logged in as default user")
     public void iAmLoggedInAsDefaultUser() {
         WebDriver driver = DriverFactory.getDriver();
-        driver.findElement(By.id("user-name")).sendKeys("standard_user"); // [S2][S12]
-        driver.findElement(By.id("password")).sendKeys("secret_sauce");   // [S2][S12]
-        driver.findElement(By.id("login-button")).click();                // [S12]
+        WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S2][S12]
+        usernameField.sendKeys("standard_user");
+        WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']")); // [S2][S12]
+        passwordField.sendKeys("secret_sauce");
+        WebElement loginBtn = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S12]
+        loginBtn.click();
         try {
             Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
         } catch (InterruptedException e) {
@@ -129,74 +127,66 @@ public class BadInventorySteps {
     // [S12] Direct XPath access without wait
     @Then("xpath {string} is visible")
     public void xpathIsVisible(String xpath) {
-        WebElement x = DriverFactory.getDriver() // [S8][S12]
-            .findElement(By.xpath(xpath));
-        System.out.println("XPath element visible: " + x.isDisplayed()); // [S6]
+        System.out.println("XPath element visible: " + new BadInventoryPage(DriverFactory.getDriver()).isElementVisibleByXpath(xpath));
     }
 
-    // [S2] By.cssSelector(".shopping_cart_link") hardcoded inline — not a constant
+    // [S2] cart link selector hardcoded inline — not a constant
     // [S12] Direct element click without wait
     @When("I click on the shopping cart link")
     public void iClickOnTheShoppingCartLink() {
-        DriverFactory.getDriver().findElement(By.cssSelector(".shopping_cart_link")).click(); // [S2][S12]
+        new BadInventoryPage(DriverFactory.getDriver()).openCart();
     }
 
-    // [S2] By.id("checkout") hardcoded inline — not a constant
+    // [S2] checkout locator hardcoded inline — not a constant
     // [S12] Direct element click without wait
     @When("I proceed to checkout from inventory")
     public void iProceedToCheckoutFromInventory() {
-        DriverFactory.getDriver().findElement(By.id("checkout")).click(); // [S2][S12]
+        new BadInventoryPage(DriverFactory.getDriver()).clickCheckoutById();
     }
 
-    // [S2] "Sauce Labs Backpack" hardcoded product name — not from config
+    // INTENTIONAL BAD EXAMPLE
     // [S9] No assertion — logs only
     // [S12] Direct findElement without wait
     @Then("Sauce Labs Backpack is visible on the page")
     public void sauceLabsBackpackIsVisibleOnThePage() {
         WebElement x = DriverFactory.getDriver()                                   // [S12]
-            .findElement(By.xpath("//div[text()='Sauce Labs Backpack']"));          // [S2]
+            .findElement(By.xpath("//div[text()='Product A']"));          // [S2]
         System.out.println("Backpack visible: " + x.isDisplayed());               // [S6][S9]
     }
 
-    // [S2] "Sauce Labs Bike Light" hardcoded product name — not from config
     // [S9] No assertion — logs only
     // [S12] Direct findElement without wait
     @Then("Sauce Labs Bike Light is visible on the page")
     public void sauceLabsBikeLightIsVisibleOnThePage() {
-        WebElement x = DriverFactory.getDriver()                                   // [S12]
-            .findElement(By.xpath("//div[text()='Sauce Labs Bike Light']"));        // [S2]
-        System.out.println("Bike Light visible: " + x.isDisplayed());             // [S6][S9]
+        System.out.println("Bike Light visible: " + new BadInventoryPage(DriverFactory.getDriver()).isBikeLightInInventory());
     }
 
-    // [S2] By.id("first-name") hardcoded — wrong concern inside inventory steps
-    // [S2] "Sarath", "Tester", "695001" hardcoded form values
+    // INTENTIONAL BAD EXAMPLE
+    // [S2] first-name field hardcoded — wrong concern inside inventory steps
     // [S11] Mixed responsibility: checkout info inside inventory step class
     // [S12] Direct element access without wait
     @When("I fill in order details from inventory context")
     public void iFillInOrderDetailsFromInventoryContext() {
         WebDriver driver = DriverFactory.getDriver();
-        driver.findElement(By.id("first-name")).sendKeys("Sarath");  // [S2][S12]
-        driver.findElement(By.id("last-name")).sendKeys("Tester");   // [S2][S12]
-        driver.findElement(By.id("postal-code")).sendKeys("695001"); // [S2][S12]
+        WebElement firstNameField = driver.findElement(By.cssSelector("[data-test='firstName']")); // [S2][S12]
+        firstNameField.sendKeys("John");
+        WebElement lastNameField = driver.findElement(By.id("last-name")); // [S2][S12]
+        lastNameField.sendKeys("Doe");
+        WebElement postalField = driver.findElement(By.id("postal-code")); // [S2][S12]
+        postalField.sendKeys("12345");
     }
 
+    // INTENTIONAL BAD EXAMPLE
     @When("I go directly to checkout without waiting")
     public void iGoDirectlyToCheckoutWithoutWaiting() {
-        DriverFactory.getDriver().findElement(By.cssSelector(".shopping_cart_link")).click();
-        DriverFactory.getDriver().findElement(By.id("checkout")).click();
+        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='shopping-cart-link']")).click();
+        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='checkout']")).click();
     }
 
     @When("I navigate to the cart page")
     public void iNavigateToTheCartPage() {
-        WebDriver driver = DriverFactory.getDriver();
-        driver.findElement(By.cssSelector(".shopping_cart_link")).click();
-        System.out.println("Navigated to cart page");
+        new BadInventoryPage(DriverFactory.getDriver()).navigateToCart();
     }
 
-    @When("I head to the shopping cart")
-    public void iHeadToTheShoppingCart() {
-        WebDriver driver = DriverFactory.getDriver();
-        driver.findElement(By.cssSelector(".shopping_cart_link")).click();
-        System.out.println("Headed to shopping cart");
-    }
 }
+
