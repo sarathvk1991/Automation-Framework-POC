@@ -8,8 +8,8 @@ package com.automation.steps.badexamples;
 // SonarQube Issues Demonstrated:
 //   [S2]  Hardcoded credentials and URLs directly in step definition code
 //   [S3]  Intentional hard wait in iNavigateToUrl — java:S2925
-//   [S4]  Generic Exception caught
-//   [S5]  Empty catch blocks
+//   [S4]  Generic Exception caught in iSubmitTheLoginForm
+//   [S5]  Empty catch block in iSubmitTheLoginForm
 //   [S6]  System.out.println instead of SLF4J logger
 //   [S7]  Non-descriptive method names: iLoginAsAndVerifyDashboard, pageTitleIs
 //   [S8]  Non-descriptive variables: x, y, tmp, result
@@ -34,14 +34,14 @@ public class BadLoginSteps {
     // [S11] Step navigates, logs message, and swallows failure all in one
     @Given("I navigate to url {string}")
     public void iNavigateToUrl(String url) {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.get(url);
         try {
-            WebDriver driver = DriverFactory.getDriver();
-            driver.get(url);
             Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
-            System.out.println("Navigated to: " + url); // [S6]
-        } catch (Exception e) { // [S4]
-            // [S5] Navigation failure swallowed — subsequent steps will fail mysteriously
+        } catch (InterruptedException e) {
+            // [S5] InterruptedException swallowed
         }
+        System.out.println("Navigated to: " + url); // [S6]
     }
 
     // [S11] One step finds element, clears, and types — mixed UI operation detail
@@ -50,40 +50,28 @@ public class BadLoginSteps {
     // [S12] Direct element access without explicit wait
     @When("I enter text {string} in field with id {string}")
     public void iEnterTextInFieldWithId(String text, String fieldId) {
-        try {
-            WebElement x = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.id(fieldId));
-            x.clear();
-            x.sendKeys(text);
-        } catch (Exception e) { // [S4]
-            System.out.println("Could not type into: " + fieldId); // [S6]
-        }
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.id(fieldId));
+        x.clear();
+        x.sendKeys(text);
     }
 
     // [S8] Variable y
     // [S12] Direct click without wait — may fail if page is still loading
     @When("I click element with id {string}")
     public void iClickElementWithId(String elementId) {
-        try {
-            WebElement y = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.id(elementId));
-            y.click();
-        } catch (Exception e) { // [S4]
-            e.printStackTrace(); // [S6]
-        }
+        WebElement y = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.id(elementId));
+        y.click();
     }
 
     // [S8] Variable tmp
     // [S12] Direct element access without wait
     @Then("element with css {string} is visible")
     public void elementWithCssIsVisible(String css) {
-        try {
-            WebElement tmp = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(css));
-            System.out.println("Element visible: " + tmp.isDisplayed()); // [S6]
-        } catch (Exception e) { // [S4]
-            // [S5] If element not found, test continues silently — false positive
-        }
+        WebElement tmp = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        System.out.println("Element visible: " + tmp.isDisplayed()); // [S6]
     }
 
     // ── [S7][S11] Non-descriptive name, does too much ─────────────────────────
@@ -95,33 +83,28 @@ public class BadLoginSteps {
     // [S12] All element access direct — no wait
     @When("I login as {string} with {string} and verify dashboard loads and check title")
     public void iLoginAsAndVerifyDashboard(String username, String password) {
-        try {
-            WebDriver driver = DriverFactory.getDriver();
-            // [S2] Hardcoded URL instead of reading from config
-            driver.get("https://www.saucedemo.com");
+        WebDriver driver = DriverFactory.getDriver();
+        // [S2] Hardcoded URL instead of reading from config
+        driver.get("https://www.saucedemo.com");
 
-            WebElement x = driver.findElement(By.id("user-name")); // [S8][S12]
-            x.clear();
-            x.sendKeys(username);
+        WebElement x = driver.findElement(By.id("user-name")); // [S8][S12]
+        x.clear();
+        x.sendKeys(username);
 
-            WebElement y = driver.findElement(By.id("password")); // [S8][S12]
-            y.clear();
-            y.sendKeys(password);
+        WebElement y = driver.findElement(By.id("password")); // [S8][S12]
+        y.clear();
+        y.sendKeys(password);
 
-            driver.findElement(By.id("login-button")).click(); // [S12]
+        driver.findElement(By.id("login-button")).click(); // [S12]
 
-            // [S11] Assertion logic inside a @When step — wrong keyword for assertions
-            String result = driver.getCurrentUrl(); // [S8]
-            if (!result.contains("inventory")) {
-                System.out.println("WARN: Not on inventory page, URL=" + result); // [S6]
-            }
-            // [S11] Also checks title — second assertion in one step
-            String tmp = driver.getTitle(); // [S8]
-            System.out.println("Title is: " + tmp); // [S6]
-
-        } catch (Exception e) { // [S4]
-            System.out.println("Login failed: " + e.getMessage()); // [S6]
+        // [S11] Assertion logic inside a @When step — wrong keyword for assertions
+        String result = driver.getCurrentUrl(); // [S8]
+        if (!result.contains("inventory")) {
+            System.out.println("WARN: Not on inventory page, URL=" + result); // [S6]
         }
+        // [S11] Also checks title — second assertion in one step
+        String tmp = driver.getTitle(); // [S8]
+        System.out.println("Title is: " + tmp); // [S6]
     }
 
     // [S10] Duplicate pattern: title check — same style used elsewhere in bad step files
@@ -129,14 +112,10 @@ public class BadLoginSteps {
     // [S9]  Assertion failure swallowed — test passes even when title is wrong
     @Then("page title is {string}")
     public void pageTitleIs(String expected) {
-        try {
-            String tmp = DriverFactory.getDriver().getTitle(); // [S8]
-            System.out.println("Expected: " + expected + " Got: " + tmp); // [S6]
-            if (!tmp.equals(expected)) {
-                System.out.println("Title mismatch!"); // [S6] should throw assertion
-            }
-        } catch (Exception e) { // [S4]
-            // [S5] Assertion failure swallowed
+        String tmp = DriverFactory.getDriver().getTitle(); // [S8]
+        System.out.println("Expected: " + expected + " Got: " + tmp); // [S6]
+        if (!tmp.equals(expected)) {
+            System.out.println("Title mismatch!"); // [S6] should throw assertion
         }
     }
 
@@ -145,13 +124,9 @@ public class BadLoginSteps {
     // [S12] Direct click without wait
     @When("I click css {string}")
     public void iClickCss(String css) {
-        try {
-            WebElement y = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(css));
-            y.click();
-        } catch (Exception e) { // [S4]
-            System.out.println("Click failed on: " + css); // [S6]
-        }
+        WebElement y = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        y.click();
     }
 
     // [S10] Duplicate of iClickCss — same pattern, XPath version, repeated across 4 files
@@ -159,13 +134,9 @@ public class BadLoginSteps {
     // [S12] Direct click without wait
     @When("I click xpath {string}")
     public void iClickXpath(String xpath) {
-        try {
-            WebElement x = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.xpath(xpath));
-            x.click();
-        } catch (Exception e) { // [S4]
-            System.out.println("XPath click failed: " + xpath); // [S6]
-        }
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.xpath(xpath));
+        x.click();
     }
 
     // [S10] Duplicate element text check — same pattern used in BadAddToCartSteps
@@ -173,16 +144,12 @@ public class BadLoginSteps {
     // [S12] Direct element access without wait
     @Then("element with css {string} has text {string}")
     public void elementWithCssHasText(String css, String expectedText) {
-        try {
-            WebElement x = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(css));
-            String tmp = x.getText(); // [S8]
-            System.out.println("Expected='" + expectedText + "' Got='" + tmp + "'"); // [S6]
-            if (!tmp.equals(expectedText)) {
-                System.out.println("TEXT MISMATCH — test should fail here"); // [S6][S9]
-            }
-        } catch (Exception e) { // [S4]
-            System.out.println("Element check failed: " + css); // [S6]
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        String tmp = x.getText(); // [S8]
+        System.out.println("Expected='" + expectedText + "' Got='" + tmp + "'"); // [S6]
+        if (!tmp.equals(expectedText)) {
+            System.out.println("TEXT MISMATCH — test should fail here"); // [S6][S9]
         }
     }
 
@@ -220,20 +187,69 @@ public class BadLoginSteps {
     public void iSubmitTheLoginForm() {
         try {
             DriverFactory.getDriver().findElement(By.id("login-button")).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
-        } catch (Exception e) { // Intentional SonarQube POC issue — catch (Exception e)
-            // Intentional SonarQube POC issue — empty catch block, login failure invisible to test
+        } catch (Exception e) {
         }
     }
 
-    // Intentional SonarQube POC issue — e.printStackTrace() instead of a proper logger
-    // Intentional SonarQube POC issue — catch (Exception e) masks specific exceptions
     // Intentional SonarQube POC issue — direct findElement without wait (flaky)
     @When("I clear the username field")
     public void iClearTheUsernameField() {
-        try {
-            DriverFactory.getDriver().findElement(By.id("user-name")).clear(); // Intentional SonarQube POC issue — no wait
-        } catch (Exception e) { // Intentional SonarQube POC issue — overly broad catch
-            e.printStackTrace(); // Intentional SonarQube POC issue — stdout dump, not a logger
-        }
+        DriverFactory.getDriver().findElement(By.id("user-name")).clear(); // Intentional SonarQube POC issue — no wait
+    }
+
+    // [S2] By.cssSelector(".shopping_cart_link") hardcoded inline — not a constant
+    // [S12] Direct element click without wait
+    @When("I open the shopping cart link")
+    public void iOpenTheShoppingCartLink() {
+        DriverFactory.getDriver().findElement(By.cssSelector(".shopping_cart_link")).click(); // [S2][S12]
+    }
+
+    // [S2] By.id("checkout") hardcoded inline — not a constant
+    // [S12] Direct element click without wait
+    @When("I click the checkout button from login context")
+    public void iClickTheCheckoutButtonFromLoginContext() {
+        DriverFactory.getDriver().findElement(By.id("checkout")).click(); // [S2][S12]
+    }
+
+    // [S2] By.id("first-name") hardcoded inline
+    // [S2] "Sarath", "Tester", "695001" hardcoded form values — not from config
+    // [S2] "Sauce Labs Backpack" hardcoded product name — wrong concern in login steps
+    // [S11] Mixed responsibility: checkout form fill inside login step class
+    // [S12] Direct element access without wait
+    @When("I fill in shipping details with defaults")
+    public void iFillInShippingDetailsWithDefaults() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("first-name")).sendKeys("Sarath");  // [S2][S12]
+        driver.findElement(By.id("last-name")).sendKeys("Tester");   // [S2][S12]
+        driver.findElement(By.id("postal-code")).sendKeys("695001"); // [S2][S12]
+        WebElement item = driver.findElement(                                      // [S12]
+            By.xpath("//div[text()='Sauce Labs Backpack']")                        // [S2]
+        );
+        System.out.println("Product: " + item.getText());                         // [S6]
+    }
+
+    @When("I type {string} into the username field directly")
+    public void iTypeIntoTheUsernameFieldDirectly(String username) {
+        DriverFactory.getDriver().findElement(By.id("user-name")).sendKeys(username);
+        DriverFactory.getDriver().findElement(By.id("password")).sendKeys("standard_user");
+        DriverFactory.getDriver().findElement(By.id("login-button")).click();
+    }
+
+    @Given("bad shopper signs in with credentials")
+    public void badShopperSignsInWithCredentials() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("user-name")).sendKeys("standard_user");
+        driver.findElement(By.id("password")).sendKeys("secret_sauce");
+        driver.findElement(By.id("login-button")).click();
+        System.out.println("Signed in as shopper");
+    }
+
+    @Given("bad tester authenticates with valid credentials")
+    public void badTesterAuthenticatesWithValidCredentials() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("user-name")).sendKeys("standard_user");
+        driver.findElement(By.id("password")).sendKeys("secret_sauce");
+        driver.findElement(By.id("login-button")).click();
+        System.out.println("Authenticated as tester");
     }
 }

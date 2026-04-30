@@ -4,13 +4,13 @@ package com.automation.utils.badexamples;
 // INTENTIONALLY NON-COMPLIANT — POC SONARQUBE DEMONSTRATION
 //
 // SonarQube Issues Demonstrated:
+//   [S2]  Hardcoded test data (credentials, URLs) returned directly
 //   [S3]  Intentional hard waits in waitForTwoSeconds / pauseForTwoSeconds — java:S2925
-//   [S4]  Generic Exception caught everywhere
-//   [S5]  Empty catch blocks — exceptions silently swallowed
+//   [S4]  Generic Exception catch in isElementPresent()
 //   [S6]  System.out.println instead of SLF4J logger
 //   [S7]  Non-descriptive method names: getEl(), findEl(), clickAndGetText()
 //   [S8]  Non-descriptive variables: x, tmp, t
-//   [S9]  Returning null instead of throwing meaningful exceptions
+//   [S9]  Returning null / false / empty string instead of throwing
 //   [S10] Massively duplicated method bodies:
 //           waitForTwoSeconds / pauseForTwoSeconds — identical wait methods
 //           getDefaultUserName / fetchDefaultUserName — same hardcoded return
@@ -26,9 +26,11 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
-import java.io.InputStream;
 
 public class BadTestUtils {
 
@@ -44,7 +46,7 @@ public class BadTestUtils {
     public static void waitForTwoSeconds() {
         try {
             Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
-        } catch (Exception e) { // [S4]
+        } catch (InterruptedException e) {
             // [S5] InterruptedException silently swallowed
         }
     }
@@ -54,7 +56,7 @@ public class BadTestUtils {
     public static void pauseForTwoSeconds() {
         try {
             Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
-        } catch (Exception e) { // [S4]
+        } catch (InterruptedException e) {
             // [S5]
         }
     }
@@ -118,7 +120,7 @@ public class BadTestUtils {
             Properties tmp = new Properties(); // [S8] 'tmp'
             tmp.load(x);
             return tmp.getProperty(key);
-        } catch (Exception e) { // [S4]
+        } catch (IOException e) {
             System.out.println("Config read failed for key: " + key); // [S6]
             return null; // [S9]
         }
@@ -134,7 +136,7 @@ public class BadTestUtils {
             Properties tmp = new Properties();
             tmp.load(x);
             return tmp.getProperty(key);
-        } catch (Exception e) { // [S4]
+        } catch (IOException e) {
             System.out.println("Config read failed for key: " + key);
             return null; // [S9]
         }
@@ -150,8 +152,8 @@ public class BadTestUtils {
             Properties tmp = new Properties();
             tmp.load(x);
             return tmp.getProperty(key);
-        } catch (Exception e) { // [S4]
-            return null; // [S5][S9] completely silent failure
+        } catch (IOException e) {
+            return null; // [S9] completely silent failure
         }
     }
 
@@ -160,28 +162,18 @@ public class BadTestUtils {
     // ══════════════════════════════════════════════════════════════════════════
 
     // [S7] "getEl" — abbreviation, non-descriptive
-    // [S8] variables x, t
+    // [S8] variable x
     // [S12] Direct element access without wait
     public static WebElement getEl(WebDriver driver, String css) {
-        try {
-            WebElement x = driver.findElement(By.cssSelector(css)); // [S8][S12]
-            return x;
-        } catch (Exception e) { // [S4]
-            System.out.println("Element not found: " + css); // [S6]
-            return null; // [S9]
-        }
+        WebElement x = driver.findElement(By.cssSelector(css)); // [S8][S12]
+        return x;
     }
 
     // [S10] Identical to getEl() — just a different method name
     // [S7] "findEl" — barely better than "getEl"
     public static WebElement findEl(WebDriver driver, String css) {
-        try {
-            WebElement x = driver.findElement(By.cssSelector(css)); // [S12]
-            return x;
-        } catch (Exception e) { // [S4]
-            System.out.println("Element not found: " + css);
-            return null; // [S9]
-        }
+        WebElement x = driver.findElement(By.cssSelector(css)); // [S12]
+        return x;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -193,17 +185,12 @@ public class BadTestUtils {
     // [S12] Both element accesses are direct — no wait
     // [S9]  Returns empty string instead of throwing on failure
     public static String clickAndGetText(WebDriver driver, String clickCss, String readCss) {
-        try {
-            WebElement t = driver.findElement(By.cssSelector(clickCss)); // [S8][S12]
-            t.click();
-            WebElement x = driver.findElement(By.cssSelector(readCss)); // [S8][S12]
-            String tmp = x.getText(); // [S8]
-            System.out.println("Got text: " + tmp); // [S6]
-            return tmp;
-        } catch (Exception e) { // [S4]
-            System.out.println("clickAndGetText failed"); // [S6] no exception detail
-            return ""; // [S9] empty string hides failure from caller
-        }
+        WebElement t = driver.findElement(By.cssSelector(clickCss)); // [S8][S12]
+        t.click();
+        WebElement x = driver.findElement(By.cssSelector(readCss)); // [S8][S12]
+        String tmp = x.getText(); // [S8]
+        System.out.println("Got text: " + tmp); // [S6]
+        return tmp;
     }
 
     // Intentional SonarQube POC issue — catch (Exception e) swallows all failure types
@@ -214,21 +201,15 @@ public class BadTestUtils {
         try {
             driver.findElement(By.cssSelector(css)).isDisplayed(); // Intentional SonarQube POC issue — direct access, no wait
             return true;
-        } catch (Exception e) { // Intentional SonarQube POC issue — overly broad catch
-            e.printStackTrace(); // Intentional SonarQube POC issue — stack trace to stdout
-            return false; // Intentional SonarQube POC issue — caller cannot distinguish absent vs error
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
-    // Intentional SonarQube POC issue — empty catch block silently swallows exception
-    // Intentional SonarQube POC issue — return null forces every caller to null-check or NPE
+    // [S12] Direct driver.getTitle() — no wait for page load
     public static String getPageTitle(WebDriver driver) {
-        try {
-            return driver.getTitle();
-        } catch (Exception e) { // Intentional SonarQube POC issue — catch (Exception e)
-            // Intentional SonarQube POC issue — empty catch, no logging, failure invisible
-            return null; // Intentional SonarQube POC issue — return null
-        }
+        return driver.getTitle();
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -242,12 +223,8 @@ public class BadTestUtils {
     // [S12] Direct element access without wait
     // Intentional SonarQube POC issue — inconsistent method naming (underscore + caps)
     public static boolean validate_CART(WebDriver driver) { // [S15] naming violation
-        try {
-            WebElement x = driver.findElement(By.cssSelector(".cart_item")); // [S8][S12]
-            return x.isDisplayed();
-        } catch (Exception e) { // [S4]
-            return false; // [S9]
-        }
+        WebElement x = driver.findElement(By.cssSelector(".cart_item")); // [S8][S12]
+        return x.isDisplayed();
     }
 
     // [S15] CheckoutNow — PascalCase method name violates Java camelCase convention
@@ -256,24 +233,63 @@ public class BadTestUtils {
     // [S12] Direct element click without wait — flaky
     // Intentional SonarQube POC issue — inconsistent method naming (PascalCase)
     public static void CheckoutNow(WebDriver driver) { // [S15] PascalCase method
-        try {
-            String login_user = "standard_user"; // Intentional SonarQube POC issue — underscore variable name (java:S116)
-            System.out.println("Checking out as: " + login_user);                           // [S6]
-            driver.findElement(By.cssSelector("[data-test='checkout']")).click();            // Intentional SonarQube POC issue — direct click, no wait
-        } catch (Exception e) { // [S4]
-            // Intentional SonarQube POC issue — empty catch block
-        }
+        String login_user = "standard_user"; // Intentional SonarQube POC issue — underscore variable name (java:S116)
+        System.out.println("Checking out as: " + login_user);                           // [S6]
+        driver.findElement(By.cssSelector("[data-test='checkout']")).click();            // Intentional SonarQube POC issue — direct click, no wait
     }
 
-    // Intentional SonarQube POC issue — catch (Exception e) used for control flow
     // Intentional SonarQube POC issue — direct click without wait is flaky
-    // Intentional SonarQube POC issue — return false on exception masks real failures
     public static boolean clickIfPresent(WebDriver driver, String css) {
-        try {
-            driver.findElement(By.cssSelector(css)).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
-            return true;
-        } catch (Exception e) { // Intentional SonarQube POC issue — exception used as "not found" signal
-            return false; // Intentional SonarQube POC issue — caller has no idea why it failed
+        driver.findElement(By.cssSelector(css)).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+        return true;
+    }
+
+    public static boolean doIt(WebDriver driver) {
+        String tmp = "";
+        driver.get("https://www.saucedemo.com");
+        WebElement x = driver.findElement(By.id("user-name"));
+        x.sendKeys("standard_user");
+        WebElement y = driver.findElement(By.id("password"));
+        y.sendKeys("secret_sauce");
+        driver.findElement(By.id("login-button")).click();
+        String login_user = "standard_user";
+        System.out.println("login_user=" + login_user);
+        boolean validate_CART = driver.findElement(By.cssSelector(".inventory_list")).isDisplayed();
+        System.out.println("validate_CART=" + validate_CART);
+        driver.findElement(By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")).click();
+        driver.findElement(By.xpath("//div[text()='Sauce Labs Bike Light']/../..//button")).click();
+        String cart_count = driver.findElement(By.cssSelector(".shopping_cart_badge")).getText();
+        System.out.println("cart_count=" + cart_count);
+        driver.findElement(By.cssSelector(".shopping_cart_link")).click();
+        List<WebElement> a = driver.findElements(By.cssSelector(".cart_item_name"));
+        for (WebElement b : a) {
+            tmp = b.getText();
+            System.out.println(tmp);
         }
+        driver.findElement(By.id("checkout")).click();
+        driver.findElement(By.id("first-name")).sendKeys("Sarath");
+        driver.findElement(By.id("last-name")).sendKeys("Tester");
+        driver.findElement(By.id("postal-code")).sendKeys("695001");
+        driver.findElement(By.cssSelector("[data-test='continue']")).click();
+        List<WebElement> x2 = driver.findElements(By.cssSelector(".cart_item"));
+        System.out.println("Summary items: " + x2.size());
+        String y2 = driver.findElement(By.cssSelector(".summary_total_label")).getText();
+        System.out.println("Total: " + y2);
+        driver.findElement(By.cssSelector("[data-test='finish']")).click();
+        WebElement c = driver.findElement(By.cssSelector(".complete-header"));
+        boolean CheckoutNow = c.isDisplayed();
+        System.out.println("CheckoutNow=" + CheckoutNow);
+        return CheckoutNow;
+    }
+
+    public static String abc(WebDriver driver, String a, String b) {
+        WebElement x = driver.findElement(By.id("user-name"));
+        x.sendKeys(a);
+        WebElement y = driver.findElement(By.id("password"));
+        y.sendKeys(b);
+        driver.findElement(By.id("login-button")).click();
+        String tmp = driver.getCurrentUrl();
+        System.out.println(tmp);
+        return tmp;
     }
 }

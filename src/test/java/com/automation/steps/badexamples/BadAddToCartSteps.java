@@ -7,8 +7,6 @@ package com.automation.steps.badexamples;
 //
 // SonarQube Issues Demonstrated:
 //   [S2]  Hardcoded product names, locators, and URLs in step code
-//   [S4]  Generic Exception caught
-//   [S5]  Empty catch blocks
 //   [S6]  System.out.println instead of logger
 //   [S8]  Non-descriptive variables: x, y, tmp, el, a, b, c
 //   [S9]  No assertion thrown on mismatch
@@ -34,18 +32,14 @@ public class BadAddToCartSteps {
     // [S12] Direct element access — no explicit wait
     @When("I click xpath {string} to add product")
     public void iClickXpathToAddProduct(String xpath) {
-        try {
-            WebElement el = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.xpath(xpath));
-            el.click();
-            // [S11] Badge assertion inside a @When step — wrong concern
-            List<WebElement> tmp = DriverFactory.getDriver() // [S8]
-                .findElements(By.cssSelector(".shopping_cart_badge")); // [S2]
-            System.out.println("Cart badge count: " + // [S6]
-                (tmp.isEmpty() ? "0" : tmp.get(0).getText()));
-        } catch (Exception e) { // [S4]
-            System.out.println("Add to cart failed: " + e); // [S6]
-        }
+        WebElement el = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.xpath(xpath));
+        el.click();
+        // [S11] Badge assertion inside a @When step — wrong concern
+        List<WebElement> tmp = DriverFactory.getDriver() // [S8]
+            .findElements(By.cssSelector(".shopping_cart_badge")); // [S2]
+        System.out.println("Cart badge count: " + // [S6]
+            (tmp.isEmpty() ? "0" : tmp.get(0).getText()));
     }
 
     // [S10] Duplicate of BadLoginSteps.iClickXpath — same method body across three classes
@@ -53,13 +47,9 @@ public class BadAddToCartSteps {
     // [S12] Direct click without wait
     @When("I click xpath3 {string}")
     public void iClickXpath3(String xpath) {
-        try {
-            WebElement x = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.xpath(xpath));
-            x.click();
-        } catch (Exception e) { // [S4]
-            System.out.println("XPath click failed: " + xpath); // [S6]
-        }
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.xpath(xpath));
+        x.click();
     }
 
     // [S10] Duplicate of BadLoginSteps.iClickCss — same body, different class
@@ -67,13 +57,9 @@ public class BadAddToCartSteps {
     // [S12] Direct click without wait
     @When("I click css3 {string}")
     public void iClickCss3(String css) {
-        try {
-            WebElement y = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(css));
-            y.click();
-        } catch (Exception e) { // [S4]
-            // [S5]
-        }
+        WebElement y = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        y.click();
     }
 
     // [S10] Duplicate of element-visible assertion — four copies across bad step files
@@ -81,13 +67,9 @@ public class BadAddToCartSteps {
     // [S12] Direct element access without wait
     @Then("element with css3 {string} is visible")
     public void elementWithCss3IsVisible(String css) {
-        try {
-            WebElement tmp = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(css));
-            System.out.println("Is displayed: " + tmp.isDisplayed()); // [S6]
-        } catch (Exception e) { // [S4]
-            // [S5] element absence silently ignored
-        }
+        WebElement tmp = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        System.out.println("Is displayed: " + tmp.isDisplayed()); // [S6]
     }
 
     // [S10] Duplicate of element-text-check — same as BadLoginSteps version
@@ -96,15 +78,11 @@ public class BadAddToCartSteps {
     // [S12] Direct element access without wait
     @Then("element with css3 {string} has text {string}")
     public void elementHasText(String css, String expectedText) {
-        try {
-            WebElement x = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(css));
-            String tmp = x.getText(); // [S8]
-            if (!tmp.equals(expectedText)) {
-                System.out.println("Mismatch: expected=" + expectedText + " got=" + tmp); // [S6][S9]
-            }
-        } catch (Exception e) { // [S4]
-            System.out.println("Text check failed"); // [S6]
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        String tmp = x.getText(); // [S8]
+        if (!tmp.equals(expectedText)) {
+            System.out.println("Mismatch: expected=" + expectedText + " got=" + tmp); // [S6][S9]
         }
     }
 
@@ -114,21 +92,17 @@ public class BadAddToCartSteps {
     // [S12] All element access direct — no wait
     @When("I add backpack to cart as logged in user")
     public void iAddBackpackToCartAsLoggedInUser() {
-        try {
-            WebDriver driver = DriverFactory.getDriver();
-            driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
-            WebElement a = driver.findElement(By.id("user-name")); // [S8][S12]
-            a.sendKeys("standard_user"); // [S2] hardcoded credential
-            WebElement b = driver.findElement(By.id("password")); // [S8][S12]
-            b.sendKeys("secret_sauce"); // [S2] hardcoded credential
-            driver.findElement(By.id("login-button")).click(); // [S12]
-            WebElement c = driver.findElement( // [S8][S12]
-                By.xpath("//button[@data-test='add-to-cart-sauce-labs-backpack']") // [S2]
-            );
-            c.click();
-        } catch (Exception e) { // [S4]
-            System.out.println("Add backpack failed: " + e.getMessage()); // [S6]
-        }
+        WebDriver driver = DriverFactory.getDriver();
+        driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
+        WebElement a = driver.findElement(By.id("user-name")); // [S8][S12]
+        a.sendKeys("standard_user"); // [S2] hardcoded credential
+        WebElement b = driver.findElement(By.id("password")); // [S8][S12]
+        b.sendKeys("secret_sauce"); // [S2] hardcoded credential
+        driver.findElement(By.id("login-button")).click(); // [S12]
+        WebElement c = driver.findElement( // [S8][S12]
+            By.xpath("//button[@data-test='add-to-cart-sauce-labs-backpack']") // [S2]
+        );
+        c.click();
     }
 
     // [S2]  Badge locator hardcoded — same as in BadInventorySteps
@@ -137,14 +111,10 @@ public class BadAddToCartSteps {
     // [S12] Direct findElements without wait
     @Then("cart has {string} items")
     public void cartHasItems(String expectedCount) {
-        try {
-            List<WebElement> x = DriverFactory.getDriver() // [S8][S12]
-                .findElements(By.cssSelector(".shopping_cart_badge"));
-            String actual = x.isEmpty() ? "0" : x.get(0).getText();
-            System.out.println("Cart count expected=" + expectedCount + " actual=" + actual); // [S6][S9]
-        } catch (Exception e) { // [S4]
-            // [S5]
-        }
+        List<WebElement> x = DriverFactory.getDriver() // [S8][S12]
+            .findElements(By.cssSelector(".shopping_cart_badge"));
+        String actual = x.isEmpty() ? "0" : x.get(0).getText();
+        System.out.println("Cart count expected=" + expectedCount + " actual=" + actual); // [S6][S9]
     }
 
     // [S2]  ".cart_item" hardcoded — third repetition across bad files
@@ -152,13 +122,9 @@ public class BadAddToCartSteps {
     // [S12] Direct findElements without wait
     @Then("the cart page shows items")
     public void theCartPageShowsItems() {
-        try {
-            List<WebElement> items = DriverFactory.getDriver()
-                .findElements(By.cssSelector(".cart_item")); // [S2][S12]
-            System.out.println("Items in cart: " + items.size()); // [S6][S9]
-        } catch (Exception e) { // [S4]
-            System.out.println("Cart page check failed"); // [S6]
-        }
+        List<WebElement> items = DriverFactory.getDriver()
+            .findElements(By.cssSelector(".cart_item")); // [S2][S12]
+        System.out.println("Items in cart: " + items.size()); // [S6][S9]
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -187,5 +153,60 @@ public class BadAddToCartSteps {
             By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")     // [S2]
         ).click();
         System.out.println("Added Sauce Labs Backpack item to cart");         // [S6]
+    }
+
+    // [S2] By.cssSelector(".shopping_cart_link") hardcoded inline — not a constant
+    // [S12] Direct element click without wait
+    @When("I navigate to the cart via the cart link")
+    public void iNavigateToTheCartViaTheCartLink() {
+        DriverFactory.getDriver().findElement(By.cssSelector(".shopping_cart_link")).click(); // [S2][S12]
+    }
+
+    // [S2] By.id("checkout") hardcoded inline — not a constant
+    // [S12] Direct element click without wait
+    @When("I click checkout from the cart page")
+    public void iClickCheckoutFromTheCartPage() {
+        DriverFactory.getDriver().findElement(By.id("checkout")).click(); // [S2][S12]
+    }
+
+    // [S2] "Sauce Labs Bike Light" hardcoded product name — not from config
+    // [S12] Direct element click without wait — flaky
+    @When("I add the bike light to the cart")
+    public void iAddTheBikeLightToTheCart() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(                                                         // [S12]
+            By.xpath("//div[text()='Sauce Labs Bike Light']/../..//button")        // [S2]
+        ).click();
+        System.out.println("Added Sauce Labs Bike Light to cart");                // [S6]
+    }
+
+    // [S2] By.id("first-name") hardcoded — wrong concern inside add-to-cart steps
+    // [S2] "Sarath", "Tester", "695001" hardcoded form values — not from config
+    // [S11] Mixed responsibility: checkout form inside add-to-cart step class
+    // [S12] Direct element access without wait
+    @When("I fill in the checkout form with test data")
+    public void iFillInTheCheckoutFormWithTestData() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("first-name")).sendKeys("Sarath");  // [S2][S12]
+        driver.findElement(By.id("last-name")).sendKeys("Tester");   // [S2][S12]
+        driver.findElement(By.id("postal-code")).sendKeys("695001"); // [S2][S12]
+    }
+
+    @When("I put the backpack into the cart")
+    public void iPutTheBackpackIntoTheCart() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(
+            By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")
+        ).click();
+        System.out.println("Put Sauce Labs Backpack into cart");
+    }
+
+    @When("I place the bike light in the cart")
+    public void iPlaceTheBikeLightInTheCart() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(
+            By.xpath("//div[text()='Sauce Labs Bike Light']/../..//button")
+        ).click();
+        System.out.println("Placed Sauce Labs Bike Light in cart");
     }
 }

@@ -8,8 +8,6 @@ package com.automation.steps.badexamples;
 // SonarQube Issues Demonstrated:
 //   [S2]  Hardcoded URLs, credentials, form values, and locators in step code
 //   [S3]  Intentional hard wait in iCompleteFullCheckoutFlow — java:S2925
-//   [S4]  Generic Exception caught
-//   [S5]  Empty catch blocks
 //   [S6]  System.out.println instead of logger
 //   [S7]  Non-descriptive: finishIt(), checkDone()
 //   [S8]  Non-descriptive variables: a, b, c, x, y, tmp
@@ -20,7 +18,6 @@ package com.automation.steps.badexamples;
 // =============================================================================
 
 import com.automation.base.DriverFactory;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
@@ -34,13 +31,9 @@ public class BadCheckoutSteps {
     // [S12] Direct click without wait
     @When("I click css4 {string}")
     public void iClickCss4(String css) {
-        try {
-            WebElement y = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(css));
-            y.click();
-        } catch (Exception e) { // [S4]
-            // [S5]
-        }
+        WebElement y = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        y.click();
     }
 
     // [S10] Duplicate of iClickXpath from BadLoginSteps / BadInventorySteps / BadAddToCartSteps
@@ -48,26 +41,18 @@ public class BadCheckoutSteps {
     // [S12] Direct click without wait
     @When("I click xpath4 {string}")
     public void iClickXpath4(String xpath) {
-        try {
-            WebElement x = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.xpath(xpath));
-            x.click();
-        } catch (Exception e) { // [S4]
-            System.out.println("XPath click failed: " + xpath); // [S6]
-        }
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.xpath(xpath));
+        x.click();
     }
 
     // [S10] Duplicate of element-visible assertion — 5th copy across bad step files
     // [S12] Direct element access without wait
     @Then("element with css4 {string} is visible")
     public void elementWithCss4IsVisible(String css) {
-        try {
-            WebElement tmp = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(css));
-            System.out.println("Visible: " + tmp.isDisplayed()); // [S6]
-        } catch (Exception e) { // [S4]
-            // [S5]
-        }
+        WebElement tmp = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        System.out.println("Visible: " + tmp.isDisplayed()); // [S6]
     }
 
     // [S2]  Hardcoded form field IDs in step code instead of page object
@@ -75,14 +60,10 @@ public class BadCheckoutSteps {
     // [S12] Direct element access without wait
     @When("I enter text {string} in field with id4 {string}")
     public void iEnterTextInFieldWithId4(String text, String fieldId) {
-        try {
-            WebElement a = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.id(fieldId));
-            a.clear();
-            a.sendKeys(text);
-        } catch (Exception e) { // [S4]
-            System.out.println("Type failed in field: " + fieldId); // [S6]
-        }
+        WebElement a = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.id(fieldId));
+        a.clear();
+        a.sendKeys(text);
     }
 
     // ── [S11] God step — entire E2E checkout flow ─────────────────────────────
@@ -95,48 +76,47 @@ public class BadCheckoutSteps {
     // [S12] Most element access direct — no explicit wait
     @When("I complete the full checkout flow from login to confirmation")
     public void iCompleteFullCheckoutFlow() {
+        WebDriver driver = DriverFactory.getDriver();
+
+        driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
+
+        WebElement a = driver.findElement(By.id("user-name")); // [S8][S12]
+        a.clear();
+        a.sendKeys("standard_user"); // [S2] hardcoded credential
+        WebElement b = driver.findElement(By.id("password")); // [S8][S12]
+        b.clear();
+        b.sendKeys("secret_sauce"); // [S2] hardcoded credential
+        driver.findElement(By.id("login-button")).click();
         try {
-            WebDriver driver = DriverFactory.getDriver();
-
-            driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
-
-            WebElement a = driver.findElement(By.id("user-name")); // [S8][S12]
-            a.clear();
-            a.sendKeys("standard_user"); // [S2] hardcoded credential
-            WebElement b = driver.findElement(By.id("password")); // [S8][S12]
-            b.clear();
-            b.sendKeys("secret_sauce"); // [S2] hardcoded credential
-            driver.findElement(By.id("login-button")).click();
             Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
-
-            // [S2] Hardcoded product XPath
-            driver.findElement(
-                By.xpath("//button[@data-test='add-to-cart-sauce-labs-backpack']")
-            ).click(); // [S12]
-
-            driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")).click(); // [S12]
-            driver.findElement(By.cssSelector("[data-test='checkout']")).click();           // [S12]
-
-            // [S2] Hardcoded form values — "Sarath", "Tester", "695001"
-            WebElement x = driver.findElement(By.id("first-name")); // [S8][S12]
-            x.clear();
-            x.sendKeys("Sarath"); // [S2] hardcoded first name
-            WebElement y = driver.findElement(By.id("last-name")); // [S8][S12]
-            y.clear();
-            y.sendKeys("Tester"); // [S2] hardcoded last name
-            WebElement tmp = driver.findElement(By.id("postal-code")); // [S8][S12]
-            tmp.clear();
-            tmp.sendKeys("695001"); // [S2] hardcoded postal code
-
-            driver.findElement(By.cssSelector("[data-test='continue']")).click(); // [S12]
-            driver.findElement(By.cssSelector("[data-test='finish']")).click();   // [S12]
-
-            WebElement c = driver.findElement(By.cssSelector(".complete-header")); // [S8][S12]
-            System.out.println("Order result: " + c.getText()); // [S6][S9] no assertion
-
-        } catch (Exception e) { // [S4]
-            System.out.println("Full checkout failed: " + e.getMessage()); // [S6]
+        } catch (InterruptedException e) {
+            // InterruptedException swallowed
         }
+
+        // [S2] Hardcoded product XPath
+        driver.findElement(
+            By.xpath("//button[@data-test='add-to-cart-sauce-labs-backpack']")
+        ).click(); // [S12]
+
+        driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")).click(); // [S12]
+        driver.findElement(By.cssSelector("[data-test='checkout']")).click();           // [S12]
+
+        // [S2] Hardcoded form values — "Sarath", "Tester", "695001"
+        WebElement x = driver.findElement(By.id("first-name")); // [S8][S12]
+        x.clear();
+        x.sendKeys("Sarath"); // [S2] hardcoded first name
+        WebElement y = driver.findElement(By.id("last-name")); // [S8][S12]
+        y.clear();
+        y.sendKeys("Tester"); // [S2] hardcoded last name
+        WebElement tmp = driver.findElement(By.id("postal-code")); // [S8][S12]
+        tmp.clear();
+        tmp.sendKeys("695001"); // [S2] hardcoded postal code
+
+        driver.findElement(By.cssSelector("[data-test='continue']")).click(); // [S12]
+        driver.findElement(By.cssSelector("[data-test='finish']")).click();   // [S12]
+
+        WebElement c = driver.findElement(By.cssSelector(".complete-header")); // [S8][S12]
+        System.out.println("Order result: " + c.getText()); // [S6][S9] no assertion
     }
 
     // [S7]  "finishIt" — completely non-descriptive
@@ -145,13 +125,9 @@ public class BadCheckoutSteps {
     // [S12] Direct click without wait
     @When("I finishIt the order")
     public void iFinishItTheOrder() {
-        try {
-            WebElement x = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector("[data-test='finish']"));
-            x.click();
-        } catch (Exception e) { // [S4]
-            e.printStackTrace(); // [S6]
-        }
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector("[data-test='finish']"));
+        x.click();
     }
 
     // [S7]  "checkDone" — ambiguous name
@@ -161,16 +137,12 @@ public class BadCheckoutSteps {
     // [S12] Direct element access without wait
     @Then("checkDone with message {string}")
     public void checkDoneWithMessage(String expected) {
-        try {
-            WebElement tmp = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(".complete-header"));
-            String actual = tmp.getText();
-            System.out.println("Expected='" + expected + "' Got='" + actual + "'"); // [S6]
-            if (!actual.contains(expected)) {
-                System.out.println("ORDER MESSAGE MISMATCH"); // [S6][S9] no assertion thrown
-            }
-        } catch (Exception e) { // [S4]
-            // [S5]
+        WebElement tmp = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(".complete-header"));
+        String actual = tmp.getText();
+        System.out.println("Expected='" + expected + "' Got='" + actual + "'"); // [S6]
+        if (!actual.contains(expected)) {
+            System.out.println("ORDER MESSAGE MISMATCH"); // [S6][S9] no assertion thrown
         }
     }
 
@@ -180,54 +152,38 @@ public class BadCheckoutSteps {
     // [S12] Direct element access without wait
     @Then("I am on the checkout overview page with total")
     public void iAmOnCheckoutOverviewPageWithTotal() {
-        try {
-            WebElement x = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(".summary_total_label"));
-            System.out.println("Total label: " + x.getText()); // [S6][S9]
-        } catch (Exception e) { // [S4]
-            System.out.println("Overview check failed"); // [S6]
-        }
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(".summary_total_label"));
+        System.out.println("Total label: " + x.getText()); // [S6][S9]
     }
 
     // [S9]  No assertion that URL contains "checkout"
     // [S12] Direct URL read — no wait for page to settle
     @Then("I am on the checkout page")
     public void iAmOnTheCheckoutPage() {
-        try {
-            String tmp = DriverFactory.getDriver().getCurrentUrl(); // [S8]
-            System.out.println("Current URL: " + tmp); // [S6][S9]
-        } catch (Exception e) { // [S4]
-            // [S5]
-        }
+        String tmp = DriverFactory.getDriver().getCurrentUrl(); // [S8]
+        System.out.println("Current URL: " + tmp); // [S6][S9]
     }
 
     // [S10] Duplicate of BadLoginSteps.elementWithCssIsVisible — 6th copy across bad steps
     // [S12] Direct element access without wait
     @Then("element with css5 {string} is visible")
     public void elementWithCss5IsVisible(String css) {
-        try {
-            WebElement el = DriverFactory.getDriver() // [S12]
-                .findElement(By.cssSelector(css));
-            System.out.println("Element visible: " + el.isDisplayed()); // [S6]
-        } catch (Exception e) { // [S4]
-            // [S5]
-        }
+        WebElement el = DriverFactory.getDriver() // [S12]
+            .findElement(By.cssSelector(css));
+        System.out.println("Element visible: " + el.isDisplayed()); // [S6]
     }
 
     // [S10] Duplicate of BadLoginSteps.elementWithCssHasText — same body
     // [S12] Direct element access without wait
     @Then("element with css5 {string} has text {string}")
     public void elementWithCss5HasText(String css, String expectedText) {
-        try {
-            WebElement x = DriverFactory.getDriver() // [S8][S12]
-                .findElement(By.cssSelector(css));
-            String tmp = x.getText(); // [S8]
-            System.out.println("Expected='" + expectedText + "' Got='" + tmp + "'"); // [S6]
-            if (!tmp.equals(expectedText)) {
-                System.out.println("TEXT MISMATCH"); // [S6][S9] no assertion
-            }
-        } catch (Exception e) { // [S4]
-            System.out.println("Text check failed on: " + css); // [S6]
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        String tmp = x.getText(); // [S8]
+        System.out.println("Expected='" + expectedText + "' Got='" + tmp + "'"); // [S6]
+        if (!tmp.equals(expectedText)) {
+            System.out.println("TEXT MISMATCH"); // [S6][S9] no assertion
         }
     }
 
@@ -235,12 +191,8 @@ public class BadCheckoutSteps {
     // [S12] Direct URL read — no wait
     @Then("I am on the checkout info page")
     public void iAmOnTheCheckoutInfoPage() {
-        try {
-            String tmp = DriverFactory.getDriver().getCurrentUrl(); // [S8]
-            System.out.println("URL: " + tmp); // [S6][S9]
-        } catch (Exception e) { // [S4]
-            // [S5]
-        }
+        String tmp = DriverFactory.getDriver().getCurrentUrl(); // [S8]
+        System.out.println("URL: " + tmp); // [S6][S9]
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -277,21 +229,72 @@ public class BadCheckoutSteps {
     // Intentional SonarQube POC issue — direct findElement click without any wait (flaky)
     @When("I click the continue button")
     public void iClickTheContinueButton() {
-        try {
-            DriverFactory.getDriver().findElement(By.cssSelector("[data-test='continue']")).click(); // Intentional SonarQube POC issue — direct click, no wait, no retry
-        } catch (Exception e) { // Intentional SonarQube POC issue — catch (Exception e)
-            e.printStackTrace(); // Intentional SonarQube POC issue — stack trace to stdout
-        }
+        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='continue']")).click(); // Intentional SonarQube POC issue — direct click, no wait, no retry
     }
 
-    // Intentional SonarQube POC issue — empty catch block, cancel failure is completely hidden
     // Intentional SonarQube POC issue — direct findElement click without wait (flaky)
     @When("I cancel the checkout")
     public void iCancelTheCheckout() {
-        try {
-            DriverFactory.getDriver().findElement(By.cssSelector("[data-test='cancel']")).click(); // Intentional SonarQube POC issue — flaky direct click
-        } catch (Exception e) { // Intentional SonarQube POC issue — overly broad catch
-            // Intentional SonarQube POC issue — empty catch block
-        }
+        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='cancel']")).click(); // Intentional SonarQube POC issue — flaky direct click
+    }
+
+    // [S2] By.cssSelector(".shopping_cart_link") hardcoded inline — not a constant
+    // [S12] Direct element click without wait
+    @When("I open the cart from the checkout context")
+    public void iOpenTheCartFromTheCheckoutContext() {
+        DriverFactory.getDriver().findElement(By.cssSelector(".shopping_cart_link")).click(); // [S2][S12]
+    }
+
+    // [S2] By.id("checkout") hardcoded inline — not a constant
+    // [S12] Direct element click without wait
+    @When("I click the checkout button")
+    public void iClickTheCheckoutButton() {
+        DriverFactory.getDriver().findElement(By.id("checkout")).click(); // [S2][S12]
+    }
+
+    // [S2] "Sauce Labs Backpack" hardcoded product name — not from config
+    // [S9] No assertion — logs only
+    // [S12] Direct findElement without wait
+    @Then("I see Sauce Labs Backpack in the order summary")
+    public void iSeeSauceLabsBackpackInTheOrderSummary() {
+        WebElement x = DriverFactory.getDriver()                                   // [S12]
+            .findElement(By.xpath("//div[text()='Sauce Labs Backpack']"));          // [S2]
+        System.out.println("Backpack visible: " + x.isDisplayed());               // [S6][S9]
+    }
+
+    // [S2] "Sauce Labs Bike Light" hardcoded product name — not from config
+    // [S9] No assertion — logs only
+    // [S12] Direct findElement without wait
+    @Then("I see Sauce Labs Bike Light in the order summary")
+    public void iSeeSauceLabsBikeLightInTheOrderSummary() {
+        WebElement x = DriverFactory.getDriver()                                   // [S12]
+            .findElement(By.xpath("//div[text()='Sauce Labs Bike Light']"));        // [S2]
+        System.out.println("Bike Light visible: " + x.isDisplayed());             // [S6][S9]
+    }
+
+    @Then("the order total label is displayed directly")
+    public void theOrderTotalLabelIsDisplayedDirectly() {
+        String total = DriverFactory.getDriver().findElement(By.cssSelector(".summary_total_label")).getText();
+        System.out.println("Order total: " + total);
+    }
+
+    @When("bad user submits checkout details")
+    public void badUserSubmitsCheckoutDetails() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("first-name")).sendKeys("Sarath");
+        driver.findElement(By.id("last-name")).sendKeys("Tester");
+        driver.findElement(By.id("postal-code")).sendKeys("695001");
+        driver.findElement(By.cssSelector("[data-test='continue']")).click();
+        System.out.println("Checkout details submitted");
+    }
+
+    @When("bad buyer provides checkout information")
+    public void badBuyerProvidesCheckoutInformation() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("first-name")).sendKeys("Sarath");
+        driver.findElement(By.id("last-name")).sendKeys("Tester");
+        driver.findElement(By.id("postal-code")).sendKeys("695001");
+        driver.findElement(By.cssSelector("[data-test='continue']")).click();
+        System.out.println("Checkout info provided by buyer");
     }
 }

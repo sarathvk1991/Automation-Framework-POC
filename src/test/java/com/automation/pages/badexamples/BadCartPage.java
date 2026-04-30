@@ -6,9 +6,6 @@ package com.automation.pages.badexamples;
 // SonarQube Issues Demonstrated:
 //   [S1]  No base class — WebDriver boilerplate duplicated again
 //   [S2]  Locator strings hardcoded inline in every method
-//   [S4]  Generic Exception catch
-//   [S5]  Empty catch blocks
-//   [S6]  System.out.println instead of logger
 //   [S7]  Non-descriptive method names: doCheck(), getStuff(), verify()
 //   [S8]  Non-descriptive variables: x, y, tmp
 //   [S9]  Returning null instead of throwing
@@ -41,15 +38,11 @@ public class BadCartPage {
     // [S12] Direct findElements with no explicit wait — unstable in slow environments
     public List<String> getStuff() {
         List<String> tmp = new ArrayList<>(); // [S8]
-        try {
-            List<WebElement> x = driver.findElements( // [S8][S12]
-                By.cssSelector(".cart_item_name")
-            );
-            for (WebElement y : x) { // [S8]
-                tmp.add(y.getText());
-            }
-        } catch (Exception e) { // [S4]
-            // [S5] Swallowed — caller gets empty list and may not realise cart wasn't read
+        List<WebElement> x = driver.findElements( // [S8][S12]
+            By.cssSelector(".cart_item_name")
+        );
+        for (WebElement y : x) { // [S8]
+            tmp.add(y.getText());
         }
         return tmp;
     }
@@ -60,40 +53,30 @@ public class BadCartPage {
     // [S13] Method returns true when item IS found but variable is named "notFound"
     // [S12] Direct findElements without wait
     public boolean doCheck(String itemName) {
-        try {
-            List<WebElement> x = driver.findElements( // [S8][S12]
-                By.cssSelector(".cart_item_name")
-            );
-            boolean notFound = true; // [S13] misleading variable — actually means "searching"
-            for (WebElement y : x) { // [S8]
-                if (y.getText().equals(itemName)) {
-                    notFound = false; // [S13] set to false when found — confusing inversion
-                }
+        List<WebElement> x = driver.findElements( // [S8][S12]
+            By.cssSelector(".cart_item_name")
+        );
+        boolean notFound = true; // [S13] misleading variable — actually means "searching"
+        for (WebElement y : x) { // [S8]
+            if (y.getText().equals(itemName)) {
+                notFound = false; // [S13] set to false when found — confusing inversion
             }
-            return !notFound; // [S13] double negation hides intent
-        } catch (Exception e) { // [S4]
-            System.out.println("Check failed for: " + itemName); // [S6]
-            return false;
         }
+        return !notFound; // [S13] double negation hides intent
     }
 
     // [S10] Exact duplicate of doCheck() — SonarQube flags this as duplicated block
     public boolean verify(String itemName) {
-        try {
-            List<WebElement> x = driver.findElements( // [S12]
-                By.cssSelector(".cart_item_name")
-            );
-            boolean notFound = true;
-            for (WebElement y : x) {
-                if (y.getText().equals(itemName)) {
-                    notFound = false;
-                }
+        List<WebElement> x = driver.findElements( // [S12]
+            By.cssSelector(".cart_item_name")
+        );
+        boolean notFound = true;
+        for (WebElement y : x) {
+            if (y.getText().equals(itemName)) {
+                notFound = false;
             }
-            return !notFound;
-        } catch (Exception e) { // [S4]
-            System.out.println("Check failed for: " + itemName);
-            return false;
         }
+        return !notFound;
     }
 
     // ── [S11] Long method ── [S2] Repeated locators ─────────────────────────
@@ -103,47 +86,35 @@ public class BadCartPage {
     // [S12] All interactions direct — no wait
     public String doEverything(String expected) {
         String tmp = null; // [S8][S9]
-        try {
-            // Concern 1: check cart title is visible
-            WebElement title = driver.findElement(By.cssSelector("span.title")); // [S2][S12]
-            System.out.println("Title: " + title.getText()); // [S6]
-            // Concern 2: count items
-            List<WebElement> items = driver.findElements(By.cssSelector(".cart_item")); // [S2][S12]
-            System.out.println("Cart has " + items.size() + " items"); // [S6]
-            // Concern 3: find specific item name
-            List<WebElement> names = driver.findElements(By.cssSelector(".cart_item_name")); // [S2]
-            for (WebElement x : names) { // [S8]
-                if (x.getText().contains(expected)) {
-                    tmp = x.getText(); // [S8]
-                }
+        // Concern 1: check cart title is visible
+        WebElement title = driver.findElement(By.cssSelector("span.title")); // [S2][S12]
+        System.out.println("Title: " + title.getText()); // [S6]
+        // Concern 2: count items
+        List<WebElement> items = driver.findElements(By.cssSelector(".cart_item")); // [S2][S12]
+        System.out.println("Cart has " + items.size() + " items"); // [S6]
+        // Concern 3: find specific item name
+        List<WebElement> names = driver.findElements(By.cssSelector(".cart_item_name")); // [S2]
+        for (WebElement x : names) { // [S8]
+            if (x.getText().contains(expected)) {
+                tmp = x.getText(); // [S8]
             }
-            // Concern 4: click checkout
-            driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
-        } catch (Exception e) { // [S4]
-            System.out.println("doEverything failed: " + e.getMessage()); // [S6]
         }
+        // Concern 4: click checkout
+        driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
         return tmp; // [S9] may return null
     }
 
     // [S2] "[data-test='checkout']" hardcoded — already used in doEverything
     // [S12] Direct click without wait
     public void goCheckout() {
-        try {
-            driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
-        } catch (Exception e) { // [S4]
-            e.printStackTrace(); // [S6]
-        }
+        driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
     }
 
     // [S2] ".cart_item" repeated a third time in this class
     // [S12] Direct findElements without wait
     public boolean isEmpty() {
-        try {
-            List<WebElement> x = driver.findElements(By.cssSelector(".cart_item")); // [S8][S12]
-            return x.size() == 0;
-        } catch (Exception e) { // [S4]
-            return true; // [S5] hides failures by treating error as "empty cart"
-        }
+        List<WebElement> x = driver.findElements(By.cssSelector(".cart_item")); // [S8][S12]
+        return x.size() == 0;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -155,15 +126,11 @@ public class BadCartPage {
     // [S12] Direct element access without wait — flaky on slow pages
     // Intentional SonarQube POC issue — poor method naming
     public String doIt() {
-        try {
-            WebElement x = driver.findElement(By.cssSelector(".cart_list"));       // [S8][S12]
-            WebElement y = driver.findElement(By.cssSelector(".cart_item_name"));  // [S8][S12]
-            String tmp = y.getText();                                               // [S8]
-            System.out.println(x.isDisplayed() + " item: " + tmp);                // [S6]
-            return tmp;
-        } catch (Exception e) { // [S4]
-            return null; // [S9] — caller may NPE
-        }
+        WebElement x = driver.findElement(By.cssSelector(".cart_list"));       // [S8][S12]
+        WebElement y = driver.findElement(By.cssSelector(".cart_item_name"));  // [S8][S12]
+        String tmp = y.getText();                                               // [S8]
+        System.out.println(x.isDisplayed() + " item: " + tmp);                // [S6]
+        return tmp;
     }
 
     // [S7]  "process" — process what? same vague name already used in BadCheckoutPage
@@ -172,37 +139,56 @@ public class BadCartPage {
     // Intentional SonarQube POC issue — poor method naming
     public List<String> process() {
         List<String> tmp = new ArrayList<>(); // [S8]
-        try {
-            List<WebElement> x = driver.findElements(By.cssSelector(".cart_item_name")); // [S8][S12]
-            for (WebElement y : x) { // [S8]
-                tmp.add(y.getText());
-            }
-        } catch (Exception e) { // [S4]
-            // [S5] empty catch — list silently stays empty on failure
+        List<WebElement> x = driver.findElements(By.cssSelector(".cart_item_name")); // [S8][S12]
+        for (WebElement y : x) { // [S8]
+            tmp.add(y.getText());
         }
         return tmp;
     }
 
-    // Intentional SonarQube POC issue — direct findElement().click() with no wait (flaky)
-    // Intentional SonarQube POC issue — catch (Exception e) with e.printStackTrace()
+    // Intentional SonarQube POC issue — direct element click with no wait (flaky)
     public void removeFirstItem() {
-        try {
-            driver.findElement(By.cssSelector(".cart_item .btn_secondary")).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
-        } catch (Exception e) { // Intentional SonarQube POC issue — overly broad catch
-            e.printStackTrace(); // Intentional SonarQube POC issue — stack trace to stdout, not a logger
-        }
+        driver.findElement(By.cssSelector(".cart_item .btn_secondary")).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
     }
 
-    // Intentional SonarQube POC issue — empty catch block swallows exception silently
-    // Intentional SonarQube POC issue — return false on exception hides whether click succeeded
     // Intentional SonarQube POC issue — direct findElement click without any wait (flaky)
     public boolean continueShopping() {
-        try {
-            driver.findElement(By.cssSelector("[data-test='continue-shopping']")).click(); // Intentional SonarQube POC issue — no wait
-            return true;
-        } catch (Exception e) { // Intentional SonarQube POC issue — catch (Exception e)
-            // Intentional SonarQube POC issue — empty catch block, failure completely invisible
-            return false; // Intentional SonarQube POC issue — return false
-        }
+        driver.findElement(By.cssSelector("[data-test='continue-shopping']")).click(); // Intentional SonarQube POC issue — no wait
+        return true;
+    }
+
+    // [S2] By.id("checkout") hardcoded inline — not a constant
+    // [S12] Direct element click without wait
+    public void proceedToCheckout() {
+        driver.findElement(By.id("checkout")).click(); // [S2][S12]
+    }
+
+    // [S2] By.cssSelector(".shopping_cart_link") hardcoded inline — not a constant
+    // [S2] By.id("checkout") repeated — second inline copy in this class
+    // [S12] Direct element access without wait
+    public boolean isCartAccessible() {
+        WebElement x = driver.findElement(By.cssSelector(".shopping_cart_link")); // [S8][S12]
+        x.click();
+        driver.findElement(By.id("checkout")).click(); // [S2][S12]
+        return true;
+    }
+
+    // [S2] "Sauce Labs Backpack" hardcoded product name — should come from test data
+    // [S2] "Sauce Labs Bike Light" hardcoded product name — should come from test data
+    // [S12] Direct findElement without wait — flaky
+    public boolean verifyExpectedItems() {
+        WebElement backpack = driver.findElement(                                   // [S12]
+            By.xpath("//div[text()='Sauce Labs Backpack']")                        // [S2]
+        );
+        WebElement bikeLight = driver.findElement(                                 // [S12]
+            By.xpath("//div[text()='Sauce Labs Bike Light']")                      // [S2]
+        );
+        System.out.println("Backpack: " + backpack.isDisplayed());                // [S6]
+        System.out.println("Bike Light: " + bikeLight.isDisplayed());             // [S6]
+        return backpack.isDisplayed() && bikeLight.isDisplayed();
+    }
+
+    public String getFirstItemPrice() {
+        return driver.findElement(By.cssSelector(".inventory_item_price")).getText();
     }
 }
