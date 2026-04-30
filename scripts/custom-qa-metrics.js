@@ -58,7 +58,10 @@ function getJavaFiles(dir) {
 
 function issue(ruleId, filePath, line, message) {
   return {
+    engineId: "custom-qa-metrics",
     ruleId,
+    severity: getSeverity(ruleId),
+    type: "CODE_SMELL",
     primaryLocation: {
       message,
       filePath,
@@ -70,6 +73,29 @@ function issue(ruleId, filePath, line, message) {
       }
     }
   };
+}
+
+function getSeverity(ruleId) {
+  switch (ruleId) {
+    case "customqa:generic-exception":
+    case "customqa:long-method":
+      return "CRITICAL";
+
+    case "customqa:non-reusable-step":
+    case "customqa:direct-webdriver-action":
+    case "customqa:duplicate-step-definition":
+      return "MAJOR";
+
+    case "customqa:hardcoded-test-data":
+    case "customqa:repeated-locator":
+      return "MINOR";
+
+    case "customqa:poor-naming":
+      return "INFO";
+
+    default:
+      return "MAJOR";
+  }
 }
 
 const issues = [];
