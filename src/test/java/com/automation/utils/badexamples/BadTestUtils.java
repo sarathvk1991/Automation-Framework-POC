@@ -266,4 +266,25 @@ public class BadTestUtils {
         System.out.println(currentUrl);
         return currentUrl;
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATE UTILITY METHODS — customqa:duplicate-utility-method trigger
+    //       Numbered method names (1/2/3) normalize to the same fingerprint via
+    //       normalizeLineForDuplication (\d+ → NUMBER), so body fingerprints match.
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // INTENTIONAL BAD EXAMPLE
+    // [S10] duplicateEmail1/2/3 — digits stripped during normalization make all
+    //       three signatures identical → duplicate-utility-method fires
+    public String duplicateEmail1() {
+        return "test_" + System.currentTimeMillis() + "@example.com";
+    }
+
+    public String duplicateEmail2() {
+        return "test_" + System.currentTimeMillis() + "@example.com";
+    }
+
+    public String duplicateEmail3() {
+        return "test_" + System.currentTimeMillis() + "@example.com";
+    }
 }

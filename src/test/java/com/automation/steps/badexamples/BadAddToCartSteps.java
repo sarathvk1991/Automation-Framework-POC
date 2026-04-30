@@ -50,7 +50,7 @@ public class BadAddToCartSteps {
     // [S12] Direct click without wait
     @When("I click xpath3 {string}")
     public void iClickXpath3(String xpath) {
-        inventory().clickByXpath(xpath);
+        new BadInventoryPage(DriverFactory.getDriver()).clickByXpath(xpath);
     }
 
     // [S10] Duplicate of BadLoginSteps.iClickCss — same body, different class
@@ -58,7 +58,7 @@ public class BadAddToCartSteps {
     // [S12] Direct click without wait
     @When("I click css3 {string}")
     public void iClickCss3(String css) {
-        inventory().clickByCss(css);
+        new BadInventoryPage(DriverFactory.getDriver()).clickByCss(css);
     }
 
     // [S10] Duplicate of element-visible assertion — four copies across bad step files
@@ -66,7 +66,7 @@ public class BadAddToCartSteps {
     // [S12] Direct element access without wait
     @Then("element with css3 {string} is visible")
     public void elementWithCss3IsVisible(String css) {
-        System.out.println("Is displayed: " + inventory().isElementVisible(css));
+        System.out.println("Is displayed: " + new BadInventoryPage(DriverFactory.getDriver()).isElementVisible(css));
     }
 
     // [S10] Duplicate of element-text-check — same as BadLoginSteps version
@@ -75,7 +75,7 @@ public class BadAddToCartSteps {
     // [S12] Direct element access without wait
     @Then("element with css3 {string} has text {string}")
     public void elementHasText(String css, String expectedText) {
-        String tmp = inventory().getTextByCss(css);
+        String tmp = new BadInventoryPage(DriverFactory.getDriver()).getTextByCss(css);
         if (!tmp.equals(expectedText)) {
             System.out.println("Mismatch: expected=" + expectedText + " got=" + tmp);
         }
@@ -120,7 +120,7 @@ public class BadAddToCartSteps {
     // [S12] Direct findElements without wait
     @Then("the cart page shows items")
     public void theCartPageShowsItems() {
-        System.out.println("Items in cart: " + cartPage().getCartItemCount());
+        System.out.println("Items in cart: " + new BadCartPage(DriverFactory.getDriver()).getCartItemCount());
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -132,7 +132,7 @@ public class BadAddToCartSteps {
     // [S12] Direct element click without wait
     @When("I add the backpack product to the shopping cart")
     public void iAddTheBackpackProductToTheShoppingCart() {
-        inventory().click1();
+        new BadInventoryPage(DriverFactory.getDriver()).click1();
         System.out.println("Added product to cart");              // [S6]
     }
 
@@ -141,7 +141,7 @@ public class BadAddToCartSteps {
     // [S12] Direct element click without wait
     @When("I add the backpack item to the shopping cart")
     public void iAddTheBackpackItemToTheShoppingCart() {
-        inventory().click1();
+        new BadInventoryPage(DriverFactory.getDriver()).click1();
         System.out.println("Added product item to cart");
     }
 
@@ -150,20 +150,20 @@ public class BadAddToCartSteps {
     // [S12] Direct element click without wait
     @When("I navigate to the cart via the cart link")
     public void iNavigateToTheCartViaTheCartLink() {
-        cartPage().clickCartLink();
+        new BadCartPage(DriverFactory.getDriver()).clickCartLink();
     }
 
     // [S2] cart proceed locator hardcoded inline — not a constant
     // [S12] Direct element click without wait
     @When("I click checkout from the cart page")
     public void iClickCheckoutFromTheCartPage() {
-        cartPage().goCheckout();
+        new BadCartPage(DriverFactory.getDriver()).goCheckout();
     }
 
     // [S12] Direct element click without wait — flaky
     @When("I add the bike light to the cart")
     public void iAddTheBikeLightToTheCart() {
-        inventory().addBikeLightToCart();
+        new BadInventoryPage(DriverFactory.getDriver()).addBikeLightToCart();
         System.out.println("Added product to cart");
     }
 
@@ -173,16 +173,7 @@ public class BadAddToCartSteps {
     // [S12] Direct element access without wait
     @When("I fill in the checkout form with test data")
     public void iFillInTheCheckoutFormWithTestData() {
-        inventory().fillOrderDetails();
-    }
-
-    // ── Private helpers ───────────────────────────────────────────────────────
-    private BadInventoryPage inventory() {
-        return new BadInventoryPage(DriverFactory.getDriver()); // [S1][S12] no base class, direct driver access
-    }
-
-    private BadCartPage cartPage() {
-        return new BadCartPage(DriverFactory.getDriver()); // [S1][S12] no base class, direct driver access
+        new BadInventoryPage(DriverFactory.getDriver()).fillOrderDetails();
     }
 
 }

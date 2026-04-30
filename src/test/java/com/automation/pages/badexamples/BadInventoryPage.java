@@ -36,8 +36,12 @@ public class BadInventoryPage {
     // [S2] ".inventory_list" hardcoded — not a constant
     // [S12] Direct element access without wait
     public boolean getData() {
-        WebElement x = driver.findElement(By.cssSelector(".inventory_list")); // [S8][S12]
-        return x.isDisplayed();
+        try {
+            WebElement x = driver.findElement(By.cssSelector(".inventory_list")); // [S8][S12]
+            return x.isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     // ── [S7] Non-descriptive ── [S2] Repeated locator ─────────────────────────
@@ -71,14 +75,18 @@ public class BadInventoryPage {
     // [S2] ".inventory_item_name" hardcoded
     // [S12] Direct findElements without wait
     public List<String> getNames() {
-        List<String> result = new ArrayList<>(); // [S8] variable 'result'
-        List<WebElement> x = driver.findElements( // [S8] 'x' [S12]
-            By.cssSelector(".inventory_item_name")
-        );
-        for (WebElement y : x) { // [S8] 'y'
-            result.add(y.getText());
+        try {
+            List<String> result = new ArrayList<>(); // [S8] variable 'result'
+            List<WebElement> x = driver.findElements( // [S8] 'x' [S12]
+                By.cssSelector(".inventory_item_name")
+            );
+            for (WebElement y : x) { // [S8] 'y'
+                result.add(y.getText());
+            }
+            return result;
+        } catch (Exception e) {
+            return new ArrayList<>();
         }
-        return result;
     }
 
     // [S10] Identical body to getNames() — duplicate code block

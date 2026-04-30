@@ -420,4 +420,28 @@ public class BadLoginPage {
     public void clickCheckoutButton() {
         driver.findElement(By.cssSelector("[data-test='checkout']")).click();
     }
+
+    // INTENTIONAL BAD EXAMPLE — [S7][S8] poor naming for POC demonstration
+    public void testThing(String x, String y, String tmp) {
+        String login_user = x;
+        String cart_count = y;
+        String validate_CART = tmp;
+        System.out.println(login_user + cart_count + validate_CART);
+    }
+
+    // INTENTIONAL BAD EXAMPLE — [S7][S8] poor naming for POC demonstration
+    public void process(String x, String y, String tmp) {
+        String login_user = x;
+        String cart_count = y;
+        String validate_CART = tmp;
+        System.out.println(login_user + cart_count + validate_CART);
+    }
+
+    // INTENTIONAL BAD EXAMPLE — [S7][S15] PascalCase method name, poor params
+    public void CheckoutNow(String x, String y, String tmp) {
+        String login_user = x;
+        String cart_count = y;
+        String validate_CART = tmp;
+        System.out.println(login_user + cart_count + validate_CART);
+    }
 }
