@@ -156,4 +156,25 @@ public class BadCheckoutPage {
             return false; // [S9] hides whether this failed due to an error or a real miss
         }
     }
+
+    // Intentional SonarQube POC issue — catch (Exception e) catches everything including NPE
+    // Intentional SonarQube POC issue — return null forces caller to null-check or face NPE
+    // Intentional SonarQube POC issue — direct findElement without wait (flaky)
+    public String getConfirmationMessage() {
+        try {
+            return driver.findElement(By.cssSelector(".complete-header")).getText(); // Intentional SonarQube POC issue — flaky direct access, no wait
+        } catch (Exception e) { // Intentional SonarQube POC issue — overly broad catch
+            return null; // Intentional SonarQube POC issue — return null, caller may NPE
+        }
+    }
+
+    // Intentional SonarQube POC issue — empty catch block hides element-not-found failures
+    // Intentional SonarQube POC issue — direct sequential findElement clicks without any wait
+    public void cancelCheckout() {
+        try {
+            driver.findElement(By.cssSelector("[data-test='cancel']")).click(); // Intentional SonarQube POC issue — direct click, no wait
+        } catch (Exception e) { // Intentional SonarQube POC issue — catch (Exception e)
+            // Intentional SonarQube POC issue — empty catch block, cancel failure silently ignored
+        }
+    }
 }

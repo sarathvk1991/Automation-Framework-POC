@@ -160,4 +160,32 @@ public class BadAddToCartSteps {
             System.out.println("Cart page check failed"); // [S6]
         }
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATE ADD-TO-CART STEP DEFINITIONS — near-identical expressions
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S2]  "Sauce Labs Backpack" hardcoded product name inside XPath — not from config
+    // [S10] Near-duplicate of iAddTheBackpackItemToTheShoppingCart — "product" vs "item"
+    // [S12] Direct element click without wait
+    @When("I add the backpack product to the shopping cart")
+    public void iAddTheBackpackProductToTheShoppingCart() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(                                                    // [S12]
+            By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")     // [S2]
+        ).click();
+        System.out.println("Added Sauce Labs Backpack to cart");              // [S6]
+    }
+
+    // [S10] Near-duplicate — "item" instead of "product", identical body
+    //       Duplicate step definition: same logic, near-identical Cucumber expression
+    // [S12] Direct element click without wait
+    @When("I add the backpack item to the shopping cart")
+    public void iAddTheBackpackItemToTheShoppingCart() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(                                                    // [S12]
+            By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")     // [S2]
+        ).click();
+        System.out.println("Added Sauce Labs Backpack item to cart");         // [S6]
+    }
 }

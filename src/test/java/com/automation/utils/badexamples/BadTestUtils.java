@@ -205,4 +205,75 @@ public class BadTestUtils {
             return ""; // [S9] empty string hides failure from caller
         }
     }
+
+    // Intentional SonarQube POC issue — catch (Exception e) swallows all failure types
+    // Intentional SonarQube POC issue — e.printStackTrace() outputs to stdout instead of logger
+    // Intentional SonarQube POC issue — return false on exception hides real cause from caller
+    // [S12] Direct findElement without any explicit wait — flaky on slow pages
+    public static boolean isElementPresent(WebDriver driver, String css) {
+        try {
+            driver.findElement(By.cssSelector(css)).isDisplayed(); // Intentional SonarQube POC issue — direct access, no wait
+            return true;
+        } catch (Exception e) { // Intentional SonarQube POC issue — overly broad catch
+            e.printStackTrace(); // Intentional SonarQube POC issue — stack trace to stdout
+            return false; // Intentional SonarQube POC issue — caller cannot distinguish absent vs error
+        }
+    }
+
+    // Intentional SonarQube POC issue — empty catch block silently swallows exception
+    // Intentional SonarQube POC issue — return null forces every caller to null-check or NPE
+    public static String getPageTitle(WebDriver driver) {
+        try {
+            return driver.getTitle();
+        } catch (Exception e) { // Intentional SonarQube POC issue — catch (Exception e)
+            // Intentional SonarQube POC issue — empty catch, no logging, failure invisible
+            return null; // Intentional SonarQube POC issue — return null
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S15] INCONSISTENT NAMING — validate_CART, CheckoutNow, login_user variable
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S15] validate_CART — mixed underscore + ALLCAPS in a Java method name
+    //       Violates Java naming conventions (should be camelCase: validateCart)
+    //       SonarQube java:S100 — method names should comply with naming convention
+    // [S8]  Variable x
+    // [S12] Direct element access without wait
+    // Intentional SonarQube POC issue — inconsistent method naming (underscore + caps)
+    public static boolean validate_CART(WebDriver driver) { // [S15] naming violation
+        try {
+            WebElement x = driver.findElement(By.cssSelector(".cart_item")); // [S8][S12]
+            return x.isDisplayed();
+        } catch (Exception e) { // [S4]
+            return false; // [S9]
+        }
+    }
+
+    // [S15] CheckoutNow — PascalCase method name violates Java camelCase convention
+    //       SonarQube java:S100 — should be checkoutNow
+    // [S8]  Local variable login_user uses underscore (java:S116 naming violation)
+    // [S12] Direct element click without wait — flaky
+    // Intentional SonarQube POC issue — inconsistent method naming (PascalCase)
+    public static void CheckoutNow(WebDriver driver) { // [S15] PascalCase method
+        try {
+            String login_user = "standard_user"; // Intentional SonarQube POC issue — underscore variable name (java:S116)
+            System.out.println("Checking out as: " + login_user);                           // [S6]
+            driver.findElement(By.cssSelector("[data-test='checkout']")).click();            // Intentional SonarQube POC issue — direct click, no wait
+        } catch (Exception e) { // [S4]
+            // Intentional SonarQube POC issue — empty catch block
+        }
+    }
+
+    // Intentional SonarQube POC issue — catch (Exception e) used for control flow
+    // Intentional SonarQube POC issue — direct click without wait is flaky
+    // Intentional SonarQube POC issue — return false on exception masks real failures
+    public static boolean clickIfPresent(WebDriver driver, String css) {
+        try {
+            driver.findElement(By.cssSelector(css)).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+            return true;
+        } catch (Exception e) { // Intentional SonarQube POC issue — exception used as "not found" signal
+            return false; // Intentional SonarQube POC issue — caller has no idea why it failed
+        }
+    }
 }

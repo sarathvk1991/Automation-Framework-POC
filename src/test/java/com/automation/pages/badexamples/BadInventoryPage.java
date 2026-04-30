@@ -157,6 +157,42 @@ public class BadInventoryPage {
         }
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S7] POOR METHOD NAMES — abc, click1
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S7]  "abc" — completely opaque; caller has no idea what this method does
+    // [S8]  Parameters a, b — meaningless single-letter names
+    // [S8]  Local variable tmp
+    // [S12] Direct element access without wait
+    // Intentional SonarQube POC issue — poor method naming
+    public boolean abc(String a, String b) { // [S8] params a, b
+        try {
+            WebElement tmp = driver.findElement( // [S8][S12]
+                By.cssSelector(".inventory_item_name")
+            );
+            System.out.println(a + " " + b + " -> " + tmp.getText()); // [S6]
+            return true;
+        } catch (Exception e) { // [S4]
+            return false; // [S9]
+        }
+    }
+
+    // [S7]  "click1" — which element? what does clicking it do? no context at all
+    // [S8]  Variable x
+    // [S12] Direct click without wait — flaky
+    // Intentional SonarQube POC issue — poor method naming
+    public void click1() {
+        try {
+            WebElement x = driver.findElement( // [S8][S12]
+                By.cssSelector(".inventory_item button")
+            );
+            x.click();
+        } catch (Exception e) { // [S4]
+            e.printStackTrace(); // Intentional SonarQube POC issue — stack trace to stdout
+        }
+    }
+
     // [S2] Locator ".shopping_cart_badge" hardcoded
     // [S8] variable 'tmp'
     // [S12] Direct element access without wait

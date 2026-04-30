@@ -242,4 +242,56 @@ public class BadCheckoutSteps {
             // [S5]
         }
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATE CHECKOUT STEP DEFINITIONS — near-identical expressions
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S2]  "Sarath", "Tester", "695001" hardcoded form values — not read from config
+    // [S10] Near-duplicate of badUserEntersCheckoutInformation — "fills in" vs "enters"
+    // [S12] All field interactions direct — no wait
+    @When("bad user fills in checkout information")
+    public void badUserFillsInCheckoutInformation() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("first-name")).sendKeys("Sarath");          // [S2][S12]
+        driver.findElement(By.id("last-name")).sendKeys("Tester");           // [S2][S12]
+        driver.findElement(By.id("postal-code")).sendKeys("695001");         // [S2][S12]
+        driver.findElement(By.cssSelector("[data-test='continue']")).click(); // [S12]
+        System.out.println("Filled checkout info for Sarath Tester");        // [S6]
+    }
+
+    // [S10] Near-duplicate — "enters" instead of "fills in", identical body
+    //       Duplicate step definition: same logic, near-identical Cucumber expression
+    // [S12] All field interactions direct — no wait
+    @When("bad user enters checkout information")
+    public void badUserEntersCheckoutInformation() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("first-name")).sendKeys("Sarath");          // [S2][S12]
+        driver.findElement(By.id("last-name")).sendKeys("Tester");           // [S2][S12]
+        driver.findElement(By.id("postal-code")).sendKeys("695001");         // [S2][S12]
+        driver.findElement(By.cssSelector("[data-test='continue']")).click(); // [S12]
+        System.out.println("Entered checkout info for Sarath Tester");       // [S6]
+    }
+
+    // Intentional SonarQube POC issue — e.printStackTrace() dumps to stdout instead of logger
+    // Intentional SonarQube POC issue — direct findElement click without any wait (flaky)
+    @When("I click the continue button")
+    public void iClickTheContinueButton() {
+        try {
+            DriverFactory.getDriver().findElement(By.cssSelector("[data-test='continue']")).click(); // Intentional SonarQube POC issue — direct click, no wait, no retry
+        } catch (Exception e) { // Intentional SonarQube POC issue — catch (Exception e)
+            e.printStackTrace(); // Intentional SonarQube POC issue — stack trace to stdout
+        }
+    }
+
+    // Intentional SonarQube POC issue — empty catch block, cancel failure is completely hidden
+    // Intentional SonarQube POC issue — direct findElement click without wait (flaky)
+    @When("I cancel the checkout")
+    public void iCancelTheCheckout() {
+        try {
+            DriverFactory.getDriver().findElement(By.cssSelector("[data-test='cancel']")).click(); // Intentional SonarQube POC issue — flaky direct click
+        } catch (Exception e) { // Intentional SonarQube POC issue — overly broad catch
+            // Intentional SonarQube POC issue — empty catch block
+        }
+    }
 }

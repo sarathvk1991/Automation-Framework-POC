@@ -185,4 +185,55 @@ public class BadLoginSteps {
             System.out.println("Element check failed: " + css); // [S6]
         }
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATE LOGIN STEP DEFINITIONS — near-identical expressions
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S2]  "standard_user" / "secret_sauce" hardcoded — not read from config
+    // [S10] Near-duplicate of badCustomerLogsInWithValidCredentials — "user" vs "customer"
+    // [S12] All element interactions direct — no wait
+    @Given("bad user logs in with valid credentials")
+    public void badUserLogsInWithValidCredentials() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("user-name")).sendKeys("standard_user"); // [S2][S12]
+        driver.findElement(By.id("password")).sendKeys("secret_sauce");   // [S2][S12]
+        driver.findElement(By.id("login-button")).click();                // [S12]
+        System.out.println("Logged in as standard user");                 // [S6]
+    }
+
+    // [S10] Near-duplicate — "customer" instead of "user", identical body
+    //       Duplicate step definition: same logic, near-identical Cucumber expression
+    // [S12] All element interactions direct — no wait
+    @Given("bad customer logs in with valid credentials")
+    public void badCustomerLogsInWithValidCredentials() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("user-name")).sendKeys("standard_user"); // [S2][S12]
+        driver.findElement(By.id("password")).sendKeys("secret_sauce");   // [S2][S12]
+        driver.findElement(By.id("login-button")).click();                // [S12]
+        System.out.println("Logged in as standard customer");             // [S6]
+    }
+
+    // Intentional SonarQube POC issue — empty catch block swallows click failure entirely
+    // Intentional SonarQube POC issue — direct findElement click with no wait (flaky)
+    @When("I submit the login form")
+    public void iSubmitTheLoginForm() {
+        try {
+            DriverFactory.getDriver().findElement(By.id("login-button")).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+        } catch (Exception e) { // Intentional SonarQube POC issue — catch (Exception e)
+            // Intentional SonarQube POC issue — empty catch block, login failure invisible to test
+        }
+    }
+
+    // Intentional SonarQube POC issue — e.printStackTrace() instead of a proper logger
+    // Intentional SonarQube POC issue — catch (Exception e) masks specific exceptions
+    // Intentional SonarQube POC issue — direct findElement without wait (flaky)
+    @When("I clear the username field")
+    public void iClearTheUsernameField() {
+        try {
+            DriverFactory.getDriver().findElement(By.id("user-name")).clear(); // Intentional SonarQube POC issue — no wait
+        } catch (Exception e) { // Intentional SonarQube POC issue — overly broad catch
+            e.printStackTrace(); // Intentional SonarQube POC issue — stdout dump, not a logger
+        }
+    }
 }

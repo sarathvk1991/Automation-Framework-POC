@@ -145,4 +145,64 @@ public class BadCartPage {
             return true; // [S5] hides failures by treating error as "empty cart"
         }
     }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S7] POOR METHOD NAMES — doIt, process
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S7]  "doIt" gives no indication of what cart action is performed
+    // [S8]  Variables x, y, tmp — single-letter / non-descriptive names
+    // [S12] Direct element access without wait — flaky on slow pages
+    // Intentional SonarQube POC issue — poor method naming
+    public String doIt() {
+        try {
+            WebElement x = driver.findElement(By.cssSelector(".cart_list"));       // [S8][S12]
+            WebElement y = driver.findElement(By.cssSelector(".cart_item_name"));  // [S8][S12]
+            String tmp = y.getText();                                               // [S8]
+            System.out.println(x.isDisplayed() + " item: " + tmp);                // [S6]
+            return tmp;
+        } catch (Exception e) { // [S4]
+            return null; // [S9] — caller may NPE
+        }
+    }
+
+    // [S7]  "process" — process what? same vague name already used in BadCheckoutPage
+    // [S8]  Variables tmp, x, y — no semantic meaning
+    // [S12] Direct findElements without wait
+    // Intentional SonarQube POC issue — poor method naming
+    public List<String> process() {
+        List<String> tmp = new ArrayList<>(); // [S8]
+        try {
+            List<WebElement> x = driver.findElements(By.cssSelector(".cart_item_name")); // [S8][S12]
+            for (WebElement y : x) { // [S8]
+                tmp.add(y.getText());
+            }
+        } catch (Exception e) { // [S4]
+            // [S5] empty catch — list silently stays empty on failure
+        }
+        return tmp;
+    }
+
+    // Intentional SonarQube POC issue — direct findElement().click() with no wait (flaky)
+    // Intentional SonarQube POC issue — catch (Exception e) with e.printStackTrace()
+    public void removeFirstItem() {
+        try {
+            driver.findElement(By.cssSelector(".cart_item .btn_secondary")).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+        } catch (Exception e) { // Intentional SonarQube POC issue — overly broad catch
+            e.printStackTrace(); // Intentional SonarQube POC issue — stack trace to stdout, not a logger
+        }
+    }
+
+    // Intentional SonarQube POC issue — empty catch block swallows exception silently
+    // Intentional SonarQube POC issue — return false on exception hides whether click succeeded
+    // Intentional SonarQube POC issue — direct findElement click without any wait (flaky)
+    public boolean continueShopping() {
+        try {
+            driver.findElement(By.cssSelector("[data-test='continue-shopping']")).click(); // Intentional SonarQube POC issue — no wait
+            return true;
+        } catch (Exception e) { // Intentional SonarQube POC issue — catch (Exception e)
+            // Intentional SonarQube POC issue — empty catch block, failure completely invisible
+            return false; // Intentional SonarQube POC issue — return false
+        }
+    }
 }
