@@ -69,7 +69,7 @@ function issue(ruleId, filePath, line, message) {
         startLine: line,
         endLine: line,
         startColumn: 1,
-        endColumn: 1
+        endColumn: 2
       }
     }
   };
