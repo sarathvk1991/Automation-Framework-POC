@@ -227,19 +227,14 @@ public class BadInventoryPage {
         checkoutEl.click();
     }
 
-    // Previously "process" — renamed to sortInventoryAndProceedToCheckout for clarity
-    public boolean sortInventoryAndProceedToCheckout(String sortOption, String expectedItem) {
-        String itemName = null;
-        WebElement inventoryListEl = driver.findElement(By.cssSelector(".inventory_list"));
-        boolean inventoryVisible = inventoryListEl.isDisplayed();
-        System.out.println("inventoryVisible=" + inventoryVisible);
+    // Helper: sort by price and validate ascending order
+    private boolean sortAndValidatePrices() {
         WebElement sortDropdown = driver.findElement(By.cssSelector("[data-test='product-sort-container']"));
         new org.openqa.selenium.support.ui.Select(sortDropdown).selectByVisibleText("Price (low to high)");
         List<WebElement> priceElements = driver.findElements(By.cssSelector(".inventory_item_price"));
         List<Double> prices = new ArrayList<>();
         for (WebElement priceEl : priceElements) {
-            String raw = priceEl.getText().replace("$", "");
-            prices.add(Double.parseDouble(raw));
+            prices.add(Double.parseDouble(priceEl.getText().replace("$", "")));
         }
         System.out.println("Prices: " + prices);
         double previousPrice = -1;
@@ -251,11 +246,19 @@ public class BadInventoryPage {
             previousPrice = price;
         }
         System.out.println("Sorted: " + sorted);
+        return sorted;
+    }
+
+    // Helper: print all inventory item names to stdout
+    private void printInventoryItemNames() {
         List<WebElement> itemElements = driver.findElements(By.cssSelector(".inventory_item_name"));
         for (WebElement item : itemElements) {
-            itemName = item.getText();
-            System.out.println(itemName);
+            System.out.println(item.getText());
         }
+    }
+
+    // Helper: add two products, navigate to cart, proceed to checkout
+    private void addItemsAndProceedToCheckout() {
         driver.findElement(By.xpath("//div[text()='Product A']/../..//button")).click();
         driver.findElement(By.xpath("//div[text()='Product B']/../..//button")).click();
         String badgeText = driver.findElement(By.cssSelector(".shopping_cart_badge")).getText();
@@ -266,6 +269,17 @@ public class BadInventoryPage {
             System.out.println("In cart: " + cartItem.getText());
         }
         driver.findElement(By.id("checkout")).click();
+    }
+
+    // Previously "process" — renamed to sortInventoryAndProceedToCheckout for clarity
+    // [S11] Original long method — now delegates to private helpers to reduce method length
+    public boolean sortInventoryAndProceedToCheckout(String sortOption, String expectedItem) {
+        WebElement inventoryListEl = driver.findElement(By.cssSelector(".inventory_list"));
+        boolean inventoryVisible = inventoryListEl.isDisplayed();
+        System.out.println("inventoryVisible=" + inventoryVisible);
+        boolean sorted = sortAndValidatePrices();
+        printInventoryItemNames();
+        addItemsAndProceedToCheckout();
         System.out.println("Reached checkout with sortOption=" + sortOption + " expectedItem=" + expectedItem);
         return sorted;
     }

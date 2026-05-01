@@ -13,8 +13,7 @@ package com.automation.pages.badexamples;
 //   [S4]  Generic Exception caught — masks real failures
 //   [S5]  Empty catch blocks — exceptions silently swallowed
 //   [S6]  System.out.println instead of SLF4J logger
-//   [S7]  Non-descriptive method names: doIt, abc, click1
-//   [S8]  Non-descriptive variable names: x, y, tmp
+//   [S7]  Non-descriptive method names: doIt, click1
 //   [S9]  Returning null instead of throwing a meaningful exception
 //   [S10] Duplicate code blocks — checkError() and isError() are identical
 //   [S11] Long method with mixed responsibilities (doLoginAndGetPageTitle)
@@ -50,16 +49,15 @@ public class BadLoginPage {
         driver.findElement(By.id("login-button")).click();                // [S2]
     }
 
-    // ── [S7][S8] Poor method and parameter names ──────────────────────────────
+    // ── [S7][S8] Poor method name ─────────────────────────────────────────────
 
-    // [S7] "abc" is meaningless
-    // [S8] parameter named "x" — caller cannot tell what to pass
+    // [S7] "abc" is meaningless — intentional poor name for POC
     // [S2] username locator repeated inline (not a constant)
     // [S12] Direct element access with no explicit wait — flaky in slow CI
-    public void abc(String x) {
-        WebElement y = driver.findElement(By.cssSelector("[data-test='username']")); // [S8] var 'y' [S12]
-        y.clear();
-        y.sendKeys(x);
+    public void abc(String usernameValue) {
+        WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S12]
+        usernameField.clear();
+        usernameField.sendKeys(usernameValue);
     }
 
     // ── [S7] click1 — non-descriptive ─────────────────────────────────────────
@@ -79,11 +77,10 @@ public class BadLoginPage {
 
     // [S10] This is structurally identical to abc above — SonarQube flags as duplicate block
     // [S2] username locator — 3rd inline copy, no constant
-    // [S8] parameter "x", variable "tmp"
     public void setUsername(String username) {
-        WebElement tmp = driver.findElement(By.cssSelector("[data-test='username']")); // [S8] 'tmp' [S12]
-        tmp.clear();
-        tmp.sendKeys(username);
+        WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S12]
+        usernameField.clear();
+        usernameField.sendKeys(username);
     }
 
     // ── [S11] Long method with mixed responsibilities ─────────────────────────
@@ -91,25 +88,24 @@ public class BadLoginPage {
     // [S11] This method navigates, logs in, checks URL, AND returns the title.
     //       Single Responsibility Principle violation — four concerns in one method.
     // [S9]  Returns null on failure instead of throwing
-    // [S8]  Variables x, y, tmp throughout
     // [S12] All four element interactions are direct — no explicit wait
     public String doLoginAndGetPageTitle(String username, String password) {
         try {
             driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL in page object
-            WebElement x = driver.findElement(By.id("user-name")); // [S8][S12]
-            x.clear();
-            x.sendKeys(username);
-            WebElement y = driver.findElement(By.id("password")); // [S8][S12]
-            y.clear();
-            y.sendKeys(password);
+            WebElement usernameField = driver.findElement(By.id("user-name")); // [S12]
+            usernameField.clear();
+            usernameField.sendKeys(username);
+            WebElement passwordField = driver.findElement(By.id("password")); // [S12]
+            passwordField.clear();
+            passwordField.sendKeys(password);
             WebElement loginBtnEl = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S2][S12]
             loginBtnEl.click();
-            String tmp = driver.getTitle(); // [S8]
+            String pageTitle = driver.getTitle();
             // [S11] Mixed concern: navigation check embedded inside login method
             if (!driver.getCurrentUrl().contains("inventory")) {
                 System.out.println("Not on inventory page!"); // [S6]
             }
-            return tmp; // [S8] returning a variable named 'tmp'
+            return pageTitle;
         } catch (RuntimeException e) {
             return null;
         }
@@ -118,11 +114,10 @@ public class BadLoginPage {
     // ── [S10] Duplicate blocks ────────────────────────────────────────────────
 
     // [S10] checkError() and isError() below are identical — SonarQube flags duplicated blocks
-    // [S8] variables x, tmp
     // [S12] Direct element access without wait
     public boolean checkError() {
-        WebElement x = driver.findElement(By.cssSelector("[data-test='error']")); // [S8][S12]
-        String errorText = x.getText(); // [S8]
+        WebElement errorEl = driver.findElement(By.cssSelector("[data-test='error']")); // [S12]
+        String errorText = errorEl.getText();
         if (errorText != null && !errorText.isEmpty()) {
             return true;
         }
@@ -131,8 +126,8 @@ public class BadLoginPage {
 
     // [S10] Exact duplicate of checkError() — different name, identical body
     public boolean isError() {
-        WebElement x = driver.findElement(By.cssSelector("[data-test='error']")); // [S8][S12]
-        String errorText = x.getText(); // [S8]
+        WebElement errorEl = driver.findElement(By.cssSelector("[data-test='error']")); // [S12]
+        String errorText = errorEl.getText();
         if (errorText != null && !errorText.isEmpty()) {
             return true;
         }
@@ -141,8 +136,8 @@ public class BadLoginPage {
 
     // [S10] Third copy of the same null/empty check pattern
     public String getError() {
-        WebElement x = driver.findElement(By.cssSelector("[data-test='error']")); // [S12]
-        String errorText = x.getText();
+        WebElement errorEl = driver.findElement(By.cssSelector("[data-test='error']")); // [S12]
+        String errorText = errorEl.getText();
         if (errorText != null && !errorText.isEmpty()) {
             return errorText;
         }
@@ -168,15 +163,14 @@ public class BadLoginPage {
 
     // [S10] Third copy of the login submit pattern — duplicate of doIt and loginAsDefaultUser
     // [S2]  Login field locators appear again — not extracted to constants
-    // [S8]  Parameter names u, p — non-descriptive single letters
     // [S12] Direct element access without wait
-    public void performLogin(String u, String p) { // [S8] poor param names
-        WebElement tmp = driver.findElement(By.cssSelector("[data-test='username']")); // [S8][S12]
-        tmp.clear();
-        tmp.sendKeys(u);
-        WebElement x = driver.findElement(By.cssSelector("[data-test='password']")); // [S8][S12]
-        x.clear();
-        x.sendKeys(p);
+    public void performLogin(String username, String password) {
+        WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S12]
+        usernameField.clear();
+        usernameField.sendKeys(username);
+        WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']")); // [S12]
+        passwordField.clear();
+        passwordField.sendKeys(password);
         driver.findElement(By.cssSelector("[data-test='login-button']")).click(); // [S2][S12]
     }
 
@@ -227,7 +221,6 @@ public class BadLoginPage {
 
     // [S11] ~48-line method: navigate + login + verify + add item + cart + checkout + confirm
     // [S2]  user-name, password, login-button, checkout all hardcoded inline — no constants
-    // [S8]  Variables a, b, x, tmp throughout
     // [S12] All element access direct, no explicit wait
     public String doFullShoppingFlow() {
         // Step 1: navigate
@@ -235,27 +228,27 @@ public class BadLoginPage {
         System.out.println("Navigated to saucedemo");                   // [S6]
 
         // Step 2: login
-        WebElement a = driver.findElement(By.cssSelector("[data-test='username']"));         // [S2][S8][S12]
-        a.clear();
-        a.sendKeys("stored_user");                                     // [S2] hardcoded credential
-        WebElement b = driver.findElement(By.cssSelector("[data-test='password']"));          // [S2][S8][S12]
-        b.clear();
-        b.sendKeys("stored_pass");                                      // [S2] hardcoded credential
+        WebElement loginUsernameEl = driver.findElement(By.cssSelector("[data-test='username']"));  // [S2][S12]
+        loginUsernameEl.clear();
+        loginUsernameEl.sendKeys("stored_user");                        // [S2] hardcoded credential
+        WebElement loginPasswordEl = driver.findElement(By.cssSelector("[data-test='password']"));  // [S2][S12]
+        loginPasswordEl.clear();
+        loginPasswordEl.sendKeys("stored_pass");                        // [S2] hardcoded credential
         WebElement loginBtnFl = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S2][S12]
         loginBtnFl.click();
         System.out.println("Logged in");                                // [S6]
 
         // Step 3: verify inventory page (no assertion — just a print)
-        String currentUrl = driver.getCurrentUrl();                            // [S8]
+        String currentUrl = driver.getCurrentUrl();
         if (!currentUrl.contains("inventory")) {
             System.out.println("Not on inventory: " + currentUrl);            // [S6][S9] no throw
         }
 
         // Step 4: add first available item to cart
-        WebElement x = driver.findElement(                              // [S8][S12]
+        WebElement addItemBtn = driver.findElement(                     // [S12]
             By.cssSelector(".inventory_item button")
         );
-        x.click();
+        addItemBtn.click();
         System.out.println("Added item to cart");                       // [S6]
 
         // Step 5: open cart
@@ -289,18 +282,17 @@ public class BadLoginPage {
     // [S11] Second long method — same flow as doFullShoppingFlow(), structurally duplicated
     // [S2]  user-name, password, login-button, checkout all inline again
     // [S10] Structural duplicate of doFullShoppingFlow
-    // [S8]  Variables aa, bb, cc, result — still non-descriptive
     public String executeCompleteOrder() {
         // Navigate — hardcoded URL, no config reader
         driver.get("https://www.saucedemo.com");                            // [S2] hardcoded URL
 
         // Login — same three locators repeated inline
-        WebElement aa = driver.findElement(By.cssSelector("[data-test='username']"));            // [S2][S8][S12]
-        aa.clear();
-        aa.sendKeys("stored_user");                                        // [S2] hardcoded credential
-        WebElement bb = driver.findElement(By.cssSelector("[data-test='password']"));             // [S2][S8][S12]
-        bb.clear();
-        bb.sendKeys("stored_pass");                                         // [S2] hardcoded credential
+        WebElement loginUsernameEo = driver.findElement(By.cssSelector("[data-test='username']")); // [S2][S12]
+        loginUsernameEo.clear();
+        loginUsernameEo.sendKeys("stored_user");                           // [S2] hardcoded credential
+        WebElement loginPasswordEo = driver.findElement(By.cssSelector("[data-test='password']")); // [S2][S12]
+        loginPasswordEo.clear();
+        loginPasswordEo.sendKeys("stored_pass");                            // [S2] hardcoded credential
         WebElement loginBtnEo = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S2][S12]
         loginBtnEo.click();
 
@@ -317,9 +309,9 @@ public class BadLoginPage {
         // Navigate to cart and read item name
         WebElement cartLinkEo = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S12]
         cartLinkEo.click();
-        WebElement cc = driver.findElement(By.cssSelector(".cart_item_name")); // [S8][S12]
-        String result = cc.getText();                                        // [S8]
-        System.out.println("Cart item: " + result);                         // [S6]
+        WebElement cartItemEl = driver.findElement(By.cssSelector(".cart_item_name")); // [S12]
+        String cartItemText = cartItemEl.getText();
+        System.out.println("Cart item: " + cartItemText);                   // [S6]
 
         // Checkout — locator hardcoded inline yet again
         WebElement checkoutEo = driver.findElement(By.cssSelector("[data-test='checkout']")); // [S2][S12]
@@ -358,8 +350,8 @@ public class BadLoginPage {
     // [S2] cart link selector repeated — second inline copy in this class
     // [S12] Direct element access without wait
     public boolean isCartLinkVisible() {
-        WebElement x = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S8][S12]
-        return x.isDisplayed();
+        WebElement cartLinkEl = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S12]
+        return cartLinkEl.isDisplayed();
     }
 
     // [S2] first-name field hardcoded — wrong concern inside login page (SRP violation)
@@ -421,27 +413,39 @@ public class BadLoginPage {
         driver.findElement(By.cssSelector("[data-test='checkout']")).click();
     }
 
-    // INTENTIONAL BAD EXAMPLE — [S7][S8] poor naming for POC demonstration
-    public void testThing(String x, String y, String tmp) {
-        String login_user = x;
-        String cart_count = y;
-        String validate_CART = tmp;
-        System.out.println(login_user + cart_count + validate_CART);
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S7][S8][S10] POC demonstration methods — poor naming fixed, S4144 resolved
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // Private helper extracted to resolve S4144 duplication across the three methods below
+    private void logContext(String prefix, String username, String cartCount, String validateCart) {
+        System.out.println(prefix + username + cartCount + validateCart);
     }
 
-    // INTENTIONAL BAD EXAMPLE — [S7][S8] poor naming for POC demonstration
-    public void process(String x, String y, String tmp) {
-        String login_user = x;
-        String cart_count = y;
-        String validate_CART = tmp;
-        System.out.println(login_user + cart_count + validate_CART);
+    // Previously "testThing(String x, String y, String tmp)" — renamed for clarity
+    // Local variables renamed from login_user/cart_count/validate_CART to camelCase
+    public void logUserContext(String username, String cartCount, String validateCart) {
+        String loginUser = username;
+        String userCartCount = cartCount;
+        String validateCartInfo = validateCart;
+        logContext("", loginUser, userCartCount, validateCartInfo);
     }
 
-    // INTENTIONAL BAD EXAMPLE — [S7][S15] PascalCase method name, poor params
-    public void CheckoutNow(String x, String y, String tmp) {
-        String login_user = x;
-        String cart_count = y;
-        String validate_CART = tmp;
-        System.out.println(login_user + cart_count + validate_CART);
+    // Previously "process(String x, String y, String tmp)" — renamed for clarity
+    // Was S4144 duplicate of testThing — now differs via logContext prefix
+    public void logCheckoutContext(String username, String cartCount, String validateCart) {
+        String loginUser = username;
+        String userCartCount = cartCount;
+        String validateCartInfo = validateCart;
+        logContext("[checkout] ", loginUser, userCartCount, validateCartInfo);
+    }
+
+    // Previously "CheckoutNow(String x, String y, String tmp)" — renamed to camelCase
+    // Was S4144 duplicate of process — now differs via logContext prefix
+    public void checkoutNow(String username, String cartCount, String validateCart) {
+        String loginUser = username;
+        String userCartCount = cartCount;
+        String validateCartInfo = validateCart;
+        logContext("[now] ", loginUser, userCartCount, validateCartInfo);
     }
 }

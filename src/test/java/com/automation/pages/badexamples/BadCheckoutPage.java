@@ -25,66 +25,66 @@ public class BadCheckoutPage {
     // [S1] Same raw WebDriver field — no base class reuse
     private WebDriver driver;
 
+    // Extracted constant to resolve repeated By.id("first-name") locator
+    private static final By FIRST_NAME_FIELD = By.id("first-name");
+
     public BadCheckoutPage(WebDriver driver) {
         this.driver = driver;
     }
 
-    // ── [S11] God method — entire checkout flow in one method ────────────────
+    // ── [S11] God method split into private helpers ───────────────────────────
+
+    // Helper: concerns 1+2 — navigate and log in
+    private void navigateAndLogin(String username, String password) {
+        driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
+        WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S12]
+        usernameField.clear();
+        usernameField.sendKeys(username);
+        WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']")); // [S12]
+        passwordField.clear();
+        passwordField.sendKeys(password);
+        driver.findElement(By.cssSelector("[data-test='login-button']")).click(); // [S2][S12]
+    }
+
+    // Helper: concerns 3+4+5 — add item, open cart, click checkout
+    private void addBackpackAndGoToCart() {
+        driver.findElement(By.cssSelector("[data-test='add-to-cart-sauce-labs-backpack']")).click(); // [S2][S12]
+        driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")).click(); // [S2][S12]
+        driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
+    }
+
+    // Helper: concerns 6+7 — fill shipping form and continue
+    private void fillShippingForm(String firstName, String lastName, String zipCode) {
+        WebElement firstNameField = driver.findElement(FIRST_NAME_FIELD); // [S12]
+        firstNameField.clear();
+        firstNameField.sendKeys(firstName);
+        WebElement lastNameField = driver.findElement(By.id("last-name")); // [S12]
+        lastNameField.clear();
+        lastNameField.sendKeys(lastName);
+        WebElement postalCodeField = driver.findElement(By.id("postal-code")); // [S12]
+        postalCodeField.clear();
+        postalCodeField.sendKeys(zipCode);
+        driver.findElement(By.cssSelector("[data-test='continue']")).click(); // [S2][S12]
+    }
+
+    // Helper: concerns 8+9 — finish and verify confirmation
+    private boolean finishAndVerifyOrder() {
+        driver.findElement(By.cssSelector("[data-test='finish']")).click(); // [S2][S12]
+        WebElement header = driver.findElement(By.cssSelector(".complete-header")); // [S2][S12]
+        System.out.println("Order result: " + header.getText()); // [S6]
+        return header.isDisplayed();
+    }
 
     // Previously "process" — renamed to executeFullCheckoutFlow for clarity
-    // [S11] executeFullCheckoutFlow does: navigate + login + add to cart + checkout info +
-    //       continue + overview + finish + confirmation assertion.
-    //       One method, 8 concerns — extreme SRP violation.
+    // [S11] Original god method — now delegates to private helpers to reduce method length
     // [S2]  Every locator hardcoded inline
     // [S12] All element interactions direct — no explicit waits, flaky in CI
     public boolean executeFullCheckoutFlow(String username, String password, String firstName, String lastName, String zipCode) {
         try {
-            // Concern 1: navigate
-            driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
-
-            // Concern 2: login
-            WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S12]
-            usernameField.clear();
-            usernameField.sendKeys(username);
-            WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']")); // [S12]
-            passwordField.clear();
-            passwordField.sendKeys(password);
-            driver.findElement(By.cssSelector("[data-test='login-button']")).click(); // [S2][S12]
-
-            // Concern 3: add product
-            WebElement addToCartBtn = driver.findElement( // [S12]
-                By.cssSelector("[data-test='add-to-cart-sauce-labs-backpack']") // [S2]
-            );
-            addToCartBtn.click();
-
-            // Concern 4: navigate to cart
-            driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")).click(); // [S2][S12]
-
-            // Concern 5: click checkout
-            driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
-
-            // Concern 6: fill checkout form with hardcoded field IDs
-            WebElement firstNameField = driver.findElement(By.id("first-name")); // [S12]
-            firstNameField.clear();
-            firstNameField.sendKeys(firstName);
-            WebElement lastNameField = driver.findElement(By.id("last-name")); // [S12]
-            lastNameField.clear();
-            lastNameField.sendKeys(lastName);
-            WebElement postalCodeField = driver.findElement(By.id("postal-code")); // [S12]
-            postalCodeField.clear();
-            postalCodeField.sendKeys(zipCode);
-
-            // Concern 7: continue to overview
-            driver.findElement(By.cssSelector("[data-test='continue']")).click(); // [S2][S12]
-
-            // Concern 8: finish
-            driver.findElement(By.cssSelector("[data-test='finish']")).click(); // [S2][S12]
-
-            // Concern 9: verify success
-            WebElement header = driver.findElement(By.cssSelector(".complete-header")); // [S2][S12]
-            System.out.println("Order result: " + header.getText()); // [S6]
-            return header.isDisplayed();
-
+            navigateAndLogin(username, password);
+            addBackpackAndGoToCart();
+            fillShippingForm(firstName, lastName, zipCode);
+            return finishAndVerifyOrder();
         } catch (WebDriverException e) {
             return false;
         }
