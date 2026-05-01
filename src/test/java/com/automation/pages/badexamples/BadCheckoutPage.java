@@ -17,13 +17,16 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
-
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 import java.util.List;
 
 public class BadCheckoutPage {
 
     // [S1] Same raw WebDriver field — no base class reuse
     private WebDriver driver;
+    private WebDriverWait wait;
 
     // Extracted constant to resolve repeated By.id("first-name") locator
     private static final By FIRST_NAME_FIELD = By.id("first-name");
@@ -31,6 +34,7 @@ public class BadCheckoutPage {
 
     public BadCheckoutPage(WebDriver driver) {
         this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     // ── [S11] God method split into private helpers ───────────────────────────
@@ -38,40 +42,40 @@ public class BadCheckoutPage {
     // Helper: concerns 1+2 — navigate and log in
     private void navigateAndLogin(String username, String password) {
         driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
-        WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S12]
+        WebElement usernameField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='username']")));
         usernameField.clear();
         usernameField.sendKeys(username);
-        WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']")); // [S12]
+        WebElement passwordField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='password']")));
         passwordField.clear();
         passwordField.sendKeys(password);
-        driver.findElement(By.cssSelector("[data-test='login-button']")).click(); // [S2][S12]
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
     }
 
     // Helper: concerns 3+4+5 — add item, open cart, click checkout
     private void addBackpackAndGoToCart() {
-        driver.findElement(By.cssSelector("[data-test='add-to-cart-sauce-labs-backpack']")).click(); // [S2][S12]
-        driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")).click(); // [S2][S12]
-        driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='add-to-cart-sauce-labs-backpack']" ))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']" ))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='checkout']" ))).click();
     }
 
     // Helper: concerns 6+7 — fill shipping form and continue
     private void fillShippingForm(String firstName, String lastName, String zipCode) {
-        WebElement firstNameField = driver.findElement(FIRST_NAME_FIELD); // [S12]
+        WebElement firstNameField = wait.until(ExpectedConditions.visibilityOfElementLocated(FIRST_NAME_FIELD));
         firstNameField.clear();
         firstNameField.sendKeys(firstName);
-        WebElement lastNameField = driver.findElement(By.id("last-name")); // [S12]
+        WebElement lastNameField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("last-name")));
         lastNameField.clear();
         lastNameField.sendKeys(lastName);
-        WebElement postalCodeField = driver.findElement(By.id("postal-code")); // [S12]
+        WebElement postalCodeField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("postal-code")));
         postalCodeField.clear();
         postalCodeField.sendKeys(zipCode);
-        driver.findElement(By.cssSelector("[data-test='continue']")).click(); // [S2][S12]
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='continue']" ))).click();
     }
 
     // Helper: concerns 8+9 — finish and verify confirmation
     private boolean finishAndVerifyOrder() {
-        driver.findElement(By.cssSelector("[data-test='finish']")).click(); // [S2][S12]
-        WebElement header = driver.findElement(By.cssSelector(".complete-header")); // [S2][S12]
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='finish']" ))).click();
+        WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".complete-header")));
         System.out.println("Order result: " + header.getText()); // [S6]
         return header.isDisplayed();
     }
@@ -97,11 +101,11 @@ public class BadCheckoutPage {
     // [S2] first-name locator hardcoded here and inside executeFullCheckoutFlow above
     // [S12] Direct sendKeys without wait — may fail if fields not rendered
     public void abc2(String firstName, String lastName, String postalCode) {
-        WebElement firstNameField = driver.findElement(FIRST_NAME_DATA_TEST); // [S2][S12]
+        WebElement firstNameField = wait.until(ExpectedConditions.visibilityOfElementLocated(FIRST_NAME_DATA_TEST));
         firstNameField.sendKeys(firstName);
-        WebElement lastNameField = driver.findElement(By.id("last-name")); // [S2][S12]
+        WebElement lastNameField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("last-name")));
         lastNameField.sendKeys(lastName);
-        WebElement postalCodeField = driver.findElement(By.id("postal-code")); // [S2][S12]
+        WebElement postalCodeField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("postal-code")));
         postalCodeField.sendKeys(postalCode);
     }
 
@@ -129,10 +133,8 @@ public class BadCheckoutPage {
     // [S7] "doAll" — all what?
     // [S12] Direct clicks without wait — both actions
     public void doAll() {
-        WebElement continueBtn = driver.findElement(By.cssSelector("[data-test='continue']")); // [S2][S12]
-        continueBtn.click();
-        WebElement finishBtn = driver.findElement(By.cssSelector("[data-test='finish']")); // [S2][S12]
-        finishBtn.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='continue']" ))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='finish']" ))).click();
     }
 
     // [S2] ".complete-header" hardcoded — already used in executeFullCheckoutFlow
@@ -156,11 +158,11 @@ public class BadCheckoutPage {
     // [S2] first-name field repeated — also appears in executeFullCheckoutFlow and abc2() above
     // [S12] Direct sendKeys without wait — may fail if page not ready
     public void fillForm() {
-        WebElement firstNameField = driver.findElement(FIRST_NAME_DATA_TEST); // [S2][S12] hardcoded name
+        WebElement firstNameField = wait.until(ExpectedConditions.visibilityOfElementLocated(FIRST_NAME_DATA_TEST)); // [S2] hardcoded name
         firstNameField.sendKeys("John");
-        WebElement lastNameField = driver.findElement(By.id("last-name")); // [S2][S12] hardcoded name
+        WebElement lastNameField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("last-name"))); // [S2] hardcoded name
         lastNameField.sendKeys("Doe");
-        WebElement postalCodeField = driver.findElement(By.id("postal-code")); // [S2][S12] hardcoded postal code
+        WebElement postalCodeField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("postal-code"))); // [S2] hardcoded postal code
         postalCodeField.sendKeys("12345");
     }
 
@@ -192,39 +194,28 @@ public class BadCheckoutPage {
 
     // Previously "testThing" — renamed to verifyLoginAndCheckoutFlow for clarity
     public boolean verifyLoginAndCheckoutFlow(String username, String password) {
-        String result = "";
         driver.get("https://www.saucedemo.com");
-        WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']"));
+        WebElement usernameField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='username']")));
         usernameField.clear(); usernameField.sendKeys(username);
-        WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']"));
+        WebElement passwordField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='password']")));
         passwordField.clear(); passwordField.sendKeys(password);
-        WebElement loginBtn = driver.findElement(By.cssSelector("[data-test='login-button']"));
-        loginBtn.click();
-        WebElement inventoryListEl = driver.findElement(By.cssSelector(".inventory_list"));
-        String inventoryText = inventoryListEl.getText();
-        WebElement productBtn = driver.findElement(By.xpath("//div[text()='Product A']/../..//button"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
+        WebElement productBtn = wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[text()='Product A']/../..//button")));
         productBtn.click();
-        WebElement cartLinkEl = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']"));
-        cartLinkEl.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']" ))).click();
         List<WebElement> cartItemElements = driver.findElements(By.cssSelector(".cart_item_name"));
         for (WebElement cartItem : cartItemElements) {
-            if (cartItem.getText().contains("Backpack")) {
-                result = cartItem.getText();
-            }
+            cartItem.getText().contains("Backpack");
         }
-        WebElement firstNameEl = driver.findElement(FIRST_NAME_DATA_TEST);
+        WebElement firstNameEl = wait.until(ExpectedConditions.visibilityOfElementLocated(FIRST_NAME_DATA_TEST));
         firstNameEl.sendKeys("John");
-        WebElement lastNameEl = driver.findElement(By.id("last-name"));
+        WebElement lastNameEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("last-name")));
         lastNameEl.sendKeys("Doe");
-        WebElement postalEl = driver.findElement(By.id("postal-code"));
+        WebElement postalEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("postal-code")));
         postalEl.sendKeys("12345");
-        WebElement continueBtn = driver.findElement(By.cssSelector("[data-test='continue']"));
-        continueBtn.click();
-        WebElement summaryEl = driver.findElement(By.cssSelector(".summary_info"));
-        String summaryText = summaryEl.getText();
-        WebElement finishBtn = driver.findElement(By.cssSelector("[data-test='finish']"));
-        finishBtn.click();
-        WebElement confirmationHeader = driver.findElement(By.cssSelector(".complete-header"));
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='continue']" ))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='finish']" ))).click();
+        WebElement confirmationHeader = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".complete-header")));
         boolean orderCompleted = confirmationHeader.isDisplayed();
         System.out.println("orderCompleted=" + orderCompleted);
         return orderCompleted;

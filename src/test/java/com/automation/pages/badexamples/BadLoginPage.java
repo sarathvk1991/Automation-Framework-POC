@@ -23,17 +23,23 @@ package com.automation.pages.badexamples;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 
 public class BadLoginPage {
 
     // [S1] No BasePage — driver stored as raw field with no shared wait utilities
     private WebDriver driver;
+    private WebDriverWait wait;
 
     private static final By USERNAME_FIELD = By.id("user-name");
     private static final By PASSWORD_FIELD = By.id("password");
+    private static final By LOGIN_BUTTON = By.id("login-button");
 
     public BadLoginPage(WebDriver driver) {
         this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     // ── [S7] Non-descriptive method name ─────────────────────────────────────
@@ -42,14 +48,11 @@ public class BadLoginPage {
     // [S3] Hard wait used instead of WebDriverWait — intentional java:S2925 demo
     // [S2] user-name id hardcoded here and repeated in every other method
     public void doIt() {
-        try {
-            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
-        } catch (InterruptedException e) {
-            // [S5] InterruptedException swallowed
-        }
-        driver.findElement(USERNAME_FIELD).sendKeys("standard_user"); // [S2]
-        driver.findElement(PASSWORD_FIELD).sendKeys("secret_sauce");   // [S2]
-        driver.findElement(By.id("login-button")).click();                // [S2]
+        String username = System.getProperty("username", "standard_user");
+        String password = System.getProperty("password", "secret_sauce");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(USERNAME_FIELD)).sendKeys(username);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(PASSWORD_FIELD)).sendKeys(password);
+        wait.until(ExpectedConditions.elementToBeClickable(LOGIN_BUTTON)).click();
     }
 
     // ── [S7][S8] Poor method name ─────────────────────────────────────────────
@@ -70,7 +73,7 @@ public class BadLoginPage {
     // [S12] Direct click without wait — may fail if page not ready
     public void click1() {
         try {
-            driver.findElement(By.cssSelector("[data-test='login-button']")).click(); // [S2][S12]
+            wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
         } catch (Exception e) { // [S4] intentional generic catch — masks real failures
             e.printStackTrace(); // [S6] stack trace to stdout
         }
@@ -95,14 +98,13 @@ public class BadLoginPage {
     public String doLoginAndGetPageTitle(String username, String password) {
         try {
             driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL in page object
-            WebElement usernameField = driver.findElement(USERNAME_FIELD); // [S12]
+            WebElement usernameField = wait.until(ExpectedConditions.visibilityOfElementLocated(USERNAME_FIELD));
             usernameField.clear();
             usernameField.sendKeys(username);
-            WebElement passwordField = driver.findElement(PASSWORD_FIELD); // [S12]
+            WebElement passwordField = wait.until(ExpectedConditions.visibilityOfElementLocated(PASSWORD_FIELD));
             passwordField.clear();
             passwordField.sendKeys(password);
-            WebElement loginBtnEl = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S2][S12]
-            loginBtnEl.click();
+            wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
             String pageTitle = driver.getTitle();
             // [S11] Mixed concern: navigation check embedded inside login method
             if (!driver.getCurrentUrl().contains("inventory")) {
@@ -119,7 +121,7 @@ public class BadLoginPage {
     // [S10] checkError() and isError() below are identical — SonarQube flags duplicated blocks
     // [S12] Direct element access without wait
     public boolean checkError() {
-        WebElement errorEl = driver.findElement(By.cssSelector("[data-test='error']")); // [S12]
+        WebElement errorEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='error']")));
         String errorText = errorEl.getText();
         if (errorText != null && !errorText.isEmpty()) {
             return true;
@@ -129,7 +131,7 @@ public class BadLoginPage {
 
     // [S10] Exact duplicate of checkError() — different name, identical body
     public boolean isError() {
-        WebElement errorEl = driver.findElement(By.cssSelector("[data-test='error']")); // [S12]
+        WebElement errorEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='error']")));
         String errorText = errorEl.getText();
         if (errorText != null && !errorText.isEmpty()) {
             return true;
@@ -139,7 +141,7 @@ public class BadLoginPage {
 
     // [S10] Third copy of the same null/empty check pattern
     public String getError() {
-        WebElement errorEl = driver.findElement(By.cssSelector("[data-test='error']")); // [S12]
+        WebElement errorEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='error']")));
         String errorText = errorEl.getText();
         if (errorText != null && !errorText.isEmpty()) {
             return errorText;
@@ -155,12 +157,11 @@ public class BadLoginPage {
     // [S2]  Login field locators repeated inline — no shared constants
     // [S12] Direct element access without wait
     public void loginAsDefaultUser() {
-        WebElement usernameEl = driver.findElement(By.cssSelector("[data-test='username']")); // [S2][S12]
+        WebElement usernameEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='username']")));
         usernameEl.sendKeys("stored_user");
-        WebElement passwordEl = driver.findElement(By.cssSelector("[data-test='password']")); // [S2][S12]
+        WebElement passwordEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='password']")));
         passwordEl.sendKeys("stored_pass");
-        WebElement loginBtnEl2 = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S2][S12]
-        loginBtnEl2.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
         System.out.println("loginAsDefaultUser executed");                // [S6]
     }
 
@@ -168,13 +169,13 @@ public class BadLoginPage {
     // [S2]  Login field locators appear again — not extracted to constants
     // [S12] Direct element access without wait
     public void performLogin(String username, String password) {
-        WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S12]
+        WebElement usernameField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='username']")));
         usernameField.clear();
         usernameField.sendKeys(username);
-        WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']")); // [S12]
+        WebElement passwordField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='password']")));
         passwordField.clear();
         passwordField.sendKeys(password);
-        driver.findElement(By.cssSelector("[data-test='login-button']")).click(); // [S2][S12]
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -380,7 +381,7 @@ public class BadLoginPage {
 
     public void navigateTo(String url) {
         driver.get(url);
-        try { Thread.sleep(2000); } catch (InterruptedException e) { }
+        wait.until(ExpectedConditions.urlContains(url));
         System.out.println("Navigated to: " + url);
     }
 
