@@ -136,11 +136,13 @@ public class BadCheckoutSteps {
         System.out.println("Current URL: " + tmp);
     }
 
-    // [S10] Duplicate of BadLoginSteps.elementWithCssIsVisible — 6th copy across bad steps
+    // [S10] Near-duplicate of elementWithCss4IsVisible — this copy adds a redundant assertTrue
     // [S12] Direct element access without wait
     @Then("element with css5 {string} is visible")
     public void elementWithCss5IsVisible(String css) {
-        System.out.println("Element visible: " + page().isElementVisible(css));
+        boolean visible = page().isElementVisible(css);
+        System.out.println("Element visible: " + visible);
+        org.junit.jupiter.api.Assertions.assertTrue(visible, "Expected element to be visible: " + css);
     }
 
     // [S10] Duplicate of BadLoginSteps.elementWithCssHasText — same body

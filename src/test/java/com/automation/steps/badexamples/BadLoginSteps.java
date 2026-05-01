@@ -25,6 +25,7 @@ import com.automation.utils.TestData;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.openqa.selenium.WebDriverException;
 
 public class BadLoginSteps {
 
@@ -146,7 +147,7 @@ public class BadLoginSteps {
     public void iSubmitTheLoginForm() {
         try {
             loginPage().click1();
-        } catch (Exception e) {
+        } catch (WebDriverException e) {
             // intentional empty catch — SonarQube S5 demo
         }
     }

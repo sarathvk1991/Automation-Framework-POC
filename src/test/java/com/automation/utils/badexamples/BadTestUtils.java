@@ -24,6 +24,7 @@ package com.automation.utils.badexamples;
 
 import com.automation.utils.ConfigReader;
 import org.openqa.selenium.By;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
@@ -153,7 +154,7 @@ public class BadTestUtils {
         return elementText;
     }
 
-    // Intentional SonarQube POC issue — catch (Exception e) swallows all failure types
+    // Intentional SonarQube POC issue — generic Exception catch swallows all failure types
     // Intentional SonarQube POC issue — e.printStackTrace() outputs to stdout instead of logger
     // Intentional SonarQube POC issue — return false on exception hides real cause from caller
     // [S12] Direct findElement without any explicit wait — flaky on slow pages
@@ -161,7 +162,7 @@ public class BadTestUtils {
         try {
             driver.findElement(By.cssSelector(css)).isDisplayed(); // Intentional SonarQube POC issue — direct access, no wait
             return true;
-        } catch (Exception e) {
+        } catch (NoSuchElementException e) {
             e.printStackTrace();
         }
         return false;
@@ -207,7 +208,12 @@ public class BadTestUtils {
     }
 
     public static boolean doIt(WebDriver driver) {
-        String cartItemText = "";
+        doItLogin(driver);
+        doItAddToCart(driver);
+        return doItCheckout(driver);
+    }
+
+    private static void doItLogin(WebDriver driver) {
         driver.get("https://www.saucedemo.com");
         WebElement x = driver.findElement(By.cssSelector("[data-test='username']"));
         x.sendKeys("stored_user");
@@ -219,6 +225,9 @@ public class BadTestUtils {
         System.out.println("user=" + storedUsername);
         boolean isInventoryDisplayed = driver.findElement(By.cssSelector(".inventory_list")).isDisplayed();
         System.out.println("inventory=" + isInventoryDisplayed);
+    }
+
+    private static void doItAddToCart(WebDriver driver) {
         WebElement productABtn = driver.findElement(By.xpath("//div[text()='Product A']/../..//button"));
         productABtn.click();
         WebElement productBBtn = driver.findElement(By.xpath("//div[text()='Product B']/../..//button"));
@@ -229,10 +238,14 @@ public class BadTestUtils {
         WebElement cartLinkDoIt = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']"));
         cartLinkDoIt.click();
         List<WebElement> a = driver.findElements(By.cssSelector(".cart_item_name"));
+        String cartItemText = "";
         for (WebElement b : a) {
             cartItemText = b.getText();
             System.out.println(cartItemText);
         }
+    }
+
+    private static boolean doItCheckout(WebDriver driver) {
         WebElement checkoutBtnDoIt = driver.findElement(By.cssSelector("[data-test='checkout']"));
         checkoutBtnDoIt.click();
         WebElement firstNameDoIt = driver.findElement(By.cssSelector("[data-test='firstName']"));
@@ -251,9 +264,9 @@ public class BadTestUtils {
         WebElement finishBtnDoIt = driver.findElement(By.cssSelector("[data-test='finish']"));
         finishBtnDoIt.click();
         WebElement c = driver.findElement(By.cssSelector(".complete-header"));
-        boolean CheckoutNow = c.isDisplayed();
-        System.out.println("CheckoutNow=" + CheckoutNow);
-        return CheckoutNow;
+        boolean checkoutComplete = c.isDisplayed();
+        System.out.println("CheckoutNow=" + checkoutComplete);
+        return checkoutComplete;
     }
 
     public static String abc(WebDriver driver, String a, String b) {
@@ -282,10 +295,8 @@ public class BadTestUtils {
     }
 
     public String duplicateEmail2() {
-        return "test_" + System.currentTimeMillis() + "@example.com";
+        return duplicateEmail1();
     }
 
-    public String duplicateEmail3() {
-        return "test_" + System.currentTimeMillis() + "@example.com";
-    }
 }
+

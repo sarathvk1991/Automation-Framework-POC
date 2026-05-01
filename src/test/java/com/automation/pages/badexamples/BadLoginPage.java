@@ -22,6 +22,7 @@ package com.automation.pages.badexamples;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -78,7 +79,7 @@ public class BadLoginPage {
     public void click1() {
         try {
             wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
-        } catch (Exception e) { // [S4] intentional generic catch — masks real failures
+        } catch (WebDriverException e) { // [S4] intentional generic catch — masks real failures
             e.printStackTrace(); // [S6] stack trace to stdout
         }
     }
@@ -127,20 +128,12 @@ public class BadLoginPage {
     public boolean checkError() {
         WebElement errorEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='error']")));
         String errorText = errorEl.getText();
-        if (errorText != null && !errorText.isEmpty()) {
-            return true;
-        }
-        return false;
+        return errorText != null && !errorText.isEmpty();
     }
 
-    // [S10] Exact duplicate of checkError() — different name, identical body
+    // [S10] Delegates to checkError() to eliminate duplicate body
     public boolean isError() {
-        WebElement errorEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='error']")));
-        String errorText = errorEl.getText();
-        if (errorText != null && !errorText.isEmpty()) {
-            return true;
-        }
-        return false;
+        return checkError();
     }
 
     // [S10] Third copy of the same null/empty check pattern
@@ -219,11 +212,14 @@ public class BadLoginPage {
     // [S2]  user-name, password, login-button, checkout all hardcoded inline — no constants
     // [S12] All element access direct, no explicit wait
     public String doFullShoppingFlow() {
-        // Step 1: navigate
         driver.get("https://www.saucedemo.com");                        // [S2] hardcoded URL
         System.out.println("Navigated to saucedemo");                   // [S6]
+        doFullShoppingLogin();
+        doFullShoppingAddToCart();
+        return doFullShoppingCheckout();
+    }
 
-        // Step 2: login
+    private void doFullShoppingLogin() {
         WebElement loginUsernameEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='username']")));
         loginUsernameEl.clear();
         loginUsernameEl.sendKeys("stored_user");                        // [S2] hardcoded credential
@@ -232,33 +228,29 @@ public class BadLoginPage {
         loginPasswordEl.sendKeys("stored_pass");                        // [S2] hardcoded credential
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
         System.out.println("Logged in");                                // [S6]
-
-        // Step 3: verify inventory page (no assertion — just a print)
         String currentUrl = driver.getCurrentUrl();
         if (!currentUrl.contains("inventory")) {
             System.out.println("Not on inventory: " + currentUrl);            // [S6][S9] no throw
         }
+    }
 
-        // Step 4: add first available item to cart
+    private void doFullShoppingAddToCart() {
         WebElement addItemBtn = wait.until(ExpectedConditions.elementToBeClickable(
             By.cssSelector(".inventory_item button")
         ));
         addItemBtn.click();
         System.out.println("Added item to cart");                       // [S6]
-
-        // Step 5: open cart
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']" ))).click();
         System.out.println("Opened cart");                              // [S6]
+    }
 
-        // Step 6: begin checkout — locator hardcoded inline again
+    private String doFullShoppingCheckout() {
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='checkout']" ))).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='firstName']" ))).sendKeys("John");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("last-name"))).sendKeys("Doe");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("postal-code"))).sendKeys("12345");
         wait.until(ExpectedConditions.elementToBeClickable(By.id("continue"))).click();
         System.out.println("Checkout info entered");                    // [S6]
-
-        // Step 7: finish order and return confirmation
         wait.until(ExpectedConditions.elementToBeClickable(By.id("finish"))).click();
         String orderConfirmation = wait.until(ExpectedConditions.visibilityOfElementLocated(
             By.cssSelector(".complete-header")
@@ -271,10 +263,13 @@ public class BadLoginPage {
     // [S2]  user-name, password, login-button, checkout all inline again
     // [S10] Structural duplicate of doFullShoppingFlow
     public String executeCompleteOrder() {
-        // Navigate — hardcoded URL, no config reader
         driver.get("https://www.saucedemo.com");                            // [S2] hardcoded URL
+        executeCompleteOrderLogin();
+        executeCompleteOrderAddAndCart();
+        return executeCompleteOrderCheckout();
+    }
 
-        // Login — same three locators repeated inline
+    private void executeCompleteOrderLogin() {
         WebElement loginUsernameEo = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='username']")));
         loginUsernameEo.clear();
         loginUsernameEo.sendKeys("stored_user");                           // [S2] hardcoded credential
@@ -282,34 +277,28 @@ public class BadLoginPage {
         loginPasswordEo.clear();
         loginPasswordEo.sendKeys("stored_pass");                            // [S2] hardcoded credential
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
-
-        // Verify login — no assertion, just a console print
         if (!driver.getTitle().contains("Swag")) {
             System.out.println("Unexpected title: " + driver.getTitle());  // [S6][S9]
         }
+    }
 
-        // Add hardcoded product — selector baked in, not a constant
+    private void executeCompleteOrderAddAndCart() {
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='add-to-cart-sauce-labs-backpack']" ))).click();
         System.out.println("Added backpack");                               // [S6]
-
-        // Navigate to cart and read item name
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']" ))).click();
         String cartItemText = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".cart_item_name"))).getText();
         System.out.println("Cart item: " + cartItemText);                   // [S6]
+    }
 
-        // Checkout — locator hardcoded inline yet again
+    private String executeCompleteOrderCheckout() {
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='checkout']" ))).click();
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='firstName']" ))).sendKeys("Jane");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("last-name"))).sendKeys("Smith");
         wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("postal-code"))).sendKeys("99999");
         wait.until(ExpectedConditions.elementToBeClickable(By.id("continue"))).click();
-
-        // Print total and finish — no assertion on price
         String total = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".summary_total_label"))).getText();
         System.out.println("Total: " + total);                              // [S6]
         wait.until(ExpectedConditions.elementToBeClickable(By.id("finish"))).click();
-
-        // Return confirmation — NPE if .complete-header not present
         WebElement confirmEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".complete-header")));
         return confirmEl.getText();
     }
