@@ -17,6 +17,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,6 +28,7 @@ public class BadInventoryPage {
 
     // [S1] Copy-pasted from BadLoginPage — no shared base class
     private WebDriver driver;
+    private WebDriverWait wait;
 
     private static final String CART_LINK_SELECTOR = ".shopping_cart_link";
     private static final By CART_LINK = By.cssSelector(CART_LINK_SELECTOR);
@@ -35,6 +39,7 @@ public class BadInventoryPage {
 
     public BadInventoryPage(WebDriver driver) {
         this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     // ── [S7][S2] Non-descriptive method, repeated locator ─────────────────────
@@ -44,7 +49,7 @@ public class BadInventoryPage {
     // [S12] Direct element access without wait
     public boolean getData() {
         try {
-            WebElement inventoryListEl = driver.findElement(By.cssSelector(".inventory_list")); // [S12]
+            WebElement inventoryListEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_list")));
             return inventoryListEl.isDisplayed();
         } catch (WebDriverException e) {
             return false;
@@ -57,9 +62,9 @@ public class BadInventoryPage {
     // [S2] "[data-test='product-sort-container']" hardcoded, repeated below
     // [S12] Direct element interaction without wait
     public void selectSortOption(String sortOptionText) {
-        WebElement sortDropdown = driver.findElement( // [S12]
+        WebElement sortDropdown = wait.until(ExpectedConditions.elementToBeClickable(
             By.cssSelector("[data-test='product-sort-container']")
-        );
+        ));
         new org.openqa.selenium.support.ui.Select(sortDropdown).selectByVisibleText(sortOptionText);
     }
 
@@ -69,9 +74,9 @@ public class BadInventoryPage {
     // [S2] Locator "[data-test='product-sort-container']" repeated (same as selectSortOption)
     // [S12] Direct element access without wait
     public void doSort(String sortText) {
-        WebElement sortDropdown = driver.findElement( // [S12]
+        WebElement sortDropdown = wait.until(ExpectedConditions.elementToBeClickable(
             By.cssSelector("[data-test='product-sort-container']")
-        );
+        ));
         new org.openqa.selenium.support.ui.Select(sortDropdown).selectByVisibleText(sortText);
     }
 
@@ -80,7 +85,8 @@ public class BadInventoryPage {
     // Private helper extracted from getNames/fetchNames duplicate to resolve S4144
     private List<String> collectItemNames() {
         List<String> names = new ArrayList<>();
-        List<WebElement> itemElements = driver.findElements( // [S12]
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_item_name")));
+        List<WebElement> itemElements = driver.findElements(
             By.cssSelector(".inventory_item_name")
         );
         for (WebElement element : itemElements) {
@@ -111,12 +117,13 @@ public class BadInventoryPage {
     // [S12] Direct element access throughout — no waits
     public boolean doSortAndValidate(String sortOption) {
         // Concern 1: find sort dropdown and sort
-        WebElement sortDropdown = driver.findElement( // [S12]
+        WebElement sortDropdown = wait.until(ExpectedConditions.elementToBeClickable(
             By.cssSelector("[data-test='product-sort-container']")
-        );
+        ));
         new org.openqa.selenium.support.ui.Select(sortDropdown).selectByVisibleText(sortOption);
         // Concern 2: collect all prices
-        List<WebElement> priceElements = driver.findElements( // [S12]
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_item_price")));
+        List<WebElement> priceElements = driver.findElements(
             By.cssSelector(".inventory_item_price")
         );
         List<Double> prices = new ArrayList<>();
@@ -146,9 +153,9 @@ public class BadInventoryPage {
     // Previously "abc" — renamed to logInventoryItemDetails for clarity
     // [S12] Direct element access without wait
     public boolean logInventoryItemDetails(String itemName, String category) {
-        WebElement inventoryItemEl = driver.findElement( // [S12]
+        WebElement inventoryItemEl = wait.until(ExpectedConditions.visibilityOfElementLocated(
             By.cssSelector(".inventory_item_name")
-        );
+        ));
         System.out.println(itemName + " " + category + " -> " + inventoryItemEl.getText()); // [S6]
         return true;
     }
@@ -156,31 +163,30 @@ public class BadInventoryPage {
     // Previously "click1" — renamed to clickFirstAddToCartButton for clarity
     // [S12] Direct click without wait — flaky
     public void clickFirstAddToCartButton() {
-        WebElement addToCartBtn = driver.findElement( // [S12]
+        WebElement addToCartBtn = wait.until(ExpectedConditions.elementToBeClickable(
             By.cssSelector(".inventory_item button")
-        );
+        ));
         addToCartBtn.click();
     }
 
     // [S2] Locator ".shopping_cart_badge" hardcoded
     // [S12] Direct element access without wait
     public String getCartCount() {
-        WebElement badgeElement = driver.findElement(By.cssSelector(".shopping_cart_badge")); // [S12]
+        WebElement badgeElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".shopping_cart_badge")));
         return badgeElement.getText();
     }
 
     // [S2] ".shopping_cart_link" hardcoded inline — not a constant, repeated across files
     // [S12] Direct click without wait — flaky on slow pages
     public void openCart() {
-        WebElement cartLink = driver.findElement(CART_LINK); // [S2][S12]
-        cartLink.click();
+        wait.until(ExpectedConditions.elementToBeClickable(CART_LINK)).click();
         System.out.println("Opened shopping cart"); // [S6]
     }
 
     // [S2] ".shopping_cart_link" repeated — 2nd inline occurrence in this class
     // [S12] Direct findElement without wait
     public boolean isCartLinkDisplayed() {
-        WebElement cartLinkEl = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S12]
+        WebElement cartLinkEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='shopping-cart-link']")));
         return cartLinkEl.isDisplayed();
     }
 
@@ -188,30 +194,25 @@ public class BadInventoryPage {
     // [S2] checkout locator hardcoded inline — not a constant
     // [S12] Direct element access without wait
     public void quickCheckout() {
-        WebElement cartLinkBtn = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S2][S12]
-        cartLinkBtn.click();
-        WebElement checkoutBtn = driver.findElement(CHECKOUT_BTN); // [S2][S12]
-        checkoutBtn.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']" ))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(CHECKOUT_BTN)).click();
     }
 
     // [S2] first-name field hardcoded — wrong concern inside inventory page (SRP violation)
     // [S11] Mixed responsibility: checkout form fill inside inventory page
     // [S12] Direct element access without wait
     public void fillOrderDetails() {
-        WebElement firstNameField = driver.findElement(FIRST_NAME_FIELD); // [S2][S12]
-        firstNameField.sendKeys("Sarath");
-        WebElement lastNameField = driver.findElement(By.id("last-name")); // [S2][S12]
-        lastNameField.sendKeys("Tester");
-        WebElement postalCodeField = driver.findElement(By.id("postal-code")); // [S2][S12]
-        postalCodeField.sendKeys("695001");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(FIRST_NAME_FIELD)).sendKeys("Sarath");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("last-name"))).sendKeys("Tester");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("postal-code"))).sendKeys("695001");
     }
 
     // [S2] Product name baked into XPath; same string repeated in step files
     // [S12] Direct findElement without wait
     public boolean isBackpackInInventory() {
-        WebElement backpackEl = driver.findElement( // [S12]
-            By.xpath("//div[text()='Product A']") // hardcoded product name
-        );
+        WebElement backpackEl = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//div[text()='Product A']")
+        ));
         return backpackEl.isDisplayed();
     }
 
@@ -219,25 +220,23 @@ public class BadInventoryPage {
     // [S2] Product name baked into XPath
     // [S12] Direct findElement without wait
     public boolean isBikeLightInInventory() {
-        WebElement bikeLightEl = driver.findElement( // [S12]
-            By.xpath("//div[text()='Product B']") // hardcoded product name
-        );
+        WebElement bikeLightEl = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//div[text()='Product B']")
+        ));
         return bikeLightEl.isDisplayed();
     }
 
     public void addFirstItemToCart() {
-        WebElement addBtn = driver.findElement(By.cssSelector(".inventory_item button"));
-        addBtn.click();
-        WebElement cartLinkEl = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']"));
-        cartLinkEl.click();
-        WebElement checkoutEl = driver.findElement(By.cssSelector("[data-test='checkout']"));
-        checkoutEl.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".inventory_item button"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']" ))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='checkout']" ))).click();
     }
 
     // Helper: sort by price and validate ascending order
     private boolean sortAndValidatePrices() {
-        WebElement sortDropdown = driver.findElement(By.cssSelector("[data-test='product-sort-container']"));
+        WebElement sortDropdown = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='product-sort-container']")));
         new org.openqa.selenium.support.ui.Select(sortDropdown).selectByVisibleText("Price (low to high)");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_item_price")));
         List<WebElement> priceElements = driver.findElements(By.cssSelector(".inventory_item_price"));
         List<Double> prices = new ArrayList<>();
         for (WebElement priceEl : priceElements) {
@@ -258,6 +257,7 @@ public class BadInventoryPage {
 
     // Helper: print all inventory item names to stdout
     private void printInventoryItemNames() {
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_item_name")));
         List<WebElement> itemElements = driver.findElements(By.cssSelector(".inventory_item_name"));
         for (WebElement item : itemElements) {
             System.out.println(item.getText());
@@ -266,22 +266,22 @@ public class BadInventoryPage {
 
     // Helper: add two products, navigate to cart, proceed to checkout
     private void addItemsAndProceedToCheckout() {
-        driver.findElement(By.xpath("//div[text()='Product A']/../..//button")).click();
-        driver.findElement(By.xpath("//div[text()='Product B']/../..//button")).click();
-        String badgeText = driver.findElement(By.cssSelector(".shopping_cart_badge")).getText();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[text()='Product A']/../..//button"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[text()='Product B']/../..//button"))).click();
+        String badgeText = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".shopping_cart_badge"))).getText();
         System.out.println("badge=" + badgeText);
-        driver.findElement(CART_LINK).click();
+        wait.until(ExpectedConditions.elementToBeClickable(CART_LINK)).click();
         List<WebElement> cartItems = driver.findElements(By.cssSelector(".cart_item_name"));
         for (WebElement cartItem : cartItems) {
             System.out.println("In cart: " + cartItem.getText());
         }
-        driver.findElement(CHECKOUT_BTN).click();
+        wait.until(ExpectedConditions.elementToBeClickable(CHECKOUT_BTN)).click();
     }
 
     // Previously "process" — renamed to sortInventoryAndProceedToCheckout for clarity
     // [S11] Original long method — now delegates to private helpers to reduce method length
     public boolean sortInventoryAndProceedToCheckout(String sortOption, String expectedItem) {
-        WebElement inventoryListEl = driver.findElement(By.cssSelector(".inventory_list"));
+        WebElement inventoryListEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_list")));
         boolean inventoryVisible = inventoryListEl.isDisplayed();
         System.out.println("inventoryVisible=" + inventoryVisible);
         boolean sorted = sortAndValidatePrices();
@@ -292,23 +292,23 @@ public class BadInventoryPage {
     }
 
     public void clickByXpath(String xpath) {
-        driver.findElement(By.xpath(xpath)).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath))).click();
     }
 
     public void clickByCss(String css) {
-        driver.findElement(By.cssSelector(css)).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(css))).click();
     }
 
     public boolean isElementPresent(String css) {
-        return driver.findElement(By.cssSelector(css)).isDisplayed();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(css))).isDisplayed();
     }
 
     public boolean isElementVisible(String css) {
-        return driver.findElement(By.cssSelector(css)).isDisplayed();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(css))).isDisplayed();
     }
 
     public boolean isElementVisibleByXpath(String xpath) {
-        return driver.findElement(By.xpath(xpath)).isDisplayed();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(xpath))).isDisplayed();
     }
 
     public String getPageTitle() {
@@ -316,19 +316,19 @@ public class BadInventoryPage {
     }
 
     public String getTextByCss(String css) {
-        return driver.findElement(By.cssSelector(css)).getText();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(css))).getText();
     }
 
     public void addBikeLightToCart() {
-        driver.findElement(By.xpath("//div[text()='Product B']/../..//button")).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath("//div[text()='Product B']/../..//button"))).click();
     }
 
     public void clickCheckoutById() {
-        driver.findElement(CHECKOUT_BTN).click();
+        wait.until(ExpectedConditions.elementToBeClickable(CHECKOUT_BTN)).click();
     }
 
     public void navigateToCart() {
-        driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']"))).click();
         System.out.println("Navigated to cart page");
     }
 }

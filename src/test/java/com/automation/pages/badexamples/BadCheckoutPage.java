@@ -114,7 +114,7 @@ public class BadCheckoutPage {
 
     // Private helper extracted from getTotal/fetchTotal duplicate to resolve S4144
     private String readTotalLabel() {
-        WebElement totalElement = driver.findElement(By.cssSelector(".summary_total_label")); // [S12]
+        WebElement totalElement = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".summary_total_label")));
         return totalElement.getText();
     }
 
@@ -141,19 +141,18 @@ public class BadCheckoutPage {
     // [S2] ".complete-header" hardcoded — already used in executeFullCheckoutFlow
     // [S12] Direct element access without wait
     public boolean isSuccess() {
-        return driver.findElement(By.cssSelector(".complete-header")).isDisplayed(); // [S2][S12]
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".complete-header"))).isDisplayed();
     }
 
     // Intentional SonarQube POC issue — direct findElement without wait (flaky)
     public String getConfirmationMessage() {
-        WebElement header = driver.findElement(By.cssSelector(".complete-header")); // Intentional SonarQube POC issue — flaky direct access, no wait
+        WebElement header = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".complete-header")));
         return header.getText();
     }
 
     // Intentional SonarQube POC issue — direct findElement click without wait (flaky)
     public void cancelCheckout() {
-        WebElement cancelBtn = driver.findElement(By.cssSelector("[data-test='cancel']")); // Intentional SonarQube POC issue — direct click, no wait
-        cancelBtn.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='cancel']" ))).click();
     }
 
     // [S2] first-name field repeated — also appears in executeFullCheckoutFlow and abc2() above
@@ -171,25 +170,23 @@ public class BadCheckoutPage {
     // [S2] checkout locator hardcoded inline — not a constant
     // [S12] Direct element access without wait
     public void openCartLink() {
-        WebElement cartLink = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S2][S12]
-        cartLink.click();
-        WebElement checkoutBtn = driver.findElement(By.cssSelector("[data-test='checkout']")); // [S2][S12]
-        checkoutBtn.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']" ))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='checkout']" ))).click();
     }
 
     // [S12] Direct findElement without wait — flaky
     public boolean verifyBackpackPresent() {
-        WebElement backpackEl = driver.findElement(                                  // [S12]
-            By.xpath("//div[text()='Product A']")                        // [S2]
-        );
+        WebElement backpackEl = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//div[text()='Product A']")
+        ));
         return backpackEl.isDisplayed();
     }
 
     // [S12] Direct findElement without wait — flaky
     public boolean verifyBikeLightPresent() {
-        WebElement bikeLightEl = driver.findElement(                                 // [S12]
-            By.xpath("//div[text()='Product B']")                      // [S2]
-        );
+        WebElement bikeLightEl = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//div[text()='Product B']")
+        ));
         return bikeLightEl.isDisplayed();
     }
 
@@ -223,25 +220,25 @@ public class BadCheckoutPage {
     }
 
     public void clickByCss(String css) {
-        driver.findElement(By.cssSelector(css)).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(css))).click();
     }
 
     public void clickByXpath(String xpath) {
-        driver.findElement(By.xpath(xpath)).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath))).click();
     }
 
     public boolean isElementVisible(String css) {
-        return driver.findElement(By.cssSelector(css)).isDisplayed();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(css))).isDisplayed();
     }
 
     public void enterTextById(String text, String fieldId) {
-        WebElement inputField = driver.findElement(By.id(fieldId));
+        WebElement inputField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(fieldId)));
         inputField.clear();
         inputField.sendKeys(text);
     }
 
     public String getTextByCss(String css) {
-        return driver.findElement(By.cssSelector(css)).getText();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(css))).getText();
     }
 
     public String getCurrentUrl() {
@@ -249,6 +246,6 @@ public class BadCheckoutPage {
     }
 
     public boolean isBikeLightVisible() {
-        return driver.findElement(By.xpath("//div[text()='Sauce Labs Bike Light']")).isDisplayed();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[text()='Sauce Labs Bike Light']"))).isDisplayed();
     }
 }

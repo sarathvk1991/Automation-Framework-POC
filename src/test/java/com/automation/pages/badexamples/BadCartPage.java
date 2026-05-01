@@ -16,6 +16,9 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +27,7 @@ public class BadCartPage {
 
     // [S1] Same boilerplate as BadLoginPage and BadInventoryPage
     private WebDriver driver;
+    private WebDriverWait wait;
 
     private static final String CART_LINK_SELECTOR = ".shopping_cart_link";
     private static final By CART_LINK = By.cssSelector(CART_LINK_SELECTOR);
@@ -32,6 +36,7 @@ public class BadCartPage {
 
     public BadCartPage(WebDriver driver) {
         this.driver = driver;
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
     }
 
     // ── [S7] Opaque method names ───────────────────────────────────────────────
@@ -98,20 +103,20 @@ public class BadCartPage {
         try {
             String foundItem = null; // [S9]
             // Concern 1: check cart title is visible
-            WebElement title = driver.findElement(By.cssSelector("span.title")); // [S2][S12]
+            WebElement title = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("span.title")));
             System.out.println("Title: " + title.getText()); // [S6]
             // Concern 2: count items
-            List<WebElement> items = driver.findElements(By.cssSelector(".cart_item")); // [S2][S12]
+            List<WebElement> items = driver.findElements(By.cssSelector(".cart_item"));
             System.out.println("Cart has " + items.size() + " items"); // [S6]
             // Concern 3: find specific item name
-            List<WebElement> names = driver.findElements(By.cssSelector(".cart_item_name")); // [S2]
+            List<WebElement> names = driver.findElements(By.cssSelector(".cart_item_name"));
             for (WebElement item : names) {
                 if (item.getText().contains(expected)) {
                     foundItem = item.getText();
                 }
             }
             // Concern 4: click checkout
-            driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
+            wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='checkout']" ))).click();
             return foundItem; // [S9] may return null
         } catch (WebDriverException e) {
             return null;
@@ -121,8 +126,7 @@ public class BadCartPage {
     // [S2] "[data-test='checkout']" hardcoded — already used in doEverything
     // [S12] Direct click without wait
     public void goCheckout() {
-        WebElement checkoutBtn = driver.findElement(By.cssSelector("[data-test='checkout']")); // [S2][S12]
-        checkoutBtn.click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='checkout']" ))).click();
     }
 
     // [S2] ".cart_item" repeated a third time in this class
@@ -139,9 +143,8 @@ public class BadCartPage {
     // Previously "doIt" — renamed to getCartListDetails
     // [S12] Direct element access without wait — flaky on slow pages
     public String getCartListDetails() {
-        WebElement cartListEl = driver.findElement(By.cssSelector(".cart_list")); // [S12]
-        WebElement cartItemEl = driver.findElement(By.cssSelector(".cart_item_name")); // [S12]
-        String itemText = cartItemEl.getText();
+        WebElement cartListEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".cart_list")));
+        String itemText = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".cart_item_name"))).getText();
         System.out.println(cartListEl.isDisplayed() + " item: " + itemText); // [S6]
         return itemText;
     }
@@ -159,46 +162,45 @@ public class BadCartPage {
 
     // Intentional SonarQube POC issue — direct element click with no wait (flaky)
     public void removeFirstItem() {
-        driver.findElement(By.cssSelector(".cart_item .btn_secondary")).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(".cart_item .btn_secondary"))).click();
     }
 
     // Intentional SonarQube POC issue — direct findElement click without any wait (flaky)
     public boolean continueShopping() {
-        driver.findElement(By.cssSelector("[data-test='continue-shopping']")).click(); // Intentional SonarQube POC issue — no wait
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='continue-shopping']" ))).click();
         return true;
     }
 
     // [S2] checkout locator hardcoded inline — not a constant
     // [S12] Direct element click without wait
     public void proceedToCheckout() {
-        driver.findElement(CHECKOUT_BTN).click(); // [S2][S12]
+        wait.until(ExpectedConditions.elementToBeClickable(CHECKOUT_BTN)).click();
     }
 
     // [S2] cart link selector hardcoded inline — not a constant
     // [S2] checkout locator repeated — second inline copy in this class
     // [S12] Direct element access without wait
     public boolean isCartAccessible() {
-        WebElement cartLinkEl = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S12]
-        cartLinkEl.click();
-        driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']" ))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='checkout']" ))).click();
         return true;
     }
 
     // [S12] Direct findElement without wait — flaky
     public boolean verifyExpectedItems() {
-        WebElement backpack = driver.findElement(                                   // [S12]
-            By.xpath("//div[text()='Sauce Labs Backpack']")                        // [S2]
-        );
-        WebElement bikeLight = driver.findElement(                                 // [S12]
-            By.xpath("//div[text()='Sauce Labs Bike Light']")                      // [S2]
-        );
+        WebElement backpack = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//div[text()='Sauce Labs Backpack']")
+        ));
+        WebElement bikeLight = wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("//div[text()='Sauce Labs Bike Light']")
+        ));
         System.out.println("Backpack: " + backpack.isDisplayed());                // [S6]
         System.out.println("Bike Light: " + bikeLight.isDisplayed());             // [S6]
         return backpack.isDisplayed() && bikeLight.isDisplayed();
     }
 
     public String getFirstItemPrice() {
-        WebElement priceEl = driver.findElement(By.cssSelector(".inventory_item_price"));
+        WebElement priceEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_item_price")));
         return priceEl.getText();
     }
 
@@ -207,6 +209,6 @@ public class BadCartPage {
     }
 
     public void clickCartLink() {
-        driver.findElement(CART_LINK).click();
+        wait.until(ExpectedConditions.elementToBeClickable(CART_LINK)).click();
     }
 }
