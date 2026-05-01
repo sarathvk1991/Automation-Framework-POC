@@ -146,7 +146,7 @@ public class BadLoginSteps {
     @When("I submit the login form")
     public void iSubmitTheLoginForm() {
         try {
-            loginPage().click1();
+            loginPage().submitLoginButton();
         } catch (WebDriverException e) {
             // intentional empty catch — SonarQube S5 demo
         }
@@ -185,8 +185,8 @@ public class BadLoginSteps {
     // INTENTIONAL BAD EXAMPLE
     @When("I type {string} into the username field directly")
     public void iTypeIntoTheUsernameFieldDirectly(String username) {
-        loginPage().abc(username);
-        loginPage().click1();
+        loginPage().enterUsernameValue(username);
+        loginPage().submitLoginButton();
     }
 
 }

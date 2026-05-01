@@ -49,10 +49,10 @@ public class BadLoginPage {
 
     // ── [S7] Non-descriptive method name ─────────────────────────────────────
 
-    // [S7] "doIt" communicates nothing about what action is performed
+    // [S7] Renamed from "doIt" — now communicates the default login action
     // [S3] Hard wait used instead of WebDriverWait — intentional java:S2925 demo
     // [S2] user-name id hardcoded here and repeated in every other method
-    public void doIt() {
+    public void performDefaultLogin() {
         String username = System.getProperty("username", TestData.USERNAME);
         String password = System.getProperty("password", TestData.PASSWORD);
         wait.until(ExpectedConditions.visibilityOfElementLocated(USERNAME_FIELD)).sendKeys(username);
@@ -62,10 +62,10 @@ public class BadLoginPage {
 
     // ── [S7][S8] Poor method name ─────────────────────────────────────────────
 
-    // [S7] "abc" is meaningless — intentional poor name for POC
+    // [S7] Renamed from "abc" — now clearly communicates the action
     // [S2] username locator repeated inline (not a constant)
     // [S12] Direct element access with no explicit wait — flaky in slow CI
-    public void abc(String usernameValue) {
+    public void enterUsernameValue(String usernameValue) {
         WebElement usernameField = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector("[data-test='username']")));
         usernameField.clear();
         usernameField.sendKeys(usernameValue);
@@ -73,10 +73,10 @@ public class BadLoginPage {
 
     // ── [S7] click1 — non-descriptive ─────────────────────────────────────────
 
-    // [S7] "click1" gives no indication of what is being clicked
-    // [S2] login-button locator repeated (already used in doIt)
+    // [S7] Renamed from "click1" — now clearly communicates the action
+    // [S2] login-button locator repeated (already used in performDefaultLogin)
     // [S12] Direct click without wait — may fail if page not ready
-    public void click1() {
+    public void submitLoginButton() {
         try {
             wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='login-button']" ))).click();
         } catch (WebDriverException e) { // [S4] intentional generic catch — masks real failures
@@ -389,30 +389,18 @@ public class BadLoginPage {
         System.out.println(prefix + username + cartCount + validateCart);
     }
 
-    // Previously "testThing(String x, String y, String tmp)" — renamed for clarity
-    // Local variables renamed from login_user/cart_count/validate_CART to camelCase
+    // Renamed from a non-descriptive identifier — now clearly communicates intent
     public void logUserContext(String username, String cartCount, String validateCart) {
-        String loginUser = username;
-        String userCartCount = cartCount;
-        String validateCartInfo = validateCart;
-        logContext("", loginUser, userCartCount, validateCartInfo);
+        logContext("", username, cartCount, validateCart);
     }
 
-    // Previously "process(String x, String y, String tmp)" — renamed for clarity
-    // Was S4144 duplicate of testThing — now differs via logContext prefix
+    // Renamed from a generic verb — uses a distinct prefix to differentiate from logUserContext
     public void logCheckoutContext(String username, String cartCount, String validateCart) {
-        String loginUser = username;
-        String userCartCount = cartCount;
-        String validateCartInfo = validateCart;
-        logContext("[checkout] ", loginUser, userCartCount, validateCartInfo);
+        logContext("[checkout] ", username, cartCount, validateCart);
     }
 
-    // Previously "CheckoutNow(String x, String y, String tmp)" — renamed to camelCase
-    // Was S4144 duplicate of process — now differs via logContext prefix
+    // Renamed from PascalCase to camelCase — uses a distinct prefix to differentiate from logCheckoutContext
     public void checkoutNow(String username, String cartCount, String validateCart) {
-        String loginUser = username;
-        String userCartCount = cartCount;
-        String validateCartInfo = validateCart;
-        logContext("[now] ", loginUser, userCartCount, validateCartInfo);
+        logContext("[now] ", username, cartCount, validateCart);
     }
 }

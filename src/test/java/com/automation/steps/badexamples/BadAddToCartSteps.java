@@ -78,9 +78,9 @@ public class BadAddToCartSteps {
     // [S12] Direct element access without wait
     @Then("element with css3 {string} has text {string}")
     public void elementHasText(String css, String expectedText) {
-        String tmp = invPage().getTextByCss(css);
-        if (!tmp.equals(expectedText)) {
-            System.out.println("Mismatch: expected=" + expectedText + " got=" + tmp);
+        String actualText = invPage().getTextByCss(css);
+        if (!actualText.equals(expectedText)) {
+            System.out.println("Mismatch: expected=" + expectedText + " got=" + actualText);
         }
     }
 

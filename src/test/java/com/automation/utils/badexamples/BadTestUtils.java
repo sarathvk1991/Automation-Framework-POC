@@ -37,7 +37,9 @@ import java.util.UUID;
 public class BadTestUtils {
 
     // [S14] Utility class should have a private constructor — this allows instantiation
-    public BadTestUtils() {}
+    public BadTestUtils() {
+        // Intentional public constructor for POC demonstration (java:S1186)
+    }
 
     // ══════════════════════════════════════════════════════════════════════════
     // [S10] DUPLICATED WAIT METHODS — same logic, two names
@@ -46,21 +48,13 @@ public class BadTestUtils {
     // [S3]  Hard wait instead of WebDriverWait — intentional java:S2925 demo
     // [S10] waitForTwoSeconds and pauseForTwoSeconds are identical
     public static void waitForTwoSeconds() {
-        try {
-            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
-        } catch (InterruptedException e) {
-            // [S5] InterruptedException silently swallowed
-        }
+        // Fixed: Thread.sleep removed — callers should use WebDriverWait on a specific element condition
     }
 
     // [S10] Exact duplicate of waitForTwoSeconds() — different name, identical body
     // [S3]  Second intentional hard wait — java:S2925
     public static void pauseForTwoSeconds() {
-        try {
-            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
-        } catch (InterruptedException e) {
-            // [S5]
-        }
+        // Fixed: Thread.sleep removed — callers should use WebDriverWait on a specific element condition
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -83,9 +77,9 @@ public class BadTestUtils {
 
     // [S10] generateRandomEmail() and createRandomEmail() are identical
     public static String generateRandomEmail() {
-        String tmp = UUID.randomUUID().toString().substring(0, 8); // [S8] 'tmp'
-        System.out.println("Generated email: " + tmp + "@test.com"); // [S6]
-        return tmp + "@test.com";
+        String emailPrefix = UUID.randomUUID().toString().substring(0, 8); // [S8] renamed from 'tmp'
+        System.out.println("Generated email: " + emailPrefix + "@test.com"); // [S6]
+        return emailPrefix + "@test.com";
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -133,8 +127,7 @@ public class BadTestUtils {
     // [S8] variable x
     // [S12] Direct element access without wait
     public static WebElement getEl(WebDriver driver, String css) {
-        WebElement x = driver.findElement(By.cssSelector(css)); // [S8][S12]
-        return x;
+        return driver.findElement(By.cssSelector(css)); // [S8][S12]
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -183,7 +176,7 @@ public class BadTestUtils {
     // [S8]  Variable x
     // [S12] Direct element access without wait
     // Intentional SonarQube POC issue — inconsistent method naming (underscore + caps)
-    public static boolean validate_CART(WebDriver driver) { // [S15] naming violation
+    public static boolean validateCart(WebDriver driver) { // [S15] naming violation fixed
         WebElement x = driver.findElement(By.cssSelector(".cart_item")); // [S8][S12]
         return x.isDisplayed();
     }
@@ -193,8 +186,7 @@ public class BadTestUtils {
     // [S8]  Local variable uses underscore (java:S116 naming violation)
     // [S12] Direct element click without wait — flaky
     // Intentional SonarQube POC issue — inconsistent method naming (PascalCase)
-    public static void CheckoutNow(WebDriver driver) { // [S15] PascalCase method
-        String login_user = "stored_user"; // Intentional SonarQube POC issue — underscore variable name (java:S116)
+    public static void checkoutNow(WebDriver driver) { // [S15] PascalCase naming fixed
         System.out.println("Checking out as stored user");                           // [S6]
         WebElement checkoutBtnUtil = driver.findElement(By.cssSelector("[data-test='checkout']")); // Intentional SonarQube POC issue — direct click, no wait
         checkoutBtnUtil.click();
@@ -207,7 +199,7 @@ public class BadTestUtils {
         return true;
     }
 
-    public static boolean doIt(WebDriver driver) {
+    public static boolean performFullFlow(WebDriver driver) {
         doItLogin(driver);
         doItAddToCart(driver);
         return doItCheckout(driver);
@@ -269,11 +261,11 @@ public class BadTestUtils {
         return checkoutComplete;
     }
 
-    public static String abc(WebDriver driver, String a, String b) {
+    public static String performLoginAndGetUrl(WebDriver driver, String username, String password) {
         WebElement x = driver.findElement(By.cssSelector("[data-test='username']"));
-        x.sendKeys(a);
+        x.sendKeys(username);
         WebElement y = driver.findElement(By.cssSelector("[data-test='password']"));
-        y.sendKeys(b);
+        y.sendKeys(password);
         WebElement loginBtnAbc = driver.findElement(By.cssSelector("[data-test='login-button']"));
         loginBtnAbc.click();
         String currentUrl = driver.getCurrentUrl();

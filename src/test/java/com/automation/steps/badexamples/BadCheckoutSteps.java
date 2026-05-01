@@ -24,6 +24,10 @@ import com.automation.pages.badexamples.BadLoginPage;
 import com.automation.utils.TestData;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 
 public class BadCheckoutSteps {
 
@@ -83,11 +87,8 @@ public class BadCheckoutSteps {
     public void iCompleteFullCheckoutFlow() {
         loginPage().navigateTo("https://www.saucedemo.com"); // [S2] hardcoded URL
         loginPage().performLogin(TestData.USERNAME, TestData.PASSWORD); // [S2] hardcoded credential
-        try {
-            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
-        } catch (InterruptedException e) {
-            // InterruptedException swallowed
-        }
+        new WebDriverWait(DriverFactory.getDriver(), Duration.ofSeconds(10))
+            .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_list"))); // [S3] replaced hard wait with explicit wait
         page().clickByCss("[data-test='add-to-cart-sauce-labs-backpack']");
         page().openCartLink();
         page().fillForm();
@@ -132,8 +133,8 @@ public class BadCheckoutSteps {
     // [S12] Direct URL read — no wait for page to settle
     @Then("I am on the checkout page")
     public void iAmOnTheCheckoutPage() {
-        String tmp = page().getCurrentUrl();
-        System.out.println("Current URL: " + tmp);
+        String currentUrl = page().getCurrentUrl();
+        System.out.println("Current URL: " + currentUrl);
     }
 
     // [S10] Near-duplicate of elementWithCss4IsVisible — this copy adds a redundant assertTrue

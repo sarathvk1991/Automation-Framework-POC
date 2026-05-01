@@ -22,6 +22,10 @@ import com.automation.pages.badexamples.BadLoginPage;
 import com.automation.utils.TestData;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 
 public class BadInventorySteps {
 
@@ -61,8 +65,8 @@ public class BadInventorySteps {
     @Then("css {string} is present in DOM")
     public void cssIsPresentInDom(String css) {
         System.out.println("Found: " + invPage().isElementPresent(css));
-        String tmp = invPage().getPageTitle();
-        System.out.println("Page title: " + tmp);
+        String pageTitle = invPage().getPageTitle();
+        System.out.println("Page title: " + pageTitle);
     }
 
     // [S10] Duplicate of BadLoginSteps.iClickCss — same method body, different class
@@ -94,11 +98,8 @@ public class BadInventorySteps {
     @When("I am logged in as default user")
     public void iAmLoggedInAsDefaultUser() {
         loginPage().performLogin(TestData.USERNAME, TestData.PASSWORD);
-        try {
-            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
-        } catch (InterruptedException e) {
-            // InterruptedException swallowed
-        }
+        new WebDriverWait(DriverFactory.getDriver(), Duration.ofSeconds(10))
+            .until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_list"))); // [S3] replaced hard wait with explicit wait
     }
 
     // [S10] Third copy of the element-visible assertion pattern
