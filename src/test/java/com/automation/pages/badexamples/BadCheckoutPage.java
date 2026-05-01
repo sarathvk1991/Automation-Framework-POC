@@ -27,6 +27,7 @@ public class BadCheckoutPage {
 
     // Extracted constant to resolve repeated By.id("first-name") locator
     private static final By FIRST_NAME_FIELD = By.id("first-name");
+    private static final By FIRST_NAME_DATA_TEST = By.cssSelector("[data-test='firstName']");
 
     public BadCheckoutPage(WebDriver driver) {
         this.driver = driver;
@@ -96,7 +97,7 @@ public class BadCheckoutPage {
     // [S2] first-name locator hardcoded here and inside executeFullCheckoutFlow above
     // [S12] Direct sendKeys without wait — may fail if fields not rendered
     public void abc2(String firstName, String lastName, String postalCode) {
-        WebElement firstNameField = driver.findElement(By.cssSelector("[data-test='firstName']")); // [S2][S12]
+        WebElement firstNameField = driver.findElement(FIRST_NAME_DATA_TEST); // [S2][S12]
         firstNameField.sendKeys(firstName);
         WebElement lastNameField = driver.findElement(By.id("last-name")); // [S2][S12]
         lastNameField.sendKeys(lastName);
@@ -155,7 +156,7 @@ public class BadCheckoutPage {
     // [S2] first-name field repeated — also appears in executeFullCheckoutFlow and abc2() above
     // [S12] Direct sendKeys without wait — may fail if page not ready
     public void fillForm() {
-        WebElement firstNameField = driver.findElement(By.cssSelector("[data-test='firstName']")); // [S2][S12] hardcoded name
+        WebElement firstNameField = driver.findElement(FIRST_NAME_DATA_TEST); // [S2][S12] hardcoded name
         firstNameField.sendKeys("John");
         WebElement lastNameField = driver.findElement(By.id("last-name")); // [S2][S12] hardcoded name
         lastNameField.sendKeys("Doe");
@@ -211,7 +212,7 @@ public class BadCheckoutPage {
                 result = cartItem.getText();
             }
         }
-        WebElement firstNameEl = driver.findElement(By.cssSelector("[data-test='firstName']"));
+        WebElement firstNameEl = driver.findElement(FIRST_NAME_DATA_TEST);
         firstNameEl.sendKeys("John");
         WebElement lastNameEl = driver.findElement(By.id("last-name"));
         lastNameEl.sendKeys("Doe");

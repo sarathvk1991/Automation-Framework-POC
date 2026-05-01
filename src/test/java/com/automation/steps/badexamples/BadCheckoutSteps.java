@@ -256,12 +256,12 @@ public class BadCheckoutSteps {
 
     @When("bad duplicate get total step 2")
     public void badDuplicateGetTotalStep2() {
-        System.out.println("Total: " + new BadCheckoutPage(DriverFactory.getDriver()).getTotal());
+        System.out.println("Total: " + new BadCheckoutPage(DriverFactory.getDriver()).fetchTotal());
     }
 
     @When("bad duplicate get total step 3")
     public void badDuplicateGetTotalStep3() {
-        System.out.println("Total: " + new BadCheckoutPage(DriverFactory.getDriver()).getTotal());
+        System.out.println("Total: " + new BadCheckoutPage(DriverFactory.getDriver()).getTextByCss(".summary_total_label"));
     }
 
 }

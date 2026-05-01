@@ -29,6 +29,9 @@ public class BadLoginPage {
     // [S1] No BasePage — driver stored as raw field with no shared wait utilities
     private WebDriver driver;
 
+    private static final By USERNAME_FIELD = By.id("user-name");
+    private static final By PASSWORD_FIELD = By.id("password");
+
     public BadLoginPage(WebDriver driver) {
         this.driver = driver;
     }
@@ -44,8 +47,8 @@ public class BadLoginPage {
         } catch (InterruptedException e) {
             // [S5] InterruptedException swallowed
         }
-        driver.findElement(By.id("user-name")).sendKeys("standard_user"); // [S2]
-        driver.findElement(By.id("password")).sendKeys("secret_sauce");   // [S2]
+        driver.findElement(USERNAME_FIELD).sendKeys("standard_user"); // [S2]
+        driver.findElement(PASSWORD_FIELD).sendKeys("secret_sauce");   // [S2]
         driver.findElement(By.id("login-button")).click();                // [S2]
     }
 
@@ -92,10 +95,10 @@ public class BadLoginPage {
     public String doLoginAndGetPageTitle(String username, String password) {
         try {
             driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL in page object
-            WebElement usernameField = driver.findElement(By.id("user-name")); // [S12]
+            WebElement usernameField = driver.findElement(USERNAME_FIELD); // [S12]
             usernameField.clear();
             usernameField.sendKeys(username);
-            WebElement passwordField = driver.findElement(By.id("password")); // [S12]
+            WebElement passwordField = driver.findElement(PASSWORD_FIELD); // [S12]
             passwordField.clear();
             passwordField.sendKeys(password);
             WebElement loginBtnEl = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S2][S12]

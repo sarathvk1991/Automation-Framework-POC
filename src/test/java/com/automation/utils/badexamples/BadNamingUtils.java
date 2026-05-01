@@ -6,84 +6,66 @@ package com.automation.utils.badexamples;
 // NOT executed at runtime. For SonarQube / custom-QA analysis only.
 //
 // SonarQube Issues Demonstrated:
-//   [S4]  Generic Exception caught throughout (process, abc, click1, CheckoutNow)
-//   [S5]  Empty / swallowed catch blocks
-//   [S7]  Non-descriptive method names: doIt, abc, click1, testThing, process,
-//         CheckoutNow — all fail naming convention rules
-//   [S8]  Non-descriptive parameter names: x, y, tmp
-//   [S10] 60 near-identical runner methods — normalised body triggers
+//   [S10] 3 near-identical runner methods — normalized body triggers
 //         customqa:duplicate-utility-method on every pair
-//
-// Metric impact intended:
-//   • Naming-compliance ratio  → well below 50 %
-//   • Exception-handling score → well below 50 %
 // =============================================================================
 public class BadNamingUtils {
 
-    // ── Core poorly-named methods ─────────────────────────────────────────────
+    // ── Core methods (previously: doIt, process, abc, click1, testThing, CheckoutNow) ─
 
-    // [S7] "doIt" communicates nothing about intent
-    // [S8] x, y, tmp are meaningless parameter names
-    public String doIt(String x, String y, String tmp) {
-        return x + y + tmp;
+    // Previously "doIt(String x, String y, String tmp)" — renamed to concatenateValues
+    // Params renamed from x/y/tmp to firstInput/secondInput/thirdInput
+    public String concatenateValues(String firstInput, String secondInput, String thirdInput) {
+        return firstInput + secondInput + thirdInput;
     }
 
-    // [S7] "process" — process what?
-    // [S8] x, y, tmp
-    // [S4][S5] catch (Exception e) swallows everything
-    public boolean process(String x, String y, String tmp) {
+    // Previously "process(String x, String y, String tmp)" — renamed to compareStringLengths
+    // Unused parameter "tmp" removed
+    // Generic catch(Exception) replaced with NullPointerException
+    public boolean compareStringLengths(String firstValue, String secondValue) {
         try {
-            return x.length() > y.length();
-        } catch (Exception e) {
+            return firstValue.length() > secondValue.length();
+        } catch (NullPointerException e) {
             return false;
         }
     }
 
-    // [S7] "abc" is gibberish
-    // [S8] x, y
-    // [S4][S5] catch (Exception e)
-    public boolean abc(String x, String y) {
+    // Previously "abc(String x, String y)" — renamed to areStringsDifferent
+    // Params renamed from x/y to firstString/secondString
+    // Generic catch(Exception) replaced with NullPointerException
+    public boolean areStringsDifferent(String firstString, String secondString) {
         try {
-            return !x.equals(y);
-        } catch (Exception e) {
+            return !firstString.equals(secondString);
+        } catch (NullPointerException e) {
             return false;
         }
     }
 
-    // [S7] "click1" — click what? why 1?
-    // [S8] x
-    // [S4][S5] catch (Exception e) swallows all errors
-    public void click1(String x) {
-        try {
-            System.out.println(x);
-        } catch (Exception e) {
-            // swallowed
-        }
+    // Previously "click1(String x)" — renamed to printValue
+    // Param renamed from x to value
+    // Try-catch removed: System.out.println cannot throw a checked exception
+    public void printValue(String value) {
+        System.out.println(value);
     }
 
-    // [S7] "testThing" — not a production-quality name
-    // [S8] x, y
-    public String testThing(String x, String y) {
-        return x + "-" + y;
+    // Previously "testThing(String x, String y)" — renamed to joinWithDash
+    // Params renamed from x/y to firstPart/secondPart
+    public String joinWithDash(String firstPart, String secondPart) {
+        return firstPart + "-" + secondPart;
     }
 
-    // [S7] "CheckoutNow" violates Java method-naming conventions (capital C)
-    // [S8] x, y, tmp
-    // [S4][S5] catch (Exception e)
-    public void CheckoutNow(String x, String y, String tmp) {
-        try {
-            System.out.println(x + y + tmp);
-        } catch (Exception e) {
-            // swallowed
-        }
+    // Previously "CheckoutNow(String x, String y, String tmp)" — renamed to checkoutNow (camelCase)
+    // Params renamed from x/y/tmp to firstInput/secondInput/thirdInput
+    // Try-catch removed: System.out.println cannot throw a checked exception
+    public void checkoutNow(String firstInput, String secondInput, String thirdInput) {
+        System.out.println(firstInput + secondInput + thirdInput);
     }
 
     // ── Runner methods ────────────────────────────────────────────────────────
-    // Each one-liner calls all 6 poorly-named methods → 6 poor-naming hits each.
-    // All 3 bodies are identical so customqa:duplicate-utility-method fires on
+    // All 3 bodies are identical → customqa:duplicate-utility-method fires on
     // every pair (intentional [S10] demo).
     // ─────────────────────────────────────────────────────────────────────────
-    public void run01(String input, String value) { doIt(input, value, input); process(input, value, input); abc(input, value); click1(input); testThing(input, value); CheckoutNow(input, value, input); }
-    public void run02(String input, String value) { doIt(input, value, input); process(input, value, input); abc(input, value); click1(input); testThing(input, value); CheckoutNow(input, value, input); }
-    public void run03(String input, String value) { doIt(input, value, input); process(input, value, input); abc(input, value); click1(input); testThing(input, value); CheckoutNow(input, value, input); }
+    public void run01(String input, String value) { concatenateValues(input, value, input); compareStringLengths(input, value); areStringsDifferent(input, value); printValue(input); joinWithDash(input, value); checkoutNow(input, value, input); }
+    public void run02(String input, String value) { concatenateValues(input, value, input); compareStringLengths(input, value); areStringsDifferent(input, value); printValue(input); joinWithDash(input, value); checkoutNow(input, value, input); }
+    public void run03(String input, String value) { concatenateValues(input, value, input); compareStringLengths(input, value); areStringsDifferent(input, value); printValue(input); joinWithDash(input, value); checkoutNow(input, value, input); }
 }
