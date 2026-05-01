@@ -22,6 +22,7 @@ package com.automation.utils.badexamples;
 //   [S15] Inconsistent naming: camelCase, under_score, and PascalCase mixed
 // =============================================================================
 
+import com.automation.utils.ConfigReader;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -67,12 +68,12 @@ public class BadTestUtils {
 
     // [S10] getDefaultUserName() and fetchDefaultUserName() are identical
     public static String getDefaultUserName() {
-        return "standard_user"; // [S2] hardcoded test data
+        return ConfigReader.get("test.username"); // [S2] was hardcoded test data
     }
 
     // [S10] getDefaultPassword() and fetchDefaultPassword() are identical
     public static String getDefaultPassword() {
-        return "secret_sauce"; // [S2] hardcoded credential
+        return ConfigReader.get("test.password"); // [S2] was hardcoded credential
     }
 
     // ══════════════════════════════════════════════════════════════════════════

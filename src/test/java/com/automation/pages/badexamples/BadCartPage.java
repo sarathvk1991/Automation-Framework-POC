@@ -19,6 +19,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
+import com.automation.utils.TestData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -189,10 +190,10 @@ public class BadCartPage {
     // [S12] Direct findElement without wait — flaky
     public boolean verifyExpectedItems() {
         WebElement backpack = wait.until(ExpectedConditions.visibilityOfElementLocated(
-            By.xpath("//div[text()='Sauce Labs Backpack']")
+            By.xpath("//div[text()='" + TestData.PRODUCT_BACKPACK + "']")
         ));
         WebElement bikeLight = wait.until(ExpectedConditions.visibilityOfElementLocated(
-            By.xpath("//div[text()='Sauce Labs Bike Light']")
+            By.xpath("//div[text()='" + TestData.PRODUCT_BIKE_LIGHT + "']")
         ));
         System.out.println("Backpack: " + backpack.isDisplayed());                // [S6]
         System.out.println("Bike Light: " + bikeLight.isDisplayed());             // [S6]

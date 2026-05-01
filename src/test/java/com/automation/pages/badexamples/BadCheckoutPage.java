@@ -21,6 +21,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
 import java.util.List;
+import com.automation.utils.TestData;
 
 public class BadCheckoutPage {
 
@@ -246,6 +247,6 @@ public class BadCheckoutPage {
     }
 
     public boolean isBikeLightVisible() {
-        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[text()='Sauce Labs Bike Light']"))).isDisplayed();
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//div[text()='" + TestData.PRODUCT_BIKE_LIGHT + "']"))).isDisplayed();
     }
 }

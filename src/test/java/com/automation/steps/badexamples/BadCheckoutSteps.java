@@ -20,6 +20,7 @@ package com.automation.steps.badexamples;
 import com.automation.base.DriverFactory;
 import com.automation.pages.badexamples.BadCartPage;
 import com.automation.pages.badexamples.BadCheckoutPage;
+import com.automation.utils.TestData;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
@@ -64,7 +65,7 @@ public class BadCheckoutSteps {
 
     // [S11] One @When method: navigates + logs in + adds item + opens cart +
     //       proceeds through form + continues + finishes = 9 concerns
-    // [S2]  Credentials hardcoded: standard_user / secret_sauce
+    // [S2]  Credentials hardcoded inline instead of using TestData constants
     // [S8]  Variables: a, b
     // [S3]  Hard wait after login — intentional java:S2925 demo
     // [S12] Direct element access for login fields — no explicit wait
@@ -77,10 +78,10 @@ public class BadCheckoutSteps {
 
         WebElement a = driver.findElement(By.cssSelector("[data-test='username']")); // [S8][S12]
         a.clear();
-        a.sendKeys("standard_user"); // [S2] hardcoded credential
+        a.sendKeys(TestData.USERNAME); // [S2] hardcoded credential
         WebElement b = driver.findElement(By.cssSelector("[data-test='password']")); // [S8][S12]
         b.clear();
-        b.sendKeys("secret_sauce"); // [S2] hardcoded credential
+        b.sendKeys(TestData.PASSWORD); // [S2] hardcoded credential
         checkoutPage.clickByCss("[data-test='login-button']");
         try {
             Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
@@ -219,16 +220,16 @@ public class BadCheckoutSteps {
     // INTENTIONAL BAD EXAMPLE
     // [S9] No assertion — logs only
     // [S12] Direct findElement without wait
-    @Then("I see Sauce Labs Backpack in the order summary")
+    @Then("I see primary product in the order summary")
     public void iSeeSauceLabsBackpackInTheOrderSummary() {
         WebElement x = DriverFactory.getDriver()                                   // [S12]
-            .findElement(By.xpath("//div[text()='Sauce Labs Backpack']"));          // [S2]
+            .findElement(By.xpath("//div[text()='" + TestData.PRODUCT_BACKPACK + "']"));  // [S2]
         System.out.println("Backpack visible: " + x.isDisplayed());               // [S6][S9]
     }
 
     // [S9] No assertion — logs only
     // [S12] Direct findElement without wait
-    @Then("I see Sauce Labs Bike Light in the order summary")
+    @Then("I see secondary product in the order summary")
     public void iSeeSauceLabsBikeLightInTheOrderSummary() {
         System.out.println("Bike Light visible: " + new BadCheckoutPage(DriverFactory.getDriver()).isBikeLightVisible());
     }

@@ -26,6 +26,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
+import com.automation.utils.TestData;
 
 public class BadLoginPage {
 
@@ -51,8 +52,8 @@ public class BadLoginPage {
     // [S3] Hard wait used instead of WebDriverWait — intentional java:S2925 demo
     // [S2] user-name id hardcoded here and repeated in every other method
     public void doIt() {
-        String username = System.getProperty("username", "standard_user");
-        String password = System.getProperty("password", "secret_sauce");
+        String username = System.getProperty("username", TestData.USERNAME);
+        String password = System.getProperty("password", TestData.PASSWORD);
         wait.until(ExpectedConditions.visibilityOfElementLocated(USERNAME_FIELD)).sendKeys(username);
         wait.until(ExpectedConditions.visibilityOfElementLocated(PASSWORD_FIELD)).sendKeys(password);
         wait.until(ExpectedConditions.elementToBeClickable(LOGIN_BUTTON)).click();

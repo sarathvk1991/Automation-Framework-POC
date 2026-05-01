@@ -20,6 +20,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import java.time.Duration;
+import com.automation.utils.TestData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -202,9 +203,9 @@ public class BadInventoryPage {
     // [S11] Mixed responsibility: checkout form fill inside inventory page
     // [S12] Direct element access without wait
     public void fillOrderDetails() {
-        wait.until(ExpectedConditions.visibilityOfElementLocated(FIRST_NAME_FIELD)).sendKeys("Sarath");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("last-name"))).sendKeys("Tester");
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("postal-code"))).sendKeys("695001");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(FIRST_NAME_FIELD)).sendKeys(TestData.FIRST_NAME);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("last-name"))).sendKeys(TestData.LAST_NAME);
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("postal-code"))).sendKeys(TestData.ZIP_CODE);
     }
 
     // [S2] Product name baked into XPath; same string repeated in step files

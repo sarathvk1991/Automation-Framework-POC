@@ -21,6 +21,7 @@ package com.automation.steps.badexamples;
 
 import com.automation.base.DriverFactory;
 import com.automation.pages.badexamples.BadLoginPage;
+import com.automation.utils.TestData;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
@@ -151,9 +152,9 @@ public class BadLoginSteps {
     public void badUserLogsInWithValidCredentials() {
         WebDriver driver = DriverFactory.getDriver();
         WebElement usernameEl = driver.findElement(By.id("user-name")); // [S2][S12]
-        usernameEl.sendKeys("standard_user");
+        usernameEl.sendKeys(TestData.USERNAME);
         WebElement passwordEl = driver.findElement(By.id("password")); // [S2][S12]
-        passwordEl.sendKeys("secret_sauce");
+        passwordEl.sendKeys(TestData.PASSWORD);
         WebElement loginBtnEl = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S12]
         loginBtnEl.click();
         System.out.println("Logged in as standard user");                 // [S6]

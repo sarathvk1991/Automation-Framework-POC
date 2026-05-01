@@ -18,6 +18,7 @@ package com.automation.steps.badexamples;
 
 import com.automation.base.DriverFactory;
 import com.automation.pages.badexamples.BadInventoryPage;
+import com.automation.utils.TestData;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
@@ -111,9 +112,9 @@ public class BadInventorySteps {
     public void iAmLoggedInAsDefaultUser() {
         WebDriver driver = DriverFactory.getDriver();
         WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S2][S12]
-        usernameField.sendKeys("standard_user");
+        usernameField.sendKeys(TestData.USERNAME);
         WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']")); // [S2][S12]
-        passwordField.sendKeys("secret_sauce");
+        passwordField.sendKeys(TestData.PASSWORD);
         WebElement loginBtn = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S12]
         loginBtn.click();
         try {
@@ -147,7 +148,7 @@ public class BadInventorySteps {
     // INTENTIONAL BAD EXAMPLE
     // [S9] No assertion — logs only
     // [S12] Direct findElement without wait
-    @Then("Sauce Labs Backpack is visible on the page")
+    @Then("primary product is visible on the page")
     public void sauceLabsBackpackIsVisibleOnThePage() {
         WebElement x = DriverFactory.getDriver()                                   // [S12]
             .findElement(By.xpath("//div[text()='Product A']"));          // [S2]
@@ -156,7 +157,7 @@ public class BadInventorySteps {
 
     // [S9] No assertion — logs only
     // [S12] Direct findElement without wait
-    @Then("Sauce Labs Bike Light is visible on the page")
+    @Then("secondary product is visible on the page")
     public void sauceLabsBikeLightIsVisibleOnThePage() {
         System.out.println("Bike Light visible: " + new BadInventoryPage(DriverFactory.getDriver()).isBikeLightInInventory());
     }

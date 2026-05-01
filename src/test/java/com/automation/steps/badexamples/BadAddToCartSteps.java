@@ -18,6 +18,7 @@ package com.automation.steps.badexamples;
 import com.automation.base.DriverFactory;
 import com.automation.pages.badexamples.BadCartPage;
 import com.automation.pages.badexamples.BadInventoryPage;
+import com.automation.utils.TestData;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
@@ -91,9 +92,9 @@ public class BadAddToCartSteps {
         WebDriver driver = DriverFactory.getDriver();
         driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
         WebElement a = driver.findElement(By.cssSelector("[data-test='username']")); // [S8][S12]
-        a.sendKeys("standard_user"); // [S2] hardcoded credential
+        a.sendKeys(TestData.USERNAME); // [S2] hardcoded credential
         WebElement b = driver.findElement(By.cssSelector("[data-test='password']")); // [S8][S12]
-        b.sendKeys("secret_sauce"); // [S2] hardcoded credential
+        b.sendKeys(TestData.PASSWORD); // [S2] hardcoded credential
         WebElement loginBtnField = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S12]
         loginBtnField.click();
         WebElement c = driver.findElement( // [S8][S12]
