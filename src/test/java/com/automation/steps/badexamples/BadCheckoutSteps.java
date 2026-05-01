@@ -20,21 +20,31 @@ package com.automation.steps.badexamples;
 import com.automation.base.DriverFactory;
 import com.automation.pages.badexamples.BadCartPage;
 import com.automation.pages.badexamples.BadCheckoutPage;
+import com.automation.pages.badexamples.BadLoginPage;
 import com.automation.utils.TestData;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 public class BadCheckoutSteps {
+
+    private BadLoginPage loginPage() {
+        return new BadLoginPage(DriverFactory.getDriver());
+    }
+
+    private BadCheckoutPage page() {
+        return new BadCheckoutPage(DriverFactory.getDriver());
+    }
+
+    private BadCartPage cart() {
+        return new BadCartPage(DriverFactory.getDriver());
+    }
 
     // [S10] Duplicate of iClickCss from BadLoginSteps, BadInventorySteps, BadAddToCartSteps
     // [S8]  Variable y
     // [S12] Direct click without wait
     @When("I click css4 {string}")
     public void iClickCss4(String css) {
-        new BadCheckoutPage(DriverFactory.getDriver()).clickByCss(css);
+        page().clickByCss(css);
     }
 
     // [S10] Duplicate of iClickXpath from BadLoginSteps / BadInventorySteps / BadAddToCartSteps
@@ -42,14 +52,14 @@ public class BadCheckoutSteps {
     // [S12] Direct click without wait
     @When("I click xpath4 {string}")
     public void iClickXpath4(String xpath) {
-        new BadCheckoutPage(DriverFactory.getDriver()).clickByXpath(xpath);
+        page().clickByXpath(xpath);
     }
 
     // [S10] Duplicate of element-visible assertion — 5th copy across bad step files
     // [S12] Direct element access without wait
     @Then("element with css4 {string} is visible")
     public void elementWithCss4IsVisible(String css) {
-        System.out.println("Visible: " + new BadCheckoutPage(DriverFactory.getDriver()).isElementVisible(css));
+        System.out.println("Visible: " + page().isElementVisible(css));
     }
 
     // [S2]  Hardcoded form field IDs in step code instead of page object
@@ -57,7 +67,7 @@ public class BadCheckoutSteps {
     // [S12] Direct element access without wait
     @When("I enter text {string} in field with id4 {string}")
     public void iEnterTextInFieldWithId4(String text, String fieldId) {
-        new BadCheckoutPage(DriverFactory.getDriver()).enterTextById(text, fieldId);
+        page().enterTextById(text, fieldId);
     }
 
     // INTENTIONAL BAD EXAMPLE
@@ -71,30 +81,18 @@ public class BadCheckoutSteps {
     // [S12] Direct element access for login fields — no explicit wait
     @When("I complete the full checkout flow from login to confirmation")
     public void iCompleteFullCheckoutFlow() {
-        WebDriver driver = DriverFactory.getDriver();
-        BadCheckoutPage checkoutPage = new BadCheckoutPage(driver);
-
-        driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
-
-        WebElement a = driver.findElement(By.cssSelector("[data-test='username']")); // [S8][S12]
-        a.clear();
-        a.sendKeys(TestData.USERNAME); // [S2] hardcoded credential
-        WebElement b = driver.findElement(By.cssSelector("[data-test='password']")); // [S8][S12]
-        b.clear();
-        b.sendKeys(TestData.PASSWORD); // [S2] hardcoded credential
-        checkoutPage.clickByCss("[data-test='login-button']");
+        loginPage().navigateTo("https://www.saucedemo.com"); // [S2] hardcoded URL
+        loginPage().performLogin(TestData.USERNAME, TestData.PASSWORD); // [S2] hardcoded credential
         try {
             Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
         } catch (InterruptedException e) {
             // InterruptedException swallowed
         }
-
-        checkoutPage.clickByCss("[data-test='add-to-cart-sauce-labs-backpack']");
-        checkoutPage.openCartLink();
-        checkoutPage.fillForm();
-        checkoutPage.doAll();
-
-        System.out.println("Order result: " + checkoutPage.getConfirmationMessage()); // [S6][S9] no assertion
+        page().clickByCss("[data-test='add-to-cart-sauce-labs-backpack']");
+        page().openCartLink();
+        page().fillForm();
+        page().doAll();
+        System.out.println("Order result: " + page().getConfirmationMessage()); // [S6][S9] no assertion
     }
 
     // INTENTIONAL BAD EXAMPLE
@@ -104,9 +102,7 @@ public class BadCheckoutSteps {
     // [S12] Direct click without wait
     @When("I finishIt the order")
     public void iFinishItTheOrder() {
-        WebElement x = DriverFactory.getDriver() // [S8][S12]
-            .findElement(By.cssSelector("[data-test='finish']"));
-        x.click();
+        page().clickByCss("[data-test='finish']"); // [S8][S12]
     }
 
     // [S7]  "checkDone" — ambiguous name
@@ -116,7 +112,7 @@ public class BadCheckoutSteps {
     // [S12] Direct element access without wait
     @Then("checkDone with message {string}")
     public void checkDoneWithMessage(String expected) {
-        String actual = new BadCheckoutPage(DriverFactory.getDriver()).getConfirmationMessage();
+        String actual = page().getConfirmationMessage();
         System.out.println("Expected='" + expected + "' Got='" + actual + "'");
         if (!actual.contains(expected)) {
             System.out.println("ORDER MESSAGE MISMATCH");
@@ -129,14 +125,14 @@ public class BadCheckoutSteps {
     // [S12] Direct element access without wait
     @Then("I am on the checkout overview page with total")
     public void iAmOnCheckoutOverviewPageWithTotal() {
-        System.out.println("Total label: " + new BadCheckoutPage(DriverFactory.getDriver()).getTotal());
+        System.out.println("Total label: " + page().getTotal());
     }
 
     // [S9]  No assertion that URL contains "checkout"
     // [S12] Direct URL read — no wait for page to settle
     @Then("I am on the checkout page")
     public void iAmOnTheCheckoutPage() {
-        String tmp = new BadCheckoutPage(DriverFactory.getDriver()).getCurrentUrl();
+        String tmp = page().getCurrentUrl();
         System.out.println("Current URL: " + tmp);
     }
 
@@ -144,14 +140,14 @@ public class BadCheckoutSteps {
     // [S12] Direct element access without wait
     @Then("element with css5 {string} is visible")
     public void elementWithCss5IsVisible(String css) {
-        System.out.println("Element visible: " + new BadCheckoutPage(DriverFactory.getDriver()).isElementVisible(css));
+        System.out.println("Element visible: " + page().isElementVisible(css));
     }
 
     // [S10] Duplicate of BadLoginSteps.elementWithCssHasText — same body
     // [S12] Direct element access without wait
     @Then("element with css5 {string} has text {string}")
     public void elementWithCss5HasText(String css, String expectedText) {
-        String actualText = new BadCheckoutPage(DriverFactory.getDriver()).getTextByCss(css);
+        String actualText = page().getTextByCss(css);
         System.out.println("Expected='" + expectedText + "' Got='" + actualText + "'");
         if (!actualText.equals(expectedText)) {
             System.out.println("TEXT MISMATCH");
@@ -162,7 +158,7 @@ public class BadCheckoutSteps {
     // [S12] Direct URL read — no wait
     @Then("I am on the checkout info page")
     public void iAmOnTheCheckoutInfoPage() {
-        String currentUrl = new BadCheckoutPage(DriverFactory.getDriver()).getCurrentUrl();
+        String currentUrl = page().getCurrentUrl();
         System.out.println("URL: " + currentUrl);
     }
 
@@ -174,9 +170,9 @@ public class BadCheckoutSteps {
     // [S10] Near-duplicate of badUserEntersCheckoutInformation — "fills in" vs "enters", identical body
     @When("bad user fills in checkout information")
     public void badUserFillsInCheckoutInformation() {
-        new BadCheckoutPage(DriverFactory.getDriver()).fillForm();
-        new BadCheckoutPage(DriverFactory.getDriver()).clickByCss("[data-test='continue']");
-        System.out.println("Filled checkout info for user");        // [S6]
+        page().fillForm();
+        page().clickByCss("[data-test='continue']");
+        System.out.println("Filled form info for user");        // [S6]
     }
 
     // [S10] Near-duplicate — "enters" instead of "fills in", identical body
@@ -184,9 +180,9 @@ public class BadCheckoutSteps {
     // [S12] All field interactions direct — no wait
     @When("bad user enters checkout information")
     public void badUserEntersCheckoutInformation() {
-        new BadCheckoutPage(DriverFactory.getDriver()).fillForm();
-        new BadCheckoutPage(DriverFactory.getDriver()).clickByCss("[data-test='continue']");
-        System.out.println("Entered checkout info for user");
+        page().fillForm();
+        page().clickByCss("[data-test='continue']");
+        System.out.println("Entered form info for user");
     }
 
     // INTENTIONAL BAD EXAMPLE
@@ -194,27 +190,27 @@ public class BadCheckoutSteps {
     // Intentional SonarQube POC issue — direct findElement click without any wait (flaky)
     @When("I click the continue button")
     public void iClickTheContinueButton() {
-        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='continue']")).click(); // Intentional SonarQube POC issue — direct click, no wait, no retry
+        page().clickByCss("[data-test='continue']"); // Intentional SonarQube POC issue
     }
 
     // Intentional SonarQube POC issue — direct findElement click without wait (flaky)
     @When("I cancel the checkout")
     public void iCancelTheCheckout() {
-        new BadCheckoutPage(DriverFactory.getDriver()).cancelCheckout();
+        page().cancelCheckout();
     }
 
     // [S2] cart link selector hardcoded inline — not a constant
     // [S12] Direct element click without wait
     @When("I open the cart from the checkout context")
     public void iOpenTheCartFromTheCheckoutContext() {
-        new BadCartPage(DriverFactory.getDriver()).clickCartLink();
+        cart().clickCartLink();
     }
 
     // [S2] checkout locator hardcoded inline — not a constant
     // [S12] Direct element click without wait
     @When("I click the checkout button")
     public void iClickTheCheckoutButton() {
-        new BadCartPage(DriverFactory.getDriver()).proceedToCheckout();
+        cart().proceedToCheckout();
     }
 
     // INTENTIONAL BAD EXAMPLE
@@ -222,23 +218,20 @@ public class BadCheckoutSteps {
     // [S12] Direct findElement without wait
     @Then("I see primary product in the order summary")
     public void iSeeSauceLabsBackpackInTheOrderSummary() {
-        WebElement x = DriverFactory.getDriver()                                   // [S12]
-            .findElement(By.xpath("//div[text()='" + TestData.PRODUCT_BACKPACK + "']"));  // [S2]
-        System.out.println("Backpack visible: " + x.isDisplayed());               // [S6][S9]
+        page().verifyBackpackPresent(); // [S6][S9]
     }
 
     // [S9] No assertion — logs only
     // [S12] Direct findElement without wait
     @Then("I see secondary product in the order summary")
     public void iSeeSauceLabsBikeLightInTheOrderSummary() {
-        System.out.println("Bike Light visible: " + new BadCheckoutPage(DriverFactory.getDriver()).isBikeLightVisible());
+        System.out.println("Bike Light visible: " + page().isBikeLightVisible());
     }
 
     // INTENTIONAL BAD EXAMPLE
     @Then("the order total label is displayed directly")
     public void theOrderTotalLabelIsDisplayedDirectly() {
-        String total = DriverFactory.getDriver().findElement(By.cssSelector(".summary_total_label")).getText();
-        System.out.println("Order total: " + total);
+        System.out.println("Order total: " + page().getTotal());
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -252,17 +245,17 @@ public class BadCheckoutSteps {
     //       make all three signatures identical → duplicate-step-definition fires
     @When("bad duplicate get total step 1")
     public void badDuplicateGetTotalStep1() {
-        System.out.println("Total: " + new BadCheckoutPage(DriverFactory.getDriver()).getTotal());
+        System.out.println("Total: " + page().getTotal());
     }
 
     @When("bad duplicate get total step 2")
     public void badDuplicateGetTotalStep2() {
-        System.out.println("Total: " + new BadCheckoutPage(DriverFactory.getDriver()).fetchTotal());
+        System.out.println("Total: " + page().fetchTotal());
     }
 
     @When("bad duplicate get total step 3")
     public void badDuplicateGetTotalStep3() {
-        System.out.println("Total: " + new BadCheckoutPage(DriverFactory.getDriver()).getTextByCss(".summary_total_label"));
+        System.out.println("Total: " + page().getTextByCss(".summary_total_label"));
     }
 
 }

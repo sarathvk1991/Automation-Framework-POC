@@ -292,6 +292,11 @@ public class BadInventoryPage {
         return sorted;
     }
 
+    public void selectByVisibleText(String optionText, String css) {
+        WebElement dropdown = wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector(css)));
+        new org.openqa.selenium.support.ui.Select(dropdown).selectByVisibleText(optionText);
+    }
+
     public void clickByXpath(String xpath) {
         wait.until(ExpectedConditions.elementToBeClickable(By.xpath(xpath))).click();
     }
@@ -332,4 +337,16 @@ public class BadInventoryPage {
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='shopping-cart-link']"))).click();
         System.out.println("Navigated to cart page");
     }
-}
+    public boolean validatePricesAscending() {
+        List<WebElement> priceElements = driver.findElements(By.cssSelector(".inventory_item_price"));
+        List<Double> prices = new ArrayList<>();
+        for (WebElement el : priceElements) {
+            prices.add(Double.parseDouble(el.getText().replace("$", "")));
+        }
+        double prev = -1;
+        for (double p : prices) {
+            if (p < prev) return false;
+            prev = p;
+        }
+        return true;
+    }}

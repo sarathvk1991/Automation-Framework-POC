@@ -353,6 +353,12 @@ public class BadLoginPage {
         System.out.println("Navigated to: " + url);
     }
 
+    public void enterTextById(String text, String id) {
+        WebElement field = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id(id)));
+        field.clear();
+        field.sendKeys(text);
+    }
+
     public void clickById(String id) {
         wait.until(ExpectedConditions.elementToBeClickable(By.id(id))).click();
     }

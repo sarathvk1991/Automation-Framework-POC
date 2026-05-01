@@ -25,18 +25,19 @@ import com.automation.utils.TestData;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
 
 public class BadLoginSteps {
+
+    private BadLoginPage loginPage() {
+        return new BadLoginPage(DriverFactory.getDriver());
+    }
 
     // [S2]  Hardcoded URL — should come from config.properties
     // [S3]  Hard wait instead of WebDriverWait — intentional java:S2925 demo
     // [S11] Step navigates, logs message, and swallows failure all in one
     @Given("I navigate to url {string}")
     public void iNavigateToUrl(String url) {
-        new BadLoginPage(DriverFactory.getDriver()).navigateTo(url);
+        loginPage().navigateTo(url);
     }
 
     // INTENTIONAL BAD EXAMPLE
@@ -46,24 +47,21 @@ public class BadLoginSteps {
     // [S12] Direct element access without explicit wait
     @When("I enter text {string} in field with id {string}")
     public void iEnterTextInFieldWithId(String text, String fieldId) {
-        WebElement x = DriverFactory.getDriver() // [S8][S12]
-            .findElement(By.id(fieldId));
-        x.clear();
-        x.sendKeys(text);
+        loginPage().enterTextById(text, fieldId);
     }
 
     // [S8] Variable y
     // [S12] Direct click without wait — may fail if page is still loading
     @When("I click element with id {string}")
     public void iClickElementWithId(String elementId) {
-        new BadLoginPage(DriverFactory.getDriver()).clickById(elementId);
+        loginPage().clickById(elementId);
     }
 
     // [S8] Variable tmp
     // [S12] Direct element access without wait
     @Then("element with css {string} is visible")
     public void elementWithCssIsVisible(String css) {
-        System.out.println("Element visible: " + new BadLoginPage(DriverFactory.getDriver()).isElementVisibleByCss(css));
+        System.out.println("Element visible: " + loginPage().isElementVisibleByCss(css));
     }
 
     // ── [S7][S11] Non-descriptive name, does too much ─────────────────────────
@@ -76,29 +74,8 @@ public class BadLoginSteps {
     // [S12] All element access direct — no wait
     @When("I login as {string} with {string} and verify dashboard loads and check title")
     public void iLoginAsAndVerifyDashboard(String username, String password) {
-        WebDriver driver = DriverFactory.getDriver();
-        // [S2] Hardcoded URL instead of reading from config
-        driver.get("https://www.saucedemo.com");
-
-        WebElement x = driver.findElement(By.id("user-name")); // [S8][S12]
-        x.clear();
-        x.sendKeys(username);
-
-        WebElement y = driver.findElement(By.id("password")); // [S8][S12]
-        y.clear();
-        y.sendKeys(password);
-
-        WebElement loginButton = driver.findElement(By.id("login-button")); // [S12]
-        loginButton.click();
-
-        // [S11] Assertion logic inside a @When step — wrong keyword for assertions
-        String result = driver.getCurrentUrl(); // [S8]
-        if (!result.contains("inventory")) {
-            System.out.println("WARN: Not on inventory page, URL=" + result); // [S6]
-        }
-        // [S11] Also checks title — second assertion in one step
-        String tmp = driver.getTitle(); // [S8]
-        System.out.println("Title is: " + tmp); // [S6]
+        String pageTitle = loginPage().doLoginAndGetPageTitle(username, password);
+        System.out.println("Title is: " + pageTitle); // [S6]
     }
 
     // [S10] Duplicate pattern: title check — same style used elsewhere in bad step files
@@ -106,7 +83,7 @@ public class BadLoginSteps {
     // [S9]  Assertion failure swallowed — test passes even when title is wrong
     @Then("page title is {string}")
     public void pageTitleIs(String expected) {
-        String pageTitle = new BadLoginPage(DriverFactory.getDriver()).getPageTitle();
+        String pageTitle = loginPage().getPageTitle();
         System.out.println("Expected: " + expected + " Got: " + pageTitle);
         if (!pageTitle.equals(expected)) {
             System.out.println("Title mismatch!");
@@ -118,7 +95,7 @@ public class BadLoginSteps {
     // [S12] Direct click without wait
     @When("I click css {string}")
     public void iClickCss(String css) {
-        new BadLoginPage(DriverFactory.getDriver()).clickByCss(css);
+        loginPage().clickByCss(css);
     }
 
     // [S10] Duplicate of iClickCss — same pattern, XPath version, repeated across 4 files
@@ -126,7 +103,7 @@ public class BadLoginSteps {
     // [S12] Direct click without wait
     @When("I click xpath {string}")
     public void iClickXpath(String xpath) {
-        new BadLoginPage(DriverFactory.getDriver()).clickByXpath(xpath);
+        loginPage().clickByXpath(xpath);
     }
 
     // [S10] Duplicate element text check — same pattern used in BadAddToCartSteps
@@ -134,7 +111,7 @@ public class BadLoginSteps {
     // [S12] Direct element access without wait
     @Then("element with css {string} has text {string}")
     public void elementWithCssHasText(String css, String expectedText) {
-        String actualText = new BadLoginPage(DriverFactory.getDriver()).getTextByCss(css);
+        String actualText = loginPage().getTextByCss(css);
         System.out.println("Expected='" + expectedText + "' Got='" + actualText + "'");
         if (!actualText.equals(expectedText)) {
             System.out.println("TEXT MISMATCH — test should fail here");
@@ -150,13 +127,7 @@ public class BadLoginSteps {
     // [S12] All element interactions direct — no wait
     @Given("bad user logs in with valid credentials")
     public void badUserLogsInWithValidCredentials() {
-        WebDriver driver = DriverFactory.getDriver();
-        WebElement usernameEl = driver.findElement(By.id("user-name")); // [S2][S12]
-        usernameEl.sendKeys(TestData.USERNAME);
-        WebElement passwordEl = driver.findElement(By.id("password")); // [S2][S12]
-        passwordEl.sendKeys(TestData.PASSWORD);
-        WebElement loginBtnEl = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S12]
-        loginBtnEl.click();
+        loginPage().performLogin(TestData.USERNAME, TestData.PASSWORD);
         System.out.println("Logged in as standard user");                 // [S6]
     }
 
@@ -165,7 +136,7 @@ public class BadLoginSteps {
     // [S12] All element interactions direct — no wait
     @Given("bad customer logs in with valid credentials")
     public void badCustomerLogsInWithValidCredentials() {
-        new BadLoginPage(DriverFactory.getDriver()).loginAsDefaultUser();
+        loginPage().loginAsDefaultUser();
     }
 
     // INTENTIONAL BAD EXAMPLE
@@ -174,15 +145,16 @@ public class BadLoginSteps {
     @When("I submit the login form")
     public void iSubmitTheLoginForm() {
         try {
-            DriverFactory.getDriver().findElement(By.cssSelector("[data-test='login-button']")).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+            loginPage().click1();
         } catch (Exception e) {
+            // intentional empty catch — SonarQube S5 demo
         }
     }
 
     // Intentional SonarQube POC issue — direct findElement without wait (flaky)
     @When("I clear the username field")
     public void iClearTheUsernameField() {
-        new BadLoginPage(DriverFactory.getDriver()).clearUsernameField();
+        loginPage().clearUsernameField();
     }
 
     // INTENTIONAL BAD EXAMPLE
@@ -190,14 +162,14 @@ public class BadLoginSteps {
     // [S12] Direct element click without wait
     @When("I open the shopping cart link")
     public void iOpenTheShoppingCartLink() {
-        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='shopping-cart-link']")).click(); // [S2][S12]
+        loginPage().isCartLinkVisible(); // [S2][S12]
     }
 
     // [S2] checkout locator hardcoded inline — not a constant
     // [S12] Direct element click without wait
     @When("I click the checkout button from login context")
     public void iClickTheCheckoutButtonFromLoginContext() {
-        new BadLoginPage(DriverFactory.getDriver()).clickCheckoutButton();
+        loginPage().clickCheckoutButton();
     }
 
     // INTENTIONAL BAD EXAMPLE
@@ -206,25 +178,14 @@ public class BadLoginSteps {
     // [S12] Direct element access without wait
     @When("I fill in shipping details with defaults")
     public void iFillInShippingDetailsWithDefaults() {
-        WebDriver driver = DriverFactory.getDriver();
-        WebElement firstNameEl = driver.findElement(By.cssSelector("[data-test='firstName']")); // [S2][S12]
-        firstNameEl.sendKeys("John");
-        WebElement lastNameEl = driver.findElement(By.id("last-name")); // [S2][S12]
-        lastNameEl.sendKeys("Doe");
-        WebElement postalEl = driver.findElement(By.id("postal-code")); // [S2][S12]
-        postalEl.sendKeys("12345");
-        WebElement item = driver.findElement(                                      // [S12]
-            By.xpath("//div[text()='Product A']")                        // [S2]
-        );
-        System.out.println("Product: " + item.getText());                         // [S6]
+        loginPage().fillAndVerify();
     }
 
     // INTENTIONAL BAD EXAMPLE
     @When("I type {string} into the username field directly")
     public void iTypeIntoTheUsernameFieldDirectly(String username) {
-        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='username']")).sendKeys(username);
-        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='password']")).sendKeys("stored_user");
-        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='login-button']")).click();
+        loginPage().abc(username);
+        loginPage().click1();
     }
 
 }
