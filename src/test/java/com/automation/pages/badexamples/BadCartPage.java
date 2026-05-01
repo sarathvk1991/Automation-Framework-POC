@@ -6,16 +6,15 @@ package com.automation.pages.badexamples;
 // SonarQube Issues Demonstrated:
 //   [S1]  No base class — WebDriver boilerplate duplicated again
 //   [S2]  Locator strings hardcoded inline in every method
-//   [S7]  Non-descriptive method names: doCheck(), getStuff(), verify()
-//   [S8]  Non-descriptive variables: x, y, tmp
+//   [S7]  Non-descriptive method names: doCheck(), goCheckout()
 //   [S9]  Returning null instead of throwing
-//   [S10] Duplicate method bodies (doCheck and verify are identical)
 //   [S12] Flaky direct element access without explicit wait throughout
 //   [S13] Boolean method uses inverted variable name (notFound logic)
 // =============================================================================
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 
 import java.util.ArrayList;
@@ -34,53 +33,55 @@ public class BadCartPage {
 
     // [S7] "getStuff" — stuff? what stuff?
     // [S2] ".cart_item_name" hardcoded inline
-    // [S8] variables x, y, tmp
     // [S12] Direct findElements with no explicit wait — unstable in slow environments
     public List<String> getStuff() {
         try {
-            List<String> tmp = new ArrayList<>(); // [S8]
-            List<WebElement> x = driver.findElements( // [S8][S12]
+            List<String> itemNames = new ArrayList<>();
+            List<WebElement> cartItems = driver.findElements(
                 By.cssSelector(".cart_item_name")
             );
-            for (WebElement y : x) { // [S8]
-                tmp.add(y.getText());
+            for (WebElement item : cartItems) {
+                itemNames.add(item.getText());
             }
-            return tmp;
-        } catch (Exception e) {
+            return itemNames;
+        } catch (WebDriverException e) {
             return new ArrayList<>();
         }
     }
 
-    // ── [S10] Duplicate bodies ── [S13] Name vs behaviour mismatch ────────────
+    // ── [S13] Name vs behaviour mismatch ─────────────────────────────────────
 
-    // [S10] doCheck() and verify() below have identical implementations
     // [S13] Method returns true when item IS found but variable is named "notFound"
     // [S12] Direct findElements without wait
     public boolean doCheck(String itemName) {
-        List<WebElement> x = driver.findElements( // [S8][S12]
+        List<WebElement> cartItems = driver.findElements( // [S12]
             By.cssSelector(".cart_item_name")
         );
         boolean notFound = true; // [S13] misleading variable — actually means "searching"
-        for (WebElement y : x) { // [S8]
-            if (y.getText().equals(itemName)) {
+        for (WebElement element : cartItems) {
+            if (element.getText().equals(itemName)) {
                 notFound = false; // [S13] set to false when found — confusing inversion
             }
         }
         return !notFound; // [S13] double negation hides intent
     }
 
-    // [S10] Exact duplicate of doCheck() — SonarQube flags this as duplicated block
+    // Was duplicate of doCheck() — now delegates to helper to eliminate duplication
     public boolean verify(String itemName) {
-        List<WebElement> x = driver.findElements( // [S12]
+        return containsItemInCart(itemName);
+    }
+
+    // Private helper extracted from doCheck/verify duplicate to resolve S4144
+    private boolean containsItemInCart(String itemName) {
+        List<WebElement> cartItems = driver.findElements( // [S12]
             By.cssSelector(".cart_item_name")
         );
-        boolean notFound = true;
-        for (WebElement y : x) {
-            if (y.getText().equals(itemName)) {
-                notFound = false;
+        for (WebElement element : cartItems) {
+            if (element.getText().equals(itemName)) {
+                return true;
             }
         }
-        return !notFound;
+        return false;
     }
 
     // ── [S11] Long method ── [S2] Repeated locators ─────────────────────────
@@ -90,7 +91,7 @@ public class BadCartPage {
     // [S12] All interactions direct — no wait
     public String doEverything(String expected) {
         try {
-            String foundItem = null; // [S8][S9]
+            String foundItem = null; // [S9]
             // Concern 1: check cart title is visible
             WebElement title = driver.findElement(By.cssSelector("span.title")); // [S2][S12]
             System.out.println("Title: " + title.getText()); // [S6]
@@ -99,15 +100,15 @@ public class BadCartPage {
             System.out.println("Cart has " + items.size() + " items"); // [S6]
             // Concern 3: find specific item name
             List<WebElement> names = driver.findElements(By.cssSelector(".cart_item_name")); // [S2]
-            for (WebElement x : names) { // [S8]
-                if (x.getText().contains(expected)) {
-                    foundItem = x.getText(); // [S8]
+            for (WebElement item : names) {
+                if (item.getText().contains(expected)) {
+                    foundItem = item.getText();
                 }
             }
             // Concern 4: click checkout
             driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
             return foundItem; // [S9] may return null
-        } catch (Exception e) {
+        } catch (WebDriverException e) {
             return null;
         }
     }
@@ -122,37 +123,33 @@ public class BadCartPage {
     // [S2] ".cart_item" repeated a third time in this class
     // [S12] Direct findElements without wait
     public boolean isEmpty() {
-        List<WebElement> x = driver.findElements(By.cssSelector(".cart_item")); // [S8][S12]
-        return x.size() == 0;
+        List<WebElement> cartItems = driver.findElements(By.cssSelector(".cart_item")); // [S12]
+        return cartItems.size() == 0;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // [S7] POOR METHOD NAMES — doIt, process
+    // Previously poorly-named methods — renamed for clarity
     // ══════════════════════════════════════════════════════════════════════════
 
-    // [S7]  "doIt" gives no indication of what cart action is performed
-    // [S8]  Variables x, y, tmp — single-letter / non-descriptive names
+    // Previously "doIt" — renamed to getCartListDetails
     // [S12] Direct element access without wait — flaky on slow pages
-    // Intentional SonarQube POC issue — poor method naming
-    public String doIt() {
-        WebElement x = driver.findElement(By.cssSelector(".cart_list"));       // [S8][S12]
-        WebElement y = driver.findElement(By.cssSelector(".cart_item_name"));  // [S8][S12]
-        String itemText = y.getText();                                               // [S8]
-        System.out.println(x.isDisplayed() + " item: " + itemText);                // [S6]
+    public String getCartListDetails() {
+        WebElement cartListEl = driver.findElement(By.cssSelector(".cart_list")); // [S12]
+        WebElement cartItemEl = driver.findElement(By.cssSelector(".cart_item_name")); // [S12]
+        String itemText = cartItemEl.getText();
+        System.out.println(cartListEl.isDisplayed() + " item: " + itemText); // [S6]
         return itemText;
     }
 
-    // [S7]  "process" — process what? same vague name already used in BadCheckoutPage
-    // [S8]  Variables tmp, x, y — no semantic meaning
+    // Previously "process" — renamed to getAllCartItemNames
     // [S12] Direct findElements without wait
-    // Intentional SonarQube POC issue — poor method naming
-    public List<String> process() {
-        List<String> tmp = new ArrayList<>(); // [S8]
-        List<WebElement> x = driver.findElements(By.cssSelector(".cart_item_name")); // [S8][S12]
-        for (WebElement y : x) { // [S8]
-            tmp.add(y.getText());
+    public List<String> getAllCartItemNames() {
+        List<String> itemNames = new ArrayList<>();
+        List<WebElement> cartItems = driver.findElements(By.cssSelector(".cart_item_name")); // [S12]
+        for (WebElement element : cartItems) {
+            itemNames.add(element.getText());
         }
-        return tmp;
+        return itemNames;
     }
 
     // Intentional SonarQube POC issue — direct element click with no wait (flaky)
@@ -176,8 +173,8 @@ public class BadCartPage {
     // [S2] checkout locator repeated — second inline copy in this class
     // [S12] Direct element access without wait
     public boolean isCartAccessible() {
-        WebElement x = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S8][S12]
-        x.click();
+        WebElement cartLinkEl = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S12]
+        cartLinkEl.click();
         driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
         return true;
     }

@@ -132,7 +132,7 @@ public class BadAddToCartSteps {
     // [S12] Direct element click without wait
     @When("I add the backpack product to the shopping cart")
     public void iAddTheBackpackProductToTheShoppingCart() {
-        new BadInventoryPage(DriverFactory.getDriver()).click1();
+        new BadInventoryPage(DriverFactory.getDriver()).clickFirstAddToCartButton();
         System.out.println("Added product to cart");              // [S6]
     }
 
@@ -141,7 +141,7 @@ public class BadAddToCartSteps {
     // [S12] Direct element click without wait
     @When("I add the backpack item to the shopping cart")
     public void iAddTheBackpackItemToTheShoppingCart() {
-        new BadInventoryPage(DriverFactory.getDriver()).click1();
+        new BadInventoryPage(DriverFactory.getDriver()).clickFirstAddToCartButton();
         System.out.println("Added product item to cart");
     }
 

@@ -6,18 +6,16 @@ package com.automation.pages.badexamples;
 // SonarQube Issues Demonstrated:
 //   [S1]  No base class — full WebDriver boilerplate duplicated across all bad pages
 //   [S2]  Locator strings hardcoded inline (no constants), repeated many times
-//   [S4]  Generic Exception catch in process
 //   [S6]  System.out.println instead of SLF4J logger
-//   [S7]  Non-descriptive method names: process, doAll(), abc2()
-//   [S8]  Non-descriptive variable names: x, y, tmp, a, b, c
-//   [S9]  Returning false on exception inside process
-//   [S10] Duplicate method bodies (getTotal and fetchTotal are identical)
-//   [S11] God method — process handles the entire checkout flow
+//   [S7]  Non-descriptive method names: doAll(), abc2()
+//   [S9]  Returning false on exception inside executeFullCheckoutFlow
+//   [S11] God method — executeFullCheckoutFlow handles the entire checkout flow
 //   [S12] Flaky direct element access without explicit wait throughout
 // =============================================================================
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 
 import java.util.List;
@@ -33,31 +31,31 @@ public class BadCheckoutPage {
 
     // ── [S11] God method — entire checkout flow in one method ────────────────
 
-    // [S11] process does: navigate + login + add to cart + checkout info +
+    // Previously "process" — renamed to executeFullCheckoutFlow for clarity
+    // [S11] executeFullCheckoutFlow does: navigate + login + add to cart + checkout info +
     //       continue + overview + finish + confirmation assertion.
     //       One method, 8 concerns — extreme SRP violation.
-    // [S8]  Variables: a, b, c, x, y, tmp
     // [S2]  Every locator hardcoded inline
     // [S12] All element interactions direct — no explicit waits, flaky in CI
-    public boolean process(String u, String p, String first, String last, String zip) {
+    public boolean executeFullCheckoutFlow(String username, String password, String firstName, String lastName, String zipCode) {
         try {
             // Concern 1: navigate
             driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
 
             // Concern 2: login
-            WebElement a = driver.findElement(By.cssSelector("[data-test='username']")); // [S8][S12]
-            a.clear();
-            a.sendKeys(u);
-            WebElement b = driver.findElement(By.cssSelector("[data-test='password']")); // [S8][S12]
-            b.clear();
-            b.sendKeys(p);
+            WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']")); // [S12]
+            usernameField.clear();
+            usernameField.sendKeys(username);
+            WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']")); // [S12]
+            passwordField.clear();
+            passwordField.sendKeys(password);
             driver.findElement(By.cssSelector("[data-test='login-button']")).click(); // [S2][S12]
 
             // Concern 3: add product
-            WebElement c = driver.findElement( // [S8][S12]
+            WebElement addToCartBtn = driver.findElement( // [S12]
                 By.cssSelector("[data-test='add-to-cart-sauce-labs-backpack']") // [S2]
             );
-            c.click();
+            addToCartBtn.click();
 
             // Concern 4: navigate to cart
             driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")).click(); // [S2][S12]
@@ -66,15 +64,15 @@ public class BadCheckoutPage {
             driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
 
             // Concern 6: fill checkout form with hardcoded field IDs
-            WebElement x = driver.findElement(By.id("first-name")); // [S8][S12]
-            x.clear();
-            x.sendKeys(first);
-            WebElement y = driver.findElement(By.id("last-name")); // [S8][S12]
-            y.clear();
-            y.sendKeys(last);
-            WebElement tmp = driver.findElement(By.id("postal-code")); // [S8][S12]
-            tmp.clear();
-            tmp.sendKeys(zip);
+            WebElement firstNameField = driver.findElement(By.id("first-name")); // [S12]
+            firstNameField.clear();
+            firstNameField.sendKeys(firstName);
+            WebElement lastNameField = driver.findElement(By.id("last-name")); // [S12]
+            lastNameField.clear();
+            lastNameField.sendKeys(lastName);
+            WebElement postalCodeField = driver.findElement(By.id("postal-code")); // [S12]
+            postalCodeField.clear();
+            postalCodeField.sendKeys(zipCode);
 
             // Concern 7: continue to overview
             driver.findElement(By.cssSelector("[data-test='continue']")).click(); // [S2][S12]
@@ -87,7 +85,7 @@ public class BadCheckoutPage {
             System.out.println("Order result: " + header.getText()); // [S6]
             return header.isDisplayed();
 
-        } catch (Exception e) {
+        } catch (WebDriverException e) {
             return false;
         }
     }
@@ -95,35 +93,36 @@ public class BadCheckoutPage {
     // ── [S7] Non-descriptive names ── [S2] Repeated locators ─────────────────
 
     // [S7] "abc2" tells nothing about what this method does
-    // [S2] first-name locator hardcoded here and inside process above
+    // [S2] first-name locator hardcoded here and inside executeFullCheckoutFlow above
     // [S12] Direct sendKeys without wait — may fail if fields not rendered
-    public void abc2(String a, String b, String c) { // [S8] params a, b, c
+    public void abc2(String firstName, String lastName, String postalCode) {
         WebElement firstNameField = driver.findElement(By.cssSelector("[data-test='firstName']")); // [S2][S12]
-        firstNameField.sendKeys(a);
+        firstNameField.sendKeys(firstName);
         WebElement lastNameField = driver.findElement(By.id("last-name")); // [S2][S12]
-        lastNameField.sendKeys(b);
+        lastNameField.sendKeys(lastName);
         WebElement postalCodeField = driver.findElement(By.id("postal-code")); // [S2][S12]
-        postalCodeField.sendKeys(c);
+        postalCodeField.sendKeys(postalCode);
     }
 
-    // ── [S10] Duplicate method bodies ─────────────────────────────────────────
+    // ── [S10] Duplicate method bodies — refactored ────────────────────────────
 
-    // [S10] getTotal() and fetchTotal() are identical — SonarQube duplicated code block
+    // Private helper extracted from getTotal/fetchTotal duplicate to resolve S4144
+    private String readTotalLabel() {
+        WebElement totalElement = driver.findElement(By.cssSelector(".summary_total_label")); // [S12]
+        return totalElement.getText();
+    }
+
     // [S2] ".summary_total_label" hardcoded
     // [S12] Direct element access without wait
     public String getTotal() {
-        WebElement x = driver.findElement(By.cssSelector(".summary_total_label")); // [S8][S12]
-        String totalText = x.getText(); // [S8]
+        String totalText = readTotalLabel();
         System.out.println("Total: " + totalText); // [S6]
         return totalText;
     }
 
-    // [S10] Identical body to getTotal()
+    // Was duplicate of getTotal() — now delegates to helper to eliminate duplication
     public String fetchTotal() {
-        WebElement x = driver.findElement(By.cssSelector(".summary_total_label")); // [S12]
-        String totalText = x.getText();
-        System.out.println("Total: " + totalText);
-        return totalText;
+        return readTotalLabel();
     }
 
     // [S7] "doAll" — all what?
@@ -135,7 +134,7 @@ public class BadCheckoutPage {
         finishBtn.click();
     }
 
-    // [S2] ".complete-header" hardcoded — already used in process
+    // [S2] ".complete-header" hardcoded — already used in executeFullCheckoutFlow
     // [S12] Direct element access without wait
     public boolean isSuccess() {
         return driver.findElement(By.cssSelector(".complete-header")).isDisplayed(); // [S2][S12]
@@ -153,7 +152,7 @@ public class BadCheckoutPage {
         cancelBtn.click();
     }
 
-    // [S2] first-name field repeated — also appears in process and abc2() above
+    // [S2] first-name field repeated — also appears in executeFullCheckoutFlow and abc2() above
     // [S12] Direct sendKeys without wait — may fail if page not ready
     public void fillForm() {
         WebElement firstNameField = driver.findElement(By.cssSelector("[data-test='firstName']")); // [S2][S12] hardcoded name
@@ -176,27 +175,28 @@ public class BadCheckoutPage {
 
     // [S12] Direct findElement without wait — flaky
     public boolean verifyBackpackPresent() {
-        WebElement x = driver.findElement(                                         // [S12]
+        WebElement backpackEl = driver.findElement(                                  // [S12]
             By.xpath("//div[text()='Product A']")                        // [S2]
         );
-        return x.isDisplayed();
+        return backpackEl.isDisplayed();
     }
 
     // [S12] Direct findElement without wait — flaky
     public boolean verifyBikeLightPresent() {
-        WebElement x = driver.findElement(                                         // [S12]
+        WebElement bikeLightEl = driver.findElement(                                 // [S12]
             By.xpath("//div[text()='Product B']")                      // [S2]
         );
-        return x.isDisplayed();
+        return bikeLightEl.isDisplayed();
     }
 
-    public boolean testThing(String a, String b) {
+    // Previously "testThing" — renamed to verifyLoginAndCheckoutFlow for clarity
+    public boolean verifyLoginAndCheckoutFlow(String username, String password) {
         String result = "";
         driver.get("https://www.saucedemo.com");
-        WebElement x = driver.findElement(By.cssSelector("[data-test='username']"));
-        x.clear(); x.sendKeys(a);
-        WebElement y = driver.findElement(By.cssSelector("[data-test='password']"));
-        y.clear(); y.sendKeys(b);
+        WebElement usernameField = driver.findElement(By.cssSelector("[data-test='username']"));
+        usernameField.clear(); usernameField.sendKeys(username);
+        WebElement passwordField = driver.findElement(By.cssSelector("[data-test='password']"));
+        passwordField.clear(); passwordField.sendKeys(password);
         WebElement loginBtn = driver.findElement(By.cssSelector("[data-test='login-button']"));
         loginBtn.click();
         WebElement inventoryListEl = driver.findElement(By.cssSelector(".inventory_list"));
@@ -205,10 +205,10 @@ public class BadCheckoutPage {
         productBtn.click();
         WebElement cartLinkEl = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']"));
         cartLinkEl.click();
-        List<WebElement> x2 = driver.findElements(By.cssSelector(".cart_item_name"));
-        for (WebElement y2 : x2) {
-            if (y2.getText().contains("Backpack")) {
-                result = y2.getText();
+        List<WebElement> cartItemElements = driver.findElements(By.cssSelector(".cart_item_name"));
+        for (WebElement cartItem : cartItemElements) {
+            if (cartItem.getText().contains("Backpack")) {
+                result = cartItem.getText();
             }
         }
         WebElement firstNameEl = driver.findElement(By.cssSelector("[data-test='firstName']"));
@@ -223,8 +223,8 @@ public class BadCheckoutPage {
         String summaryText = summaryEl.getText();
         WebElement finishBtn = driver.findElement(By.cssSelector("[data-test='finish']"));
         finishBtn.click();
-        WebElement c = driver.findElement(By.cssSelector(".complete-header"));
-        boolean orderCompleted = c.isDisplayed();
+        WebElement confirmationHeader = driver.findElement(By.cssSelector(".complete-header"));
+        boolean orderCompleted = confirmationHeader.isDisplayed();
         System.out.println("orderCompleted=" + orderCompleted);
         return orderCompleted;
     }
@@ -242,9 +242,9 @@ public class BadCheckoutPage {
     }
 
     public void enterTextById(String text, String fieldId) {
-        WebElement a = driver.findElement(By.id(fieldId));
-        a.clear();
-        a.sendKeys(text);
+        WebElement inputField = driver.findElement(By.id(fieldId));
+        inputField.clear();
+        inputField.sendKeys(text);
     }
 
     public String getTextByCss(String css) {
