@@ -1,0 +1,33 @@
+{
+  "hardcodedPatterns": [
+    "standard_user",
+    "secret_sauce",
+    "Sauce Labs Backpack",
+    "Sauce Labs Bike Light",
+    "Sarath",
+    "Tester",
+    "695001"
+  ],
+  "locatorPatterns": [
+    "By.id(\"user-name\")",
+    "By.id(\"password\")",
+    "By.id(\"login-button\")",
+    "By.cssSelector(\".shopping_cart_link\")",
+    "By.id(\"checkout\")",
+    "By.id(\"first-name\")"
+  ],
+  "poorNamingPatterns": [
+    "\\bdoIt\\s*\\(",
+    "\\babc\\s*\\(",
+    "\\bclick1\\s*\\(",
+    "\\btestThing\\s*\\(",
+    "\\bprocess\\s*\\(",
+    "\\bString\\s+x\\b",
+    "\\bString\\s+y\\b",
+    "\\bString\\s+tmp\\b",
+    "\\blogin_user\\b",
+    "\\bcart_count\\b",
+    "\\bvalidate_CART\\b",
+    "\\bCheckoutNow\\s*\\("
+  ]
+}
