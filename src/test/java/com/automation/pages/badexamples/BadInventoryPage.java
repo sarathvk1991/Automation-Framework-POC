@@ -26,6 +26,13 @@ public class BadInventoryPage {
     // [S1] Copy-pasted from BadLoginPage — no shared base class
     private WebDriver driver;
 
+    private static final String CART_LINK_SELECTOR = ".shopping_cart_link";
+    private static final By CART_LINK = By.cssSelector(CART_LINK_SELECTOR);
+    private static final String CHECKOUT_BUTTON_ID = "checkout";
+    private static final By CHECKOUT_BTN = By.id(CHECKOUT_BUTTON_ID);
+    private static final String FIRST_NAME_LOCATOR_ID = "first-name";
+    private static final By FIRST_NAME_FIELD = By.id(FIRST_NAME_LOCATOR_ID);
+
     public BadInventoryPage(WebDriver driver) {
         this.driver = driver;
     }
@@ -165,7 +172,7 @@ public class BadInventoryPage {
     // [S2] ".shopping_cart_link" hardcoded inline — not a constant, repeated across files
     // [S12] Direct click without wait — flaky on slow pages
     public void openCart() {
-        WebElement cartLink = driver.findElement(By.cssSelector(".shopping_cart_link")); // [S2][S12]
+        WebElement cartLink = driver.findElement(CART_LINK); // [S2][S12]
         cartLink.click();
         System.out.println("Opened shopping cart"); // [S6]
     }
@@ -183,7 +190,7 @@ public class BadInventoryPage {
     public void quickCheckout() {
         WebElement cartLinkBtn = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S2][S12]
         cartLinkBtn.click();
-        WebElement checkoutBtn = driver.findElement(By.id("checkout")); // [S2][S12]
+        WebElement checkoutBtn = driver.findElement(CHECKOUT_BTN); // [S2][S12]
         checkoutBtn.click();
     }
 
@@ -191,7 +198,7 @@ public class BadInventoryPage {
     // [S11] Mixed responsibility: checkout form fill inside inventory page
     // [S12] Direct element access without wait
     public void fillOrderDetails() {
-        WebElement firstNameField = driver.findElement(By.id("first-name")); // [S2][S12]
+        WebElement firstNameField = driver.findElement(FIRST_NAME_FIELD); // [S2][S12]
         firstNameField.sendKeys("Sarath");
         WebElement lastNameField = driver.findElement(By.id("last-name")); // [S2][S12]
         lastNameField.sendKeys("Tester");
@@ -263,12 +270,12 @@ public class BadInventoryPage {
         driver.findElement(By.xpath("//div[text()='Product B']/../..//button")).click();
         String badgeText = driver.findElement(By.cssSelector(".shopping_cart_badge")).getText();
         System.out.println("badge=" + badgeText);
-        driver.findElement(By.cssSelector(".shopping_cart_link")).click();
+        driver.findElement(CART_LINK).click();
         List<WebElement> cartItems = driver.findElements(By.cssSelector(".cart_item_name"));
         for (WebElement cartItem : cartItems) {
             System.out.println("In cart: " + cartItem.getText());
         }
-        driver.findElement(By.id("checkout")).click();
+        driver.findElement(CHECKOUT_BTN).click();
     }
 
     // Previously "process" — renamed to sortInventoryAndProceedToCheckout for clarity
@@ -317,7 +324,7 @@ public class BadInventoryPage {
     }
 
     public void clickCheckoutById() {
-        driver.findElement(By.id("checkout")).click();
+        driver.findElement(CHECKOUT_BTN).click();
     }
 
     public void navigateToCart() {

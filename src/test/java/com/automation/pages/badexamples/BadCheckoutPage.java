@@ -28,8 +28,9 @@ public class BadCheckoutPage {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    // Extracted constant to resolve repeated By.id("first-name") locator
-    private static final By FIRST_NAME_FIELD = By.id("first-name");
+    // Extracted constant to resolve repeated first-name locator
+    private static final String FIRST_NAME_ID = "first-name";
+    private static final By FIRST_NAME_FIELD = By.id(FIRST_NAME_ID);
     private static final By FIRST_NAME_DATA_TEST = By.cssSelector("[data-test='firstName']");
 
     public BadCheckoutPage(WebDriver driver) {

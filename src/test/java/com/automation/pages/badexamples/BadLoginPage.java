@@ -33,9 +33,12 @@ public class BadLoginPage {
     private WebDriver driver;
     private WebDriverWait wait;
 
-    private static final By USERNAME_FIELD = By.id("user-name");
-    private static final By PASSWORD_FIELD = By.id("password");
-    private static final By LOGIN_BUTTON = By.id("login-button");
+    private static final String USER_NAME_LOCATOR_ID = "user-name";
+    private static final By USERNAME_FIELD = By.id(USER_NAME_LOCATOR_ID);
+    private static final String PASSWORD_LOCATOR_ID = "password";
+    private static final By PASSWORD_FIELD = By.id(PASSWORD_LOCATOR_ID);
+    private static final String LOGIN_BUTTON_ID = "login-button";
+    private static final By LOGIN_BUTTON = By.id(LOGIN_BUTTON_ID);
 
     public BadLoginPage(WebDriver driver) {
         this.driver = driver;
@@ -341,7 +344,7 @@ public class BadLoginPage {
         return confirmEl.getText();
     }
 
-    // [S2] By.cssSelector(".shopping_cart_link") hardcoded inline — not a constant
+    // [S2] shopping_cart_link selector hardcoded inline — not a constant
     // [S2] checkout locator hardcoded inline — not a constant
     // [S12] Direct element access without wait
     public void goToCheckout() {

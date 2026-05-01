@@ -25,6 +25,11 @@ public class BadCartPage {
     // [S1] Same boilerplate as BadLoginPage and BadInventoryPage
     private WebDriver driver;
 
+    private static final String CART_LINK_SELECTOR = ".shopping_cart_link";
+    private static final By CART_LINK = By.cssSelector(CART_LINK_SELECTOR);
+    private static final String CHECKOUT_BUTTON_ID = "checkout";
+    private static final By CHECKOUT_BTN = By.id(CHECKOUT_BUTTON_ID);
+
     public BadCartPage(WebDriver driver) {
         this.driver = driver;
     }
@@ -166,7 +171,7 @@ public class BadCartPage {
     // [S2] checkout locator hardcoded inline — not a constant
     // [S12] Direct element click without wait
     public void proceedToCheckout() {
-        driver.findElement(By.id("checkout")).click(); // [S2][S12]
+        driver.findElement(CHECKOUT_BTN).click(); // [S2][S12]
     }
 
     // [S2] cart link selector hardcoded inline — not a constant
@@ -202,6 +207,6 @@ public class BadCartPage {
     }
 
     public void clickCartLink() {
-        driver.findElement(By.cssSelector(".shopping_cart_link")).click();
+        driver.findElement(CART_LINK).click();
     }
 }
