@@ -1,10 +1,17 @@
 @wip @BAD_EXAMPLE
 Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catalogue for Authenticated Users
   # [LINT] name-length: Feature name exceeds 70-char maximum
+@wip @BAD_EXAMPLE
+Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catalogue for Authenticated Users
+  # [LINT] name-length: Feature name exceeds 70-char maximum
 
   @smoke
   Scenario: Products are visible after login
+  @smoke
+  Scenario: Products are visible after login
     Given I am logged in as a standard user
+    When I navigate to the inventory page
+    Then I should see at least one product listed
     When I navigate to the inventory page
     Then I should see at least one product listed
 
@@ -13,7 +20,11 @@ Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catal
     Given I am logged in as a standard user
     When I view the inventory page
     Then each product should display a name and a price
+    When I view the inventory page
+    Then each product should display a name and a price
 
+  @smoke @e2e @e2e
+  Scenario: standard user logs into the application and sorts the product list by price low to high and confirms the cheapest item appears at the top of the page
   @smoke @e2e @e2e
   Scenario: standard user logs into the application and sorts the product list by price low to high and confirms the cheapest item appears at the top of the page
     Given I am logged in as a standard user

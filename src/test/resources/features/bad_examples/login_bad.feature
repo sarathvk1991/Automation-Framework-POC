@@ -4,6 +4,8 @@ Feature: SauceDemo Regression Tests — E2E Coverage for All User Flows Includin
 
   Background:
     Given the application is running and the login page is loaded
+  Background:
+    Given the application is running and the login page is loaded
 
   @smoke
   Scenario: Successful login with standard user credentials
@@ -13,10 +15,16 @@ Feature: SauceDemo Regression Tests — E2E Coverage for All User Flows Includin
 
   @regression
   Scenario: Verify login redirect
+  @regression
+  Scenario: Verify login redirect
     Given I am on the login page
     When I log in with a valid standard user account
     Then I should land on the products page
+    When I log in with a valid standard user account
+    Then I should land on the products page
 
+  @regression
+  Scenario: Verify login redirect
   @regression
   Scenario: Verify login redirect
     Given I am on the login page

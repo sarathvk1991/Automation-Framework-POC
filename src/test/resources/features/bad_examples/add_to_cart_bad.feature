@@ -4,6 +4,8 @@ Feature: SauceDemo Regression Tests — E2E Coverage for All User Flows Includin
 
   @smoke
   Scenario:
+  @smoke
+  Scenario:
     Given I am logged in as a standard user
     When I click the add to cart button on any product
     Then the cart icon badge should update to show one item
@@ -11,10 +13,16 @@ Feature: SauceDemo Regression Tests — E2E Coverage for All User Flows Includin
 
   @smoke
   Scenario: Add a single product to the cart
+  @smoke
+  Scenario: Add a single product to the cart
     Given I am logged in as a standard user
     When I add the Sauce Labs Backpack to the cart
     Then the cart badge should display "1"
+    When I add the Sauce Labs Backpack to the cart
+    Then the cart badge should display "1"
 
+  @smoke @regression @regression
+  Scenario: authenticated user adds the sauce labs backpack and the sauce labs bike light to the cart then removes the backpack and verifies the cart badge shows one item remaining
   @smoke @regression @regression
   Scenario: authenticated user adds the sauce labs backpack and the sauce labs bike light to the cart then removes the backpack and verifies the cart badge shows one item remaining
     Given I am logged in as a standard user
@@ -43,9 +51,14 @@ Feature: SauceDemo Regression Tests — E2E Coverage for All User Flows Includin
     Given I am logged in as a standard user
     When I add the Sauce Labs Fleece Jacket to the cart
     Then the cart badge should display "1"
+    When I add the Sauce Labs Fleece Jacket to the cart
+    Then the cart badge should display "1"
 
+  @smoke
+  Scenario Outline: Add items of various price ranges to the cart
   @smoke
   Scenario Outline: Add items of various price ranges to the cart
     Given I am logged in as a standard user
     When I add "<product>" to the cart
+    Then the cart badge should show "<expected_count>"
     Then the cart badge should show "<expected_count>"
