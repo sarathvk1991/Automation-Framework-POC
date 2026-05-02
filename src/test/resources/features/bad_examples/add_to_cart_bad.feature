@@ -1,51 +1,49 @@
-# Intentional bad Gherkin examples for lint failure demo
 @wip @BAD_EXAMPLE
-Feature: Add To Cart Bad Feature — Demonstrates Intentional Gherkin Lint Anti-Patterns For Lint Demo
-# [LINT] name-length: Feature name exceeds 70-char maximum
+Feature: Add To Cart — Managing Cart State, Product Selection, and Removal Operations Throughout the Shopping Session
+  # [LINT] name-length: Feature name exceeds 70-char maximum
 
-  # ── Violation: no-homogenous-tags ───────────────────────────────────────────
-  # @smoke appears on every scenario below. It should be on the Feature.
-
-  # ── Violation: no-unnamed-scenarios ─────────────────────────────────────────
   @smoke
   Scenario:
     Given I am logged in as a standard user
-    When I add a product to the cart
-    Then the cart badge should update
+    When I click the add to cart button on any product
+    Then the cart icon badge should update to show one item
 
-  # ── Violation: no-dupe-scenario-names (first occurrence) ────────────────────
   @smoke
-  Scenario: User adds product to cart
+  Scenario: Add a single product to the cart
     Given I am logged in as a standard user
-    When I add the backpack to the cart
-    Then the cart badge should show one item
+    When I add the Sauce Labs Backpack to the cart
+    Then the cart badge should display "1"
 
-  # ── Violation: no-dupe-scenario-names (duplicate) ───────────────────────────
-  @smoke
-  Scenario: User adds product to cart
-    Given I am logged in as a standard user
-    When I add the bike light to the cart
-    Then the cart badge should show one item
-
-  # ── Violation: no-duplicate-tags (@regression twice) ─────────────────────────
-  # ── Violation: name-length (Scenario name exceeds 90-char maximum) ───────────
   @smoke @regression @regression
-  Scenario: user logs in and adds multiple products to cart and then removes one and verifies the cart count is correct
+  Scenario: authenticated user adds the sauce labs backpack and the sauce labs bike light to the cart then removes the backpack and verifies the cart badge shows one item remaining
     Given I am logged in as a standard user
-    When I add the backpack to the cart
-    And I add the bike light to the cart
-    And I remove the backpack from the cart
-    Then the cart badge should show one item
+    When I add the Sauce Labs Backpack to the cart
+    And I add the Sauce Labs Bike Light to the cart
+    And I remove the Sauce Labs Backpack from the cart
+    Then the cart badge should display "1"
+    And only the Sauce Labs Bike Light should remain in the cart
 
-  # ── Violation: no-partially-commented-tag-lines ──────────────────────────────
+  @smoke
+  Scenario: Remove a product from the cart
+    Given I have two items in my cart on the inventory page
+    When I click Remove on the Sauce Labs Backpack
+    Then the cart badge should decrement to one
+
   @smoke
   @wip # @sanity
-  Scenario: Empty cart scenario
-    Given I am logged in as a standard user
+  Scenario: Cart retains items when navigating between pages
+    Given I have added the Sauce Labs Backpack to my cart
+    When I navigate to the about page and then return to inventory
+    Then the Sauce Labs Backpack should still be in my cart
 
-  # ── Violation: no-scenario-outlines-without-examples ────────────────────────
   @smoke
-  Scenario Outline: Add different products to cart
+  Scenario: Add a single product to the cart
+    Given I am logged in as a standard user
+    When I add the Sauce Labs Fleece Jacket to the cart
+    Then the cart badge should display "1"
+
+  @smoke
+  Scenario Outline: Add items of various price ranges to the cart
     Given I am logged in as a standard user
     When I add "<product>" to the cart
-    Then the cart badge should show the correct count
+    Then the cart badge should show "<expected_count>"

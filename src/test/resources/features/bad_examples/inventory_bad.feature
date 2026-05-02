@@ -1,50 +1,35 @@
-# Intentional bad Gherkin examples for lint failure demo
 @wip @BAD_EXAMPLE
-Feature: Inventory Bad Feature — Demonstrates Intentional Gherkin Lint Anti-Patterns For Lint Demo
-# [LINT] name-length: Feature name exceeds 70-char maximum
+Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catalogue for Authenticated Users
+  # [LINT] name-length: Feature name exceeds 70-char maximum
 
-  # ── Violation: no-homogenous-tags ───────────────────────────────────────────
-  # @smoke appears on every scenario below. It should be on the Feature.
+  @smoke
+  Scenario: Products are visible after login
+    Given I am logged in as a standard user
+    When I navigate to the inventory page
+    Then I should see at least one product listed
 
-  # ── Violation: no-unnamed-scenarios ─────────────────────────────────────────
+  @smoke
+  Scenario: Product names and prices are shown
+    Given I am logged in as a standard user
+    When I view the inventory page
+    Then each product should display a name and a price
+
+  @smoke @e2e @e2e
+  Scenario: standard user logs into the application and sorts the product list by price low to high and confirms the cheapest item appears at the top of the page
+    Given I am logged in as a standard user
+    When I select the "Price (low to high)" sort option
+    Then the first product displayed should have the lowest price
+
+  # Verify sort preference does not persist after logout
+  @smoke
+  @wip # @regression
+  Scenario: Sort order resets on next login
+    Given I am logged in and have sorted products by name Z to A
+    When I log out and log back in
+    Then the sort order should default to the original order
+
   @smoke
   Scenario:
     Given I am logged in as a standard user
-    When I am on the inventory page
-    Then products should be displayed
-
-  # ── Violation: no-dupe-scenario-names (first occurrence) ────────────────────
-  @smoke
-  Scenario: Check inventory
-    Given I am logged in as a standard user
-    When I am on the inventory page
-    Then products should be displayed
-
-  # ── Violation: no-dupe-scenario-names (duplicate) ───────────────────────────
-  @smoke
-  Scenario: Check inventory
-    Given I am logged in as a standard user
-    When I sort products by price
-    Then products should be in order
-
-  # ── Violation: no-duplicate-tags (@e2e twice) ────────────────────────────────
-  # ── Violation: name-length (Scenario name exceeds 90-char maximum) ───────────
-  @smoke @e2e @e2e
-  Scenario: user logs in and sorts inventory by price and adds cheapest product to cart and navigates to the cart page
-    Given I am logged in as a standard user
-    When I sort products by price low to high
-    And I add the first product to the cart
-    Then the cart badge should show one item
-
-  # ── Violation: no-partially-commented-tag-lines ──────────────────────────────
-  @smoke
-  @wip # @regression
-  Scenario: Empty inventory scenario
-    Given I am logged in as a standard user
-
-  # ── Violation: no-scenario-outlines-without-examples ────────────────────────
-  @smoke
-  Scenario Outline: Sort inventory with different options
-    Given I am logged in as a standard user
-    When I sort products by "<sort_option>"
-    Then products should be in the expected order
+    When I view the inventory page
+    Then the cart icon should show zero items
