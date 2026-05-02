@@ -1,50 +1,37 @@
-# Intentional bad Gherkin examples for lint failure demo
-@wip @BAD_EXAMPLE @regression
-Feature: Login Bad Feature
-# [LINT] name-length: Feature name exceeds 70-char maximum
+@wip @BAD_EXAMPLE
+Feature: Login Feature — Verifying Authentication Flows, Session Handling and Redirect Behaviour Across All User Types
+  # [LINT] name-length: Feature name exceeds 70-char maximum
 
-  # ── Violation: no-homogenous-tags ───────────────────────────────────────────
-  # @regression appears on every scenario below. It should be on the Feature.
+  Background:
+    Given the application is running and the login page is loaded
 
-  # ── Violation: no-unnamed-scenarios ─────────────────────────────────────────
-  Scenario: Log in with valid credentials
+  @regression
+  Scenario: Successful login with standard user credentials
     Given I am on the login page
-    When I enter valid credentials
-    Then I should be logged in
+    When I enter valid username and password
+    Then I should be redirected to the inventory page
 
-  # ── Violation: no-dupe-scenario-names (first occurrence) ────────────────────
-  Scenario: Login test
+  @regression
+  Scenario: Verify login redirect
     Given I am on the login page
-    When I enter valid credentials
-    Then I should be logged in
+    When I log in with a valid standard user account
+    Then I should land on the products page
 
-  # ── Violation: no-dupe-scenario-names (duplicate) ───────────────────────────
-  Scenario: Login test with invalid credentials
+  @regression
+  Scenario: Verify login redirect
     Given I am on the login page
-    When I enter wrong credentials
-    Then I should see an error message
+    When I attempt to log in with a locked out user account
+    Then I should see an error banner displayed
 
-  # ── Violation: no-duplicate-tags (@smoke twice) ─────────────────────────────
-  # ── Violation: name-length (Scenario name exceeds 90-char maximum) ───────────
-  @smoke
-  Scenario: User logs in and navigates to inventory page
-    Given I navigate to the application
-    When I log in as a standard user
-    And I add an item to the cart
-    And I proceed to checkout
-    Then the order confirmation is displayed
+  @regression @smoke @smoke
+  Scenario: user enters standard credentials on the login page and clicks login and verifies they are redirected to the inventory products page
+    Given I navigate to the SauceDemo login URL
+    When I enter "standard_user" and "secret_sauce"
+    And I click the Login button
+    Then the page heading should read "Products"
 
-  # ── Violation: no-partially-commented-tag-lines ──────────────────────────────
-  @wip
-  Scenario: Empty login scenario
+  @regression
+  Scenario Outline: Login with various credential types
     Given I am on the login page
-
-  # ── Violation: no-scenario-outlines-without-examples ────────────────────────
-  Scenario Outline: Login with different user types
-    Given user enters "<username>" and "<password>"
-    When user submits the login form
-    Then user should see the inventory page
-    Examples:
-      | username      | password     |
-      | standard_user | secret_sauce |
-      | problem_user  | secret_sauce |
+    When I enter "<username>" and "<password>"
+    Then I should see the expected outcome for that user type
