@@ -117,8 +117,7 @@ public class BadTestUtils {
             Properties tmp = new Properties(); // [S8] 'tmp'
             tmp.load(x);
             return tmp.getProperty(key);
-        } catch (IOException e) {
-        } catch (IOException e) {
+        } catch (IOException e){
             System.out.println("Config read failed for key: " + key); // [S6]
             return null; // [S9]
         }
@@ -134,8 +133,7 @@ public class BadTestUtils {
             Properties tmp = new Properties();
             tmp.load(x);
             return tmp.getProperty(key);
-        } catch (IOException e) {
-        } catch (IOException e) {
+            } catch (IOException e) {
             System.out.println("Config read failed for key: " + key);
             return null; // [S9]
         }
