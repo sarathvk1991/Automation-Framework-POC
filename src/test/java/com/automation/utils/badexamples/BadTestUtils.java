@@ -4,25 +4,33 @@ package com.automation.utils.badexamples;
 // INTENTIONALLY NON-COMPLIANT — POC SONARQUBE DEMONSTRATION
 //
 // SonarQube Issues Demonstrated:
-//   [S3]  Thread.sleep() used as the primary wait strategy
-//   [S4]  Generic Exception caught everywhere
-//   [S5]  Empty catch blocks — exceptions silently swallowed
+//   [S2]  Hardcoded test data (credentials, URLs) returned directly
+//   [S3]  Intentional hard waits in waitForTwoSeconds / pauseForTwoSeconds — java:S2925
+//   [S4]  Generic Exception catch in isElementPresent()
 //   [S6]  System.out.println instead of SLF4J logger
-//   [S7]  Non-descriptive method names: wait1(), wait2(), doWait(), pause()
+//   [S7]  Non-descriptive method names: getEl(), findEl(), clickAndGetText()
 //   [S8]  Non-descriptive variables: x, tmp, t
-//   [S9]  Returning null instead of throwing meaningful exceptions
-//   [S10] Massively duplicated method bodies across wait1/wait2/doWait/pause
-//   [S12] Magic numbers throughout (1000, 2000, 3000, 5000)
+//   [S9]  Returning null / false / empty string instead of throwing
+//   [S10] Massively duplicated method bodies:
+//           waitForTwoSeconds / pauseForTwoSeconds — identical wait methods
+//           getDefaultUserName / fetchDefaultUserName — same hardcoded return
+//           getDefaultPassword / fetchDefaultPassword — same hardcoded return
+//           generateRandomEmail / createRandomEmail — same UUID logic
+//           read_config / readConfig / GetConfig — three identical config readers
+//           getEl / findEl — two identical element finders
 //   [S14] Utility class has public constructor (should be private)
-//   [S15] Inconsistent naming: camelCase mixed with under_score style
+//   [S15] Inconsistent naming: camelCase, under_score, and PascalCase mixed
 // =============================================================================
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 
-import java.util.Properties;
+import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
+import java.util.Properties;
+import java.util.UUID;
 
 public class BadTestUtils {
 
@@ -30,54 +38,59 @@ public class BadTestUtils {
     public BadTestUtils() {}
 
     // ══════════════════════════════════════════════════════════════════════════
-    // [S10] DUPLICATED WAIT METHODS — four methods that do the same thing
+    // [S10] DUPLICATED WAIT METHODS — same logic, two names
     // ══════════════════════════════════════════════════════════════════════════
 
-    // [S7] "wait1" — wait for how long? in what unit? why?
-    // [S3] Uses Thread.sleep instead of WebDriverWait
-    public static void wait1() {
+    // [S3]  Hard wait instead of WebDriverWait — intentional java:S2925 demo
+    // [S10] waitForTwoSeconds and pauseForTwoSeconds are identical
+    public static void waitForTwoSeconds() {
         try {
-            Thread.sleep(1000); // [S12] magic number
-        } catch (Exception e) { // [S4]
-            // [S5] Empty — InterruptedException silently swallowed
+            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
+        } catch (InterruptedException e) {
+            // [S5] InterruptedException silently swallowed
         }
     }
 
-    // [S10] Identical to wait1() except for the sleep duration — should be a parameter
-    // [S7] "wait2" — different from wait1 only in name and magic number
-    public static void wait2() {
+    // [S10] Exact duplicate of waitForTwoSeconds() — different name, identical body
+    // [S3]  Second intentional hard wait — java:S2925
+    public static void pauseForTwoSeconds() {
         try {
-            Thread.sleep(2000); // [S12]
-        } catch (Exception e) { // [S4]
+            Thread.sleep(2000); // [S3] intentional hard wait — java:S2925
+        } catch (InterruptedException e) {
             // [S5]
         }
     }
 
-    // [S10] Third duplicate — doWait() does exactly what wait1() and wait2() do
-    // [S7] "doWait" is marginally better but still non-descriptive
-    public static void doWait() {
-        try {
-            Thread.sleep(3000); // [S12]
-        } catch (Exception e) { // [S4]
-            System.out.println("Sleep interrupted"); // [S6]
-        }
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATED CREDENTIAL ACCESSORS — hardcoded data returned twice each
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S10] getDefaultUserName() and fetchDefaultUserName() are identical
+    public static String getDefaultUserName() {
+        return "standard_user"; // [S2] hardcoded test data
     }
 
-    // [S10] Fourth duplicate — pause() again does the same thing
-    // [S15] "pause" uses a different naming style from wait1/wait2/doWait
-    public static void pause() {
-        try {
-            Thread.sleep(5000); // [S12]
-        } catch (Exception e) { // [S4]
-            e.printStackTrace(); // [S6] stdout
-        }
+    // [S10] getDefaultPassword() and fetchDefaultPassword() are identical
+    public static String getDefaultPassword() {
+        return "secret_sauce"; // [S2] hardcoded credential
     }
 
     // ══════════════════════════════════════════════════════════════════════════
-    // [S10] DUPLICATED CONFIG READERS
+    // [S10] DUPLICATED EMAIL GENERATORS
     // ══════════════════════════════════════════════════════════════════════════
 
-    // [S10] read_config() and readConfig() below are identical — different name style
+    // [S10] generateRandomEmail() and createRandomEmail() are identical
+    public static String generateRandomEmail() {
+        String tmp = UUID.randomUUID().toString().substring(0, 8); // [S8] 'tmp'
+        System.out.println("Generated email: " + tmp + "@test.com"); // [S6]
+        return tmp + "@test.com";
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATED CONFIG READERS — three methods, identical body
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S10] read_config() and readConfig() and GetConfig() are identical
     // [S15] Underscore naming in a Java method (violates Java convention)
     // [S9]  Returns null on failure
     public static String read_config(String key) { // [S15] underscore method name
@@ -88,7 +101,7 @@ public class BadTestUtils {
             Properties tmp = new Properties(); // [S8] 'tmp'
             tmp.load(x);
             return tmp.getProperty(key);
-        } catch (Exception e) { // [S4]
+        } catch (IOException e) {
             System.out.println("Config read failed for key: " + key); // [S6]
             return null; // [S9]
         }
@@ -104,101 +117,174 @@ public class BadTestUtils {
             Properties tmp = new Properties();
             tmp.load(x);
             return tmp.getProperty(key);
-        } catch (Exception e) { // [S4]
+        } catch (IOException e) {
             System.out.println("Config read failed for key: " + key);
             return null; // [S9]
         }
     }
 
-    // [S10] Third copy — GetConfig uses PascalCase method name (Java violation)
-    // [S15] PascalCase method name — inconsistent with all others
-    public static String GetConfig(String key) { // [S15] PascalCase method
-        try {
-            InputStream x = BadTestUtils.class
-                .getClassLoader()
-                .getResourceAsStream("config.properties");
-            Properties tmp = new Properties();
-            tmp.load(x);
-            return tmp.getProperty(key);
-        } catch (Exception e) { // [S4]
-            return null; // [S5][S9] completely silent failure
-        }
-    }
-
     // ══════════════════════════════════════════════════════════════════════════
-    // [S10] DUPLICATED ELEMENT FINDERS
+    // [S10] DUPLICATED ELEMENT FINDERS — two methods, identical body
     // ══════════════════════════════════════════════════════════════════════════
 
     // [S7] "getEl" — abbreviation, non-descriptive
-    // [S3] Thread.sleep before every find
-    // [S8] variables x, t
+    // [S8] variable x
+    // [S12] Direct element access without wait
     public static WebElement getEl(WebDriver driver, String css) {
-        try {
-            Thread.sleep(1000); // [S3][S12]
-            WebElement x = driver.findElement(By.cssSelector(css)); // [S8]
-            return x;
-        } catch (Exception e) { // [S4]
-            System.out.println("Element not found: " + css); // [S6]
-            return null; // [S9]
-        }
-    }
-
-    // [S10] Identical to getEl() — just a different method name
-    // [S7] "findEl" — barely better than "getEl"
-    public static WebElement findEl(WebDriver driver, String css) {
-        try {
-            Thread.sleep(1000);
-            WebElement x = driver.findElement(By.cssSelector(css));
-            return x;
-        } catch (Exception e) { // [S4]
-            System.out.println("Element not found: " + css);
-            return null; // [S9]
-        }
+        WebElement x = driver.findElement(By.cssSelector(css)); // [S8][S12]
+        return x;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
     // EXTRA ANTI-PATTERNS
     // ══════════════════════════════════════════════════════════════════════════
 
-    // [S11] One method handles: wait + find + click + wait + find + read
-    // [S3]  Multiple Thread.sleep calls
+    // [S11] One method handles: click + read — two concerns
     // [S8]  Variables: t, x, tmp
+    // [S12] Both element accesses are direct — no wait
+    // [S9]  Returns empty string instead of throwing on failure
     public static String clickAndGetText(WebDriver driver, String clickCss, String readCss) {
-        try {
-            Thread.sleep(1000); // [S3]
-            WebElement t = driver.findElement(By.cssSelector(clickCss)); // [S8]
-            t.click();
-            Thread.sleep(2000); // [S3][S12] arbitrary delay after click
-            WebElement x = driver.findElement(By.cssSelector(readCss)); // [S8]
-            String tmp = x.getText(); // [S8]
-            System.out.println("Got text: " + tmp); // [S6]
-            return tmp;
-        } catch (Exception e) { // [S4]
-            System.out.println("clickAndGetText failed"); // [S6] no exception detail
-            return ""; // [S9] empty string hides failure from caller
-        }
+        WebElement t = driver.findElement(By.cssSelector(clickCss)); // [S8][S12]
+        t.click();
+        WebElement x = driver.findElement(By.cssSelector(readCss)); // [S8][S12]
+        String elementText = x.getText(); // [S8]
+        System.out.println("Got text: " + elementText); // [S6]
+        return elementText;
     }
 
-    // [S7] "hardSleep" — at least descriptive, but still an anti-pattern
-    // [S3] Unconditional Thread.sleep with a configurable duration
-    // [S12] Caller is expected to pass magic numbers (e.g. hardSleep(3000))
-    public static void hardSleep(int ms) {
+    // Intentional SonarQube POC issue — catch (Exception e) swallows all failure types
+    // Intentional SonarQube POC issue — e.printStackTrace() outputs to stdout instead of logger
+    // Intentional SonarQube POC issue — return false on exception hides real cause from caller
+    // [S12] Direct findElement without any explicit wait — flaky on slow pages
+    public static boolean isElementPresent(WebDriver driver, String css) {
         try {
-            Thread.sleep(ms); // [S3]
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Sleep interrupted after " + ms + "ms"); // [S6]
+            driver.findElement(By.cssSelector(css)).isDisplayed(); // Intentional SonarQube POC issue — direct access, no wait
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return false;
     }
 
-    // [S10] Identical to hardSleep but named differently
-    // [S15] "sleep_ms" uses underscore naming — inconsistent convention
-    public static void sleep_ms(int ms) { // [S15]
-        try {
-            Thread.sleep(ms); // [S3]
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            System.out.println("Sleep interrupted after " + ms + "ms");
+    // [S12] Direct driver.getTitle() — no wait for page load
+    public static String getPageTitle(WebDriver driver) {
+        return driver.getTitle();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S15] INCONSISTENT NAMING — inconsistent variable and method names
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // [S15] mixed underscore + ALLCAPS in a Java method name
+    //       Violates Java naming conventions (should be camelCase: validateCart)
+    //       SonarQube java:S100 — method names should comply with naming convention
+    // [S8]  Variable x
+    // [S12] Direct element access without wait
+    // Intentional SonarQube POC issue — inconsistent method naming (underscore + caps)
+    public static boolean validate_CART(WebDriver driver) { // [S15] naming violation
+        WebElement x = driver.findElement(By.cssSelector(".cart_item")); // [S8][S12]
+        return x.isDisplayed();
+    }
+
+    // [S15] CheckoutNow — PascalCase method name violates Java camelCase convention
+    //       SonarQube java:S100 — should be checkoutNow
+    // [S8]  Local variable uses underscore (java:S116 naming violation)
+    // [S12] Direct element click without wait — flaky
+    // Intentional SonarQube POC issue — inconsistent method naming (PascalCase)
+    public static void CheckoutNow(WebDriver driver) { // [S15] PascalCase method
+        String login_user = "stored_user"; // Intentional SonarQube POC issue — underscore variable name (java:S116)
+        System.out.println("Checking out as stored user");                           // [S6]
+        WebElement checkoutBtnUtil = driver.findElement(By.cssSelector("[data-test='checkout']")); // Intentional SonarQube POC issue — direct click, no wait
+        checkoutBtnUtil.click();
+    }
+
+    // Intentional SonarQube POC issue — direct click without wait is flaky
+    public static boolean clickIfPresent(WebDriver driver, String css) {
+        WebElement clickTarget = driver.findElement(By.cssSelector(css)); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+        clickTarget.click();
+        return true;
+    }
+
+    public static boolean doIt(WebDriver driver) {
+        String cartItemText = "";
+        driver.get("https://www.saucedemo.com");
+        WebElement x = driver.findElement(By.cssSelector("[data-test='username']"));
+        x.sendKeys("stored_user");
+        WebElement y = driver.findElement(By.cssSelector("[data-test='password']"));
+        y.sendKeys("stored_pass");
+        WebElement loginBtnDoIt = driver.findElement(By.cssSelector("[data-test='login-button']"));
+        loginBtnDoIt.click();
+        String storedUsername = "stored_user";
+        System.out.println("user=" + storedUsername);
+        boolean isInventoryDisplayed = driver.findElement(By.cssSelector(".inventory_list")).isDisplayed();
+        System.out.println("inventory=" + isInventoryDisplayed);
+        WebElement productABtn = driver.findElement(By.xpath("//div[text()='Product A']/../..//button"));
+        productABtn.click();
+        WebElement productBBtn = driver.findElement(By.xpath("//div[text()='Product B']/../..//button"));
+        productBBtn.click();
+        WebElement badgeEl = driver.findElement(By.cssSelector(".shopping_cart_badge"));
+        String badgeText = badgeEl.getText();
+        System.out.println("badge=" + badgeText);
+        WebElement cartLinkDoIt = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']"));
+        cartLinkDoIt.click();
+        List<WebElement> a = driver.findElements(By.cssSelector(".cart_item_name"));
+        for (WebElement b : a) {
+            cartItemText = b.getText();
+            System.out.println(cartItemText);
         }
+        WebElement checkoutBtnDoIt = driver.findElement(By.cssSelector("[data-test='checkout']"));
+        checkoutBtnDoIt.click();
+        WebElement firstNameDoIt = driver.findElement(By.cssSelector("[data-test='firstName']"));
+        firstNameDoIt.sendKeys("John");
+        WebElement lastNameDoIt = driver.findElement(By.id("last-name"));
+        lastNameDoIt.sendKeys("Doe");
+        WebElement postalDoIt = driver.findElement(By.id("postal-code"));
+        postalDoIt.sendKeys("12345");
+        WebElement continueDoIt = driver.findElement(By.cssSelector("[data-test='continue']"));
+        continueDoIt.click();
+        List<WebElement> x2 = driver.findElements(By.cssSelector(".cart_item"));
+        System.out.println("Summary items: " + x2.size());
+        WebElement totalLabel = driver.findElement(By.cssSelector(".summary_total_label"));
+        String y2 = totalLabel.getText();
+        System.out.println("Total: " + y2);
+        WebElement finishBtnDoIt = driver.findElement(By.cssSelector("[data-test='finish']"));
+        finishBtnDoIt.click();
+        WebElement c = driver.findElement(By.cssSelector(".complete-header"));
+        boolean CheckoutNow = c.isDisplayed();
+        System.out.println("CheckoutNow=" + CheckoutNow);
+        return CheckoutNow;
+    }
+
+    public static String abc(WebDriver driver, String a, String b) {
+        WebElement x = driver.findElement(By.cssSelector("[data-test='username']"));
+        x.sendKeys(a);
+        WebElement y = driver.findElement(By.cssSelector("[data-test='password']"));
+        y.sendKeys(b);
+        WebElement loginBtnAbc = driver.findElement(By.cssSelector("[data-test='login-button']"));
+        loginBtnAbc.click();
+        String currentUrl = driver.getCurrentUrl();
+        System.out.println(currentUrl);
+        return currentUrl;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATE UTILITY METHODS — customqa:duplicate-utility-method trigger
+    //       Numbered method names (1/2/3) normalize to the same fingerprint via
+    //       normalizeLineForDuplication (\d+ → NUMBER), so body fingerprints match.
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // INTENTIONAL BAD EXAMPLE
+    // [S10] duplicateEmail1/2/3 — digits stripped during normalization make all
+    //       three signatures identical → duplicate-utility-method fires
+    public String duplicateEmail1() {
+        return "test_" + System.currentTimeMillis() + "@example.com";
+    }
+
+    public String duplicateEmail2() {
+        return "test_" + System.currentTimeMillis() + "@example.com";
+    }
+
+    public String duplicateEmail3() {
+        return "test_" + System.currentTimeMillis() + "@example.com";
     }
 }

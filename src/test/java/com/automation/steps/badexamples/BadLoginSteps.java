@@ -3,21 +3,20 @@ package com.automation.steps.badexamples;
 // =============================================================================
 // INTENTIONALLY NON-COMPLIANT — POC SONARQUBE DEMONSTRATION
 //
-// This package (com.automation.steps.badexamples) is NOT included in the
-// Cucumber glue path configured in RunCucumberTest, so these step definitions
-// are never registered or executed. They exist for SonarQube static analysis.
+// NOT in the Cucumber glue path — never executed. For SonarQube analysis only.
 //
 // SonarQube Issues Demonstrated:
 //   [S2]  Hardcoded credentials and URLs directly in step definition code
-//   [S3]  Thread.sleep() instead of explicit waits
-//   [S4]  Generic Exception caught
-//   [S5]  Empty catch blocks
+//   [S3]  Intentional hard wait in iNavigateToUrl — java:S2925
+//   [S4]  Generic Exception caught in iSubmitTheLoginForm
+//   [S5]  Empty catch block in iSubmitTheLoginForm
 //   [S6]  System.out.println instead of SLF4J logger
-//   [S7]  Non-descriptive method names: doLogin(), test1(), checkIt()
+//   [S7]  Non-descriptive method names: iLoginAsAndVerifyDashboard, pageTitleIs
 //   [S8]  Non-descriptive variables: x, y, tmp, result
-//   [S9]  Returning null / swallowing failures
+//   [S9]  Swallowing failures without signalling
 //   [S10] Duplicate logic blocks across step methods
 //   [S11] One step method performing login + navigation + assertion
+//   [S12] Direct element access without wait throughout
 // =============================================================================
 
 import com.automation.base.DriverFactory;
@@ -31,167 +30,201 @@ import org.openqa.selenium.WebElement;
 
 public class BadLoginSteps {
 
-    // [S11] Step method creates the page, navigates, and verifies all at once
     // [S2]  Hardcoded URL — should come from config.properties
-    // [S3]  Thread.sleep instead of WebDriverWait
+    // [S3]  Hard wait instead of WebDriverWait — intentional java:S2925 demo
+    // [S11] Step navigates, logs message, and swallows failure all in one
     @Given("I navigate to url {string}")
     public void iNavigateToUrl(String url) {
-        try {
-            WebDriver driver = DriverFactory.getDriver();
-            driver.get(url); // URL comes from feature file — acceptable here,
-                             // but bad page classes also hardcode "https://www.saucedemo.com"
-            Thread.sleep(2000); // [S3][S12]
-            System.out.println("Navigated to: " + url); // [S6]
-        } catch (Exception e) { // [S4]
-            // [S5] Navigation failure swallowed — subsequent steps will fail mysteriously
-        }
+        new BadLoginPage(DriverFactory.getDriver()).navigateTo(url);
     }
 
+    // INTENTIONAL BAD EXAMPLE
     // [S11] One step finds element, clears, and types — mixed UI operation detail
-    // [S2]  Locator built from raw id string passed in — exposing implementation
+    // [S2]  Exposes raw id string — implementation leaked to feature file
     // [S8]  Variable x
+    // [S12] Direct element access without explicit wait
     @When("I enter text {string} in field with id {string}")
     public void iEnterTextInFieldWithId(String text, String fieldId) {
-        try {
-            Thread.sleep(500); // [S3]
-            WebElement x = DriverFactory.getDriver() // [S8]
-                .findElement(By.id(fieldId));
-            x.clear();
-            x.sendKeys(text);
-        } catch (Exception e) { // [S4]
-            System.out.println("Could not type into: " + fieldId); // [S6]
-        }
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.id(fieldId));
+        x.clear();
+        x.sendKeys(text);
     }
 
     // [S8] Variable y
+    // [S12] Direct click without wait — may fail if page is still loading
     @When("I click element with id {string}")
     public void iClickElementWithId(String elementId) {
-        try {
-            Thread.sleep(500); // [S3]
-            WebElement y = DriverFactory.getDriver() // [S8]
-                .findElement(By.id(elementId));
-            y.click();
-            Thread.sleep(1000); // [S3] sleep after click
-        } catch (Exception e) { // [S4]
-            e.printStackTrace(); // [S6]
-        }
+        new BadLoginPage(DriverFactory.getDriver()).clickById(elementId);
     }
 
     // [S8] Variable tmp
+    // [S12] Direct element access without wait
     @Then("element with css {string} is visible")
     public void elementWithCssIsVisible(String css) {
-        try {
-            Thread.sleep(2000); // [S3]
-            WebElement tmp = DriverFactory.getDriver() // [S8]
-                .findElement(By.cssSelector(css));
-            System.out.println("Element visible: " + tmp.isDisplayed()); // [S6]
-        } catch (Exception e) { // [S4]
-            // [S5] If element not found, test continues silently — false positive
-        }
+        System.out.println("Element visible: " + new BadLoginPage(DriverFactory.getDriver()).isElementVisibleByCss(css));
     }
 
     // ── [S7][S11] Non-descriptive name, does too much ─────────────────────────
 
-    // [S7]  "doLogin" — does login what? success login? failure?
-    // [S11] One step: navigates + logs in + checks URL — three concerns
-    // [S2]  Hardcoded "https://www.saucedemo.com" and "standard_user"/"secret_sauce"
-    // [S8]  Variables x, y, result
+    // INTENTIONAL BAD EXAMPLE
+    // [S7]  Method name mixes action and assertion in one step
+    // [S11] One step: navigates + logs in + checks URL + checks title — four concerns
+    // [S2]  Hardcoded "https://www.saucedemo.com"
+    // [S8]  Variables x, y, result, tmp
+    // [S12] All element access direct — no wait
     @When("I login as {string} with {string} and verify dashboard loads and check title")
     public void iLoginAsAndVerifyDashboard(String username, String password) {
-        try {
-            WebDriver driver = DriverFactory.getDriver();
-            // [S2] Hardcoded URL instead of reading from config
-            driver.get("https://www.saucedemo.com");
-            Thread.sleep(2000); // [S3]
+        WebDriver driver = DriverFactory.getDriver();
+        // [S2] Hardcoded URL instead of reading from config
+        driver.get("https://www.saucedemo.com");
 
-            WebElement x = driver.findElement(By.id("user-name")); // [S8]
-            x.clear();
-            x.sendKeys(username);
+        WebElement x = driver.findElement(By.id("user-name")); // [S8][S12]
+        x.clear();
+        x.sendKeys(username);
 
-            WebElement y = driver.findElement(By.id("password")); // [S8]
-            y.clear();
-            y.sendKeys(password);
+        WebElement y = driver.findElement(By.id("password")); // [S8][S12]
+        y.clear();
+        y.sendKeys(password);
 
-            driver.findElement(By.id("login-button")).click();
-            Thread.sleep(2000); // [S3]
+        WebElement loginButton = driver.findElement(By.id("login-button")); // [S12]
+        loginButton.click();
 
-            // [S11] Assertion logic inside a @When step — wrong keyword for assertions
-            String result = driver.getCurrentUrl(); // [S8]
-            if (!result.contains("inventory")) {
-                System.out.println("WARN: Not on inventory page, URL=" + result); // [S6]
-            }
-            // [S11] Also checks title — second assertion in one step
-            String tmp = driver.getTitle(); // [S8]
-            System.out.println("Title is: " + tmp); // [S6]
-
-        } catch (Exception e) { // [S4]
-            System.out.println("Login failed: " + e.getMessage()); // [S6]
+        // [S11] Assertion logic inside a @When step — wrong keyword for assertions
+        String result = driver.getCurrentUrl(); // [S8]
+        if (!result.contains("inventory")) {
+            System.out.println("WARN: Not on inventory page, URL=" + result); // [S6]
         }
+        // [S11] Also checks title — second assertion in one step
+        String tmp = driver.getTitle(); // [S8]
+        System.out.println("Title is: " + tmp); // [S6]
     }
 
-    // [S10] Duplicate of element visibility check — same logic as elementWithCssIsVisible
+    // [S10] Duplicate pattern: title check — same style used elsewhere in bad step files
     // [S8]  Variable tmp
+    // [S9]  Assertion failure swallowed — test passes even when title is wrong
     @Then("page title is {string}")
     public void pageTitleIs(String expected) {
-        try {
-            Thread.sleep(1000); // [S3]
-            String tmp = DriverFactory.getDriver().getTitle(); // [S8]
-            System.out.println("Expected: " + expected + " Got: " + tmp); // [S6]
-            // [S10] Same pattern as other assertion steps — no shared utility
-            if (!tmp.equals(expected)) {
-                System.out.println("Title mismatch!"); // [S6] should throw assertion
-            }
-        } catch (Exception e) { // [S4]
-            // [S5] Assertion failure swallowed — test passes even when title is wrong
+        String pageTitle = new BadLoginPage(DriverFactory.getDriver()).getPageTitle();
+        System.out.println("Expected: " + expected + " Got: " + pageTitle);
+        if (!pageTitle.equals(expected)) {
+            System.out.println("Title mismatch!");
         }
     }
 
-    // [S10] Duplicate: clicking by CSS — same pattern repeated in BadAddToCartSteps
+    // [S10] Duplicate: clicking by CSS — same body repeated in BadAddToCartSteps, BadInventorySteps
     // [S8]  Variable y
+    // [S12] Direct click without wait
     @When("I click css {string}")
     public void iClickCss(String css) {
-        try {
-            Thread.sleep(500); // [S3]
-            WebElement y = DriverFactory.getDriver() // [S8]
-                .findElement(By.cssSelector(css));
-            y.click();
-            Thread.sleep(1000); // [S3]
-        } catch (Exception e) { // [S4]
-            System.out.println("Click failed on: " + css); // [S6]
-        }
+        new BadLoginPage(DriverFactory.getDriver()).clickByCss(css);
     }
 
-    // [S10] Duplicate of iClickCss — same pattern, XPath version
+    // [S10] Duplicate of iClickCss — same pattern, XPath version, repeated across 4 files
     // [S8]  Variable x
+    // [S12] Direct click without wait
     @When("I click xpath {string}")
     public void iClickXpath(String xpath) {
-        try {
-            Thread.sleep(500); // [S3]
-            WebElement x = DriverFactory.getDriver() // [S8]
-                .findElement(By.xpath(xpath));
-            x.click();
-            Thread.sleep(1000); // [S3]
-        } catch (Exception e) { // [S4]
-            System.out.println("XPath click failed: " + xpath); // [S6]
+        new BadLoginPage(DriverFactory.getDriver()).clickByXpath(xpath);
+    }
+
+    // [S10] Duplicate element text check — same pattern used in BadAddToCartSteps
+    // [S8]  Variables x, tmp
+    // [S12] Direct element access without wait
+    @Then("element with css {string} has text {string}")
+    public void elementWithCssHasText(String css, String expectedText) {
+        String actualText = new BadLoginPage(DriverFactory.getDriver()).getTextByCss(css);
+        System.out.println("Expected='" + expectedText + "' Got='" + actualText + "'");
+        if (!actualText.equals(expectedText)) {
+            System.out.println("TEXT MISMATCH — test should fail here");
         }
     }
 
-    // [S10] Duplicate element text check — same pattern used in BadInventorySteps
-    // [S8]  Variables x, tmp
-    @Then("element with css {string} has text {string}")
-    public void elementWithCssHasText(String css, String expectedText) {
+    // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATE LOGIN STEP DEFINITIONS — near-identical expressions
+    // ══════════════════════════════════════════════════════════════════════════
+
+    // INTENTIONAL BAD EXAMPLE
+    // [S10] Near-duplicate of badCustomerLogsInWithValidCredentials — "user" vs "customer"
+    // [S12] All element interactions direct — no wait
+    @Given("bad user logs in with valid credentials")
+    public void badUserLogsInWithValidCredentials() {
+        WebDriver driver = DriverFactory.getDriver();
+        WebElement usernameEl = driver.findElement(By.id("user-name")); // [S2][S12]
+        usernameEl.sendKeys("standard_user");
+        WebElement passwordEl = driver.findElement(By.id("password")); // [S2][S12]
+        passwordEl.sendKeys("secret_sauce");
+        WebElement loginBtnEl = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S12]
+        loginBtnEl.click();
+        System.out.println("Logged in as standard user");                 // [S6]
+    }
+
+    // [S10] Near-duplicate — "customer" instead of "user", identical body
+    //       Duplicate step definition: same logic, near-identical Cucumber expression
+    // [S12] All element interactions direct — no wait
+    @Given("bad customer logs in with valid credentials")
+    public void badCustomerLogsInWithValidCredentials() {
+        new BadLoginPage(DriverFactory.getDriver()).loginAsDefaultUser();
+    }
+
+    // INTENTIONAL BAD EXAMPLE
+    // Intentional SonarQube POC issue — empty catch block swallows click failure entirely
+    // Intentional SonarQube POC issue — direct findElement click with no wait (flaky)
+    @When("I submit the login form")
+    public void iSubmitTheLoginForm() {
         try {
-            Thread.sleep(1000); // [S3]
-            WebElement x = DriverFactory.getDriver() // [S8]
-                .findElement(By.cssSelector(css));
-            String tmp = x.getText(); // [S8]
-            System.out.println("Expected='" + expectedText + "' Got='" + tmp + "'"); // [S6]
-            // [S10] Same assertion-by-println anti-pattern repeated
-            if (!tmp.equals(expectedText)) {
-                System.out.println("TEXT MISMATCH — test should fail here"); // [S6]
-            }
-        } catch (Exception e) { // [S4]
-            System.out.println("Element check failed: " + css); // [S6]
+            DriverFactory.getDriver().findElement(By.cssSelector("[data-test='login-button']")).click(); // Intentional SonarQube POC issue — flaky direct click, no wait or retry
+        } catch (Exception e) {
         }
     }
+
+    // Intentional SonarQube POC issue — direct findElement without wait (flaky)
+    @When("I clear the username field")
+    public void iClearTheUsernameField() {
+        new BadLoginPage(DriverFactory.getDriver()).clearUsernameField();
+    }
+
+    // INTENTIONAL BAD EXAMPLE
+    // [S2] cart link selector hardcoded inline — not a constant
+    // [S12] Direct element click without wait
+    @When("I open the shopping cart link")
+    public void iOpenTheShoppingCartLink() {
+        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='shopping-cart-link']")).click(); // [S2][S12]
+    }
+
+    // [S2] checkout locator hardcoded inline — not a constant
+    // [S12] Direct element click without wait
+    @When("I click the checkout button from login context")
+    public void iClickTheCheckoutButtonFromLoginContext() {
+        new BadLoginPage(DriverFactory.getDriver()).clickCheckoutButton();
+    }
+
+    // INTENTIONAL BAD EXAMPLE
+    // [S2] first-name field hardcoded inline
+    // [S11] Mixed responsibility: checkout form fill inside login step class
+    // [S12] Direct element access without wait
+    @When("I fill in shipping details with defaults")
+    public void iFillInShippingDetailsWithDefaults() {
+        WebDriver driver = DriverFactory.getDriver();
+        WebElement firstNameEl = driver.findElement(By.cssSelector("[data-test='firstName']")); // [S2][S12]
+        firstNameEl.sendKeys("John");
+        WebElement lastNameEl = driver.findElement(By.id("last-name")); // [S2][S12]
+        lastNameEl.sendKeys("Doe");
+        WebElement postalEl = driver.findElement(By.id("postal-code")); // [S2][S12]
+        postalEl.sendKeys("12345");
+        WebElement item = driver.findElement(                                      // [S12]
+            By.xpath("//div[text()='Product A']")                        // [S2]
+        );
+        System.out.println("Product: " + item.getText());                         // [S6]
+    }
+
+    // INTENTIONAL BAD EXAMPLE
+    @When("I type {string} into the username field directly")
+    public void iTypeIntoTheUsernameFieldDirectly(String username) {
+        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='username']")).sendKeys(username);
+        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='password']")).sendKeys("stored_user");
+        DriverFactory.getDriver().findElement(By.cssSelector("[data-test='login-button']")).click();
+    }
+
 }
+
