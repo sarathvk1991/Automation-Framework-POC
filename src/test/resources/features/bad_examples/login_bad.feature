@@ -1,22 +1,30 @@
 @wip @BAD_EXAMPLE
-Feature: Login Feature — Verifying Authentication Flows, Session Handling and Redirect Behaviour Across All User Types
+Feature: SauceDemo Regression Tests — E2E Coverage for All User Flows Including Login Authentication and Cart Management
   # [LINT] name-length: Feature name exceeds 70-char maximum
 
   Background:
     Given the application is running and the login page is loaded
+  Background:
+    Given the application is running and the login page is loaded
 
-  @regression
+  @smoke
   Scenario: Successful login with standard user credentials
     Given I am on the login page
-    When I enter valid username and password
+    When I enter valid username and password   
     Then I should be redirected to the inventory page
 
+  @regression
+  Scenario: Verify login redirect
   @regression
   Scenario: Verify login redirect
     Given I am on the login page
     When I log in with a valid standard user account
     Then I should land on the products page
+    When I log in with a valid standard user account
+    Then I should land on the products page
 
+  @regression
+  Scenario: Verify login redirect
   @regression
   Scenario: Verify login redirect
     Given I am on the login page
@@ -30,7 +38,7 @@ Feature: Login Feature — Verifying Authentication Flows, Session Handling and 
     And I click the Login button
     Then the page heading should read "Products"
 
-  @regression
+  @negative
   Scenario Outline: Login with various credential types
     Given I am on the login page
     When I enter "<username>" and "<password>"
