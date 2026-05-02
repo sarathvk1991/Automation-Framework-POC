@@ -7,7 +7,11 @@ package com.automation.utils.badexamples;
 //   [S2]  Hardcoded test data (credentials, URLs) returned directly
 //   [S3]  Intentional hard waits in waitForTwoSeconds / pauseForTwoSeconds — java:S2925
 //   [S4]  Generic Exception catch in isElementPresent()
+//   [S2]  Hardcoded test data (credentials, URLs) returned directly
+//   [S3]  Intentional hard waits in waitForTwoSeconds / pauseForTwoSeconds — java:S2925
+//   [S4]  Generic Exception catch in isElementPresent()
 //   [S6]  System.out.println instead of SLF4J logger
+//   [S7]  Non-descriptive method names: getEl(), findEl(), clickAndGetText()
 //   [S7]  Non-descriptive method names: getEl(), findEl(), clickAndGetText()
 //   [S8]  Non-descriptive variables: x, tmp, t
 //   [S9]  Returning null / false / empty string instead of throwing
@@ -18,7 +22,16 @@ package com.automation.utils.badexamples;
 //           generateRandomEmail / createRandomEmail — same UUID logic
 //           read_config / readConfig / GetConfig — three identical config readers
 //           getEl / findEl — two identical element finders
+//   [S9]  Returning null / false / empty string instead of throwing
+//   [S10] Massively duplicated method bodies:
+//           waitForTwoSeconds / pauseForTwoSeconds — identical wait methods
+//           getDefaultUserName / fetchDefaultUserName — same hardcoded return
+//           getDefaultPassword / fetchDefaultPassword — same hardcoded return
+//           generateRandomEmail / createRandomEmail — same UUID logic
+//           read_config / readConfig / GetConfig — three identical config readers
+//           getEl / findEl — two identical element finders
 //   [S14] Utility class has public constructor (should be private)
+//   [S15] Inconsistent naming: camelCase, under_score, and PascalCase mixed
 //   [S15] Inconsistent naming: camelCase, under_score, and PascalCase mixed
 // =============================================================================
 
@@ -31,7 +44,11 @@ import org.openqa.selenium.WebElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.UUID;
 
 public class BadTestUtils {
@@ -42,6 +59,7 @@ public class BadTestUtils {
     }
 
     // ══════════════════════════════════════════════════════════════════════════
+    // [S10] DUPLICATED WAIT METHODS — same logic, two names
     // [S10] DUPLICATED WAIT METHODS — same logic, two names
     // ══════════════════════════════════════════════════════════════════════════
 
@@ -84,8 +102,10 @@ public class BadTestUtils {
 
     // ══════════════════════════════════════════════════════════════════════════
     // [S10] DUPLICATED CONFIG READERS — three methods, identical body
+    // [S10] DUPLICATED CONFIG READERS — three methods, identical body
     // ══════════════════════════════════════════════════════════════════════════
 
+    // [S10] read_config() and readConfig() and GetConfig() are identical
     // [S10] read_config() and readConfig() and GetConfig() are identical
     // [S15] Underscore naming in a Java method (violates Java convention)
     // [S9]  Returns null on failure
@@ -97,6 +117,7 @@ public class BadTestUtils {
             Properties tmp = new Properties(); // [S8] 'tmp'
             tmp.load(x);
             return tmp.getProperty(key);
+        } catch (IOException e) {
         } catch (IOException e) {
             System.out.println("Config read failed for key: " + key); // [S6]
             return null; // [S9]
@@ -114,6 +135,7 @@ public class BadTestUtils {
             tmp.load(x);
             return tmp.getProperty(key);
         } catch (IOException e) {
+        } catch (IOException e) {
             System.out.println("Config read failed for key: " + key);
             return null; // [S9]
         }
@@ -121,9 +143,12 @@ public class BadTestUtils {
 
     // ══════════════════════════════════════════════════════════════════════════
     // [S10] DUPLICATED ELEMENT FINDERS — two methods, identical body
+    // [S10] DUPLICATED ELEMENT FINDERS — two methods, identical body
     // ══════════════════════════════════════════════════════════════════════════
 
     // [S7] "getEl" — abbreviation, non-descriptive
+    // [S8] variable x
+    // [S12] Direct element access without wait
     // [S8] variable x
     // [S12] Direct element access without wait
     public static WebElement getEl(WebDriver driver, String css) {
@@ -135,7 +160,10 @@ public class BadTestUtils {
     // ══════════════════════════════════════════════════════════════════════════
 
     // [S11] One method handles: click + read — two concerns
+    // [S11] One method handles: click + read — two concerns
     // [S8]  Variables: t, x, tmp
+    // [S12] Both element accesses are direct — no wait
+    // [S9]  Returns empty string instead of throwing on failure
     // [S12] Both element accesses are direct — no wait
     // [S9]  Returns empty string instead of throwing on failure
     public static String clickAndGetText(WebDriver driver, String clickCss, String readCss) {

@@ -134,6 +134,7 @@ public class BadCheckoutPage {
 
     // [S7] "doAll" — all what?
     // [S12] Direct clicks without wait — both actions
+    // [S12] Direct clicks without wait — both actions
     public void doAll() {
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='continue']" ))).click();
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='finish']" ))).click();

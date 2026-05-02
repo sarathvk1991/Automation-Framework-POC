@@ -10,6 +10,7 @@ package com.automation.pages.badexamples;
 //   [S1]  No base class — WebDriver boilerplate copy-pasted (violates DRY)
 //   [S2]  Locators hardcoded inline in every method instead of constants
 //   [S3]  Intentional hard wait in doIt — java:S2925
+//   [S3]  Intentional hard wait in doIt — java:S2925
 //   [S4]  Generic Exception caught — masks real failures
 //   [S5]  Empty catch blocks — exceptions silently swallowed
 //   [S6]  System.out.println instead of SLF4J logger
@@ -17,6 +18,7 @@ package com.automation.pages.badexamples;
 //   [S9]  Returning null instead of throwing a meaningful exception
 //   [S10] Duplicate code blocks — checkError() and isError() are identical
 //   [S11] Long method with mixed responsibilities (doLoginAndGetPageTitle)
+//   [S12] Flaky direct element access without explicit wait (most methods)
 //   [S12] Flaky direct element access without explicit wait (most methods)
 // =============================================================================
 

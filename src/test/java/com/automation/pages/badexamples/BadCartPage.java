@@ -98,7 +98,9 @@ public class BadCartPage {
     // ── [S11] Long method ── [S2] Repeated locators ─────────────────────────
 
     // [S11] Reads cart title, counts items, finds specific item, clicks checkout — mixed responsibility
+    // [S11] Reads cart title, counts items, finds specific item, clicks checkout — mixed responsibility
     // [S2] ".cart_item" and ".cart_item_name" repeated (same as getStuff above)
+    // [S12] All interactions direct — no wait
     // [S12] All interactions direct — no wait
     public String doEverything(String expected) {
         try {
@@ -126,11 +128,13 @@ public class BadCartPage {
 
     // [S2] "[data-test='checkout']" hardcoded — already used in doEverything
     // [S12] Direct click without wait
+    // [S12] Direct click without wait
     public void goCheckout() {
         wait.until(ExpectedConditions.elementToBeClickable(By.cssSelector("[data-test='checkout']" ))).click();
     }
 
     // [S2] ".cart_item" repeated a third time in this class
+    // [S12] Direct findElements without wait
     // [S12] Direct findElements without wait
     public boolean isEmpty() {
         List<WebElement> cartItems = driver.findElements(By.cssSelector(".cart_item")); // [S12]

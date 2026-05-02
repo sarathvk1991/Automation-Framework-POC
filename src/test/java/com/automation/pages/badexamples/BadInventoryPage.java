@@ -11,6 +11,7 @@ package com.automation.pages.badexamples;
 //   [S10] Duplicate method bodies (getNames and fetchNames — now refactored)
 //   [S11] Long method mixing sort + collect + assert in one call
 //   [S12] Flaky direct element access without explicit wait throughout
+//   [S12] Flaky direct element access without explicit wait throughout
 // =============================================================================
 
 import org.openqa.selenium.By;
@@ -48,6 +49,7 @@ public class BadInventoryPage {
     // [S7] "getData" — data of what? returns what type? completely opaque
     // [S2] ".inventory_list" hardcoded — not a constant
     // [S12] Direct element access without wait
+    // [S12] Direct element access without wait
     public boolean getData() {
         try {
             WebElement inventoryListEl = wait.until(ExpectedConditions.visibilityOfElementLocated(By.cssSelector(".inventory_list")));
@@ -69,6 +71,7 @@ public class BadInventoryPage {
         new org.openqa.selenium.support.ui.Select(sortDropdown).selectByVisibleText(sortOptionText);
     }
 
+    // ── [S7] Opaque method name ─────────────────────────────────────────────
     // ── [S7] Opaque method name ─────────────────────────────────────────────
 
     // [S7] "doSort" — sort by what? ascending or descending?
@@ -97,6 +100,7 @@ public class BadInventoryPage {
     }
 
     // [S2] ".inventory_item_name" hardcoded
+    // [S12] Direct findElements without wait
     // [S12] Direct findElements without wait
     public List<String> getNames() {
         try {

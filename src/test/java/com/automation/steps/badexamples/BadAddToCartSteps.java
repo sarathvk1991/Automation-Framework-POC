@@ -11,7 +11,11 @@ package com.automation.steps.badexamples;
 //   [S8]  Non-descriptive variables: x, y, tmp, el, a, b, c
 //   [S9]  No assertion thrown on mismatch
 //   [S10] Duplicate logic across step methods (element-click, element-visible, text-check)
+//   [S8]  Non-descriptive variables: x, y, tmp, el, a, b, c
+//   [S9]  No assertion thrown on mismatch
+//   [S10] Duplicate logic across step methods (element-click, element-visible, text-check)
 //   [S11] Steps that mix login, add-to-cart, and navigation in one method
+//   [S12] Flaky direct element access without any explicit wait
 //   [S12] Flaky direct element access without any explicit wait
 // =============================================================================
 
@@ -41,6 +45,7 @@ public class BadAddToCartSteps {
     // [S2]  XPath with hardcoded data-test attribute; badge locator hardcoded
     // [S8]  Variables el, tmp
     // [S12] Direct element access — no explicit wait
+    // [S12] Direct element access — no explicit wait
     @When("I click xpath {string} to add product")
     public void iClickXpathToAddProduct(String xpath) {
         invPage().clickByXpath(xpath);
@@ -49,7 +54,9 @@ public class BadAddToCartSteps {
     }
 
     // [S10] Duplicate of BadLoginSteps.iClickXpath — same method body across three classes
+    // [S10] Duplicate of BadLoginSteps.iClickXpath — same method body across three classes
     // [S8]  Variable x
+    // [S12] Direct click without wait
     // [S12] Direct click without wait
     @When("I click xpath3 {string}")
     public void iClickXpath3(String xpath) {
@@ -59,6 +66,7 @@ public class BadAddToCartSteps {
     // [S10] Duplicate of BadLoginSteps.iClickCss — same body, different class
     // [S8]  Variable y
     // [S12] Direct click without wait
+    // [S12] Direct click without wait
     @When("I click css3 {string}")
     public void iClickCss3(String css) {
         invPage().clickByCss(css);
@@ -67,6 +75,7 @@ public class BadAddToCartSteps {
     // [S10] Duplicate of element-visible assertion — four copies across bad step files
     // [S8]  Variable tmp
     // [S12] Direct element access without wait
+    // [S12] Direct element access without wait
     @Then("element with css3 {string} is visible")
     public void elementWithCss3IsVisible(String css) {
         System.out.println("Is displayed: " + invPage().isElementVisible(css));
@@ -74,6 +83,8 @@ public class BadAddToCartSteps {
 
     // [S10] Duplicate of element-text-check — same as BadLoginSteps version
     // [S8]  Variables x, tmp
+    // [S9]  No assertion thrown — mismatch only logged
+    // [S12] Direct element access without wait
     // [S9]  No assertion thrown — mismatch only logged
     // [S12] Direct element access without wait
     @Then("element with css3 {string} has text {string}")
@@ -89,6 +100,7 @@ public class BadAddToCartSteps {
     // [S2]  Hardcoded URL, hardcoded credentials, hardcoded product XPath
     // [S8]  Variables a, b, c
     // [S12] All element access direct — no wait
+    // [S12] All element access direct — no wait
     @When("I add backpack to cart as logged in user")
     public void iAddBackpackToCartAsLoggedInUser() {
         loginPage().navigateTo("https://www.saucedemo.com"); // [S2] hardcoded URL
@@ -101,12 +113,16 @@ public class BadAddToCartSteps {
     // [S8]  Variable x
     // [S9]  No assertion — mismatch only logged
     // [S12] Direct findElements without wait
+    // [S9]  No assertion — mismatch only logged
+    // [S12] Direct findElements without wait
     @Then("cart has {string} items")
     public void cartHasItems(String expectedCount) {
         System.out.println("Cart count expected=" + expectedCount + " actual=" + invPage().getCartCount()); // [S6][S9]
     }
 
     // [S2]  ".cart_item" hardcoded — third repetition across bad files
+    // [S9]  No assertion on item count
+    // [S12] Direct findElements without wait
     // [S9]  No assertion on item count
     // [S12] Direct findElements without wait
     @Then("the cart page shows items")

@@ -4,18 +4,25 @@ package com.automation.steps.badexamples;
 // INTENTIONALLY NON-COMPLIANT — POC SONARQUBE DEMONSTRATION
 //
 // NOT in the Cucumber glue path — never executed. For SonarQube analysis only.
+// NOT in the Cucumber glue path — never executed. For SonarQube analysis only.
 //
 // SonarQube Issues Demonstrated:
 //   [S2]  Hardcoded credentials and URLs directly in step definition code
 //   [S3]  Intentional hard wait in iNavigateToUrl — java:S2925
 //   [S4]  Generic Exception caught in iSubmitTheLoginForm
 //   [S5]  Empty catch block in iSubmitTheLoginForm
+//   [S3]  Intentional hard wait in iNavigateToUrl — java:S2925
+//   [S4]  Generic Exception caught in iSubmitTheLoginForm
+//   [S5]  Empty catch block in iSubmitTheLoginForm
 //   [S6]  System.out.println instead of SLF4J logger
+//   [S7]  Non-descriptive method names: iLoginAsAndVerifyDashboard, pageTitleIs
 //   [S7]  Non-descriptive method names: iLoginAsAndVerifyDashboard, pageTitleIs
 //   [S8]  Non-descriptive variables: x, y, tmp, result
 //   [S9]  Swallowing failures without signalling
+//   [S9]  Swallowing failures without signalling
 //   [S10] Duplicate logic blocks across step methods
 //   [S11] One step method performing login + navigation + assertion
+//   [S12] Direct element access without wait throughout
 //   [S12] Direct element access without wait throughout
 // =============================================================================
 
@@ -36,6 +43,8 @@ public class BadLoginSteps {
     // [S2]  Hardcoded URL — should come from config.properties
     // [S3]  Hard wait instead of WebDriverWait — intentional java:S2925 demo
     // [S11] Step navigates, logs message, and swallows failure all in one
+    // [S3]  Hard wait instead of WebDriverWait — intentional java:S2925 demo
+    // [S11] Step navigates, logs message, and swallows failure all in one
     @Given("I navigate to url {string}")
     public void iNavigateToUrl(String url) {
         loginPage().navigateTo(url);
@@ -44,7 +53,9 @@ public class BadLoginSteps {
     // INTENTIONAL BAD EXAMPLE
     // [S11] One step finds element, clears, and types — mixed UI operation detail
     // [S2]  Exposes raw id string — implementation leaked to feature file
+    // [S2]  Exposes raw id string — implementation leaked to feature file
     // [S8]  Variable x
+    // [S12] Direct element access without explicit wait
     // [S12] Direct element access without explicit wait
     @When("I enter text {string} in field with id {string}")
     public void iEnterTextInFieldWithId(String text, String fieldId) {
@@ -53,12 +64,14 @@ public class BadLoginSteps {
 
     // [S8] Variable y
     // [S12] Direct click without wait — may fail if page is still loading
+    // [S12] Direct click without wait — may fail if page is still loading
     @When("I click element with id {string}")
     public void iClickElementWithId(String elementId) {
         loginPage().clickById(elementId);
     }
 
     // [S8] Variable tmp
+    // [S12] Direct element access without wait
     // [S12] Direct element access without wait
     @Then("element with css {string} is visible")
     public void elementWithCssIsVisible(String css) {
@@ -73,6 +86,12 @@ public class BadLoginSteps {
     // [S2]  Hardcoded "https://www.saucedemo.com"
     // [S8]  Variables x, y, result, tmp
     // [S12] All element access direct — no wait
+    // INTENTIONAL BAD EXAMPLE
+    // [S7]  Method name mixes action and assertion in one step
+    // [S11] One step: navigates + logs in + checks URL + checks title — four concerns
+    // [S2]  Hardcoded "https://www.saucedemo.com"
+    // [S8]  Variables x, y, result, tmp
+    // [S12] All element access direct — no wait
     @When("I login as {string} with {string} and verify dashboard loads and check title")
     public void iLoginAsAndVerifyDashboard(String username, String password) {
         String pageTitle = loginPage().doLoginAndGetPageTitle(username, password);
@@ -80,7 +99,9 @@ public class BadLoginSteps {
     }
 
     // [S10] Duplicate pattern: title check — same style used elsewhere in bad step files
+    // [S10] Duplicate pattern: title check — same style used elsewhere in bad step files
     // [S8]  Variable tmp
+    // [S9]  Assertion failure swallowed — test passes even when title is wrong
     // [S9]  Assertion failure swallowed — test passes even when title is wrong
     @Then("page title is {string}")
     public void pageTitleIs(String expected) {
@@ -92,7 +113,9 @@ public class BadLoginSteps {
     }
 
     // [S10] Duplicate: clicking by CSS — same body repeated in BadAddToCartSteps, BadInventorySteps
+    // [S10] Duplicate: clicking by CSS — same body repeated in BadAddToCartSteps, BadInventorySteps
     // [S8]  Variable y
+    // [S12] Direct click without wait
     // [S12] Direct click without wait
     @When("I click css {string}")
     public void iClickCss(String css) {
@@ -100,7 +123,9 @@ public class BadLoginSteps {
     }
 
     // [S10] Duplicate of iClickCss — same pattern, XPath version, repeated across 4 files
+    // [S10] Duplicate of iClickCss — same pattern, XPath version, repeated across 4 files
     // [S8]  Variable x
+    // [S12] Direct click without wait
     // [S12] Direct click without wait
     @When("I click xpath {string}")
     public void iClickXpath(String xpath) {
@@ -108,7 +133,9 @@ public class BadLoginSteps {
     }
 
     // [S10] Duplicate element text check — same pattern used in BadAddToCartSteps
+    // [S10] Duplicate element text check — same pattern used in BadAddToCartSteps
     // [S8]  Variables x, tmp
+    // [S12] Direct element access without wait
     // [S12] Direct element access without wait
     @Then("element with css {string} has text {string}")
     public void elementWithCssHasText(String css, String expectedText) {

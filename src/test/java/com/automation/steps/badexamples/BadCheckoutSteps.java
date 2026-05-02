@@ -8,16 +8,20 @@ package com.automation.steps.badexamples;
 // SonarQube Issues Demonstrated:
 //   [S2]  Hardcoded URLs, credentials, form values, and locators in step code
 //   [S3]  Intentional hard wait in iCompleteFullCheckoutFlow — java:S2925
+//   [S3]  Intentional hard wait in iCompleteFullCheckoutFlow — java:S2925
 //   [S6]  System.out.println instead of logger
+//   [S7]  Non-descriptive: finishIt(), checkDone()
 //   [S7]  Non-descriptive: finishIt(), checkDone()
 //   [S8]  Non-descriptive variables: a, b, c, x, y, tmp
 //   [S9]  No assertion thrown on mismatch — logs only
 //   [S10] Duplicate element-find-and-click pattern (5th copy across bad step files)
 //   [S11] God step method handling login + cart + checkout in one @When
 //   [S12] Direct element access without wait throughout
+//   [S12] Direct element access without wait throughout
 // =============================================================================
 
 import com.automation.base.DriverFactory;
+import com.automation.pages.badexamples.BadCartPage;
 import com.automation.pages.badexamples.BadCartPage;
 import com.automation.pages.badexamples.BadCheckoutPage;
 import com.automation.pages.badexamples.BadLoginPage;
@@ -46,6 +50,7 @@ public class BadCheckoutSteps {
     // [S10] Duplicate of iClickCss from BadLoginSteps, BadInventorySteps, BadAddToCartSteps
     // [S8]  Variable y
     // [S12] Direct click without wait
+    // [S12] Direct click without wait
     @When("I click css4 {string}")
     public void iClickCss4(String css) {
         page().clickByCss(css);
@@ -54,6 +59,7 @@ public class BadCheckoutSteps {
     // [S10] Duplicate of iClickXpath from BadLoginSteps / BadInventorySteps / BadAddToCartSteps
     // [S8]  Variable x
     // [S12] Direct click without wait
+    // [S12] Direct click without wait
     @When("I click xpath4 {string}")
     public void iClickXpath4(String xpath) {
         page().clickByXpath(xpath);
@@ -61,12 +67,15 @@ public class BadCheckoutSteps {
 
     // [S10] Duplicate of element-visible assertion — 5th copy across bad step files
     // [S12] Direct element access without wait
+    // [S12] Direct element access without wait
     @Then("element with css4 {string} is visible")
     public void elementWithCss4IsVisible(String css) {
         System.out.println("Visible: " + page().isElementVisible(css));
     }
 
     // [S2]  Hardcoded form field IDs in step code instead of page object
+    // [S8]  Variables a
+    // [S12] Direct element access without wait
     // [S8]  Variables a
     // [S12] Direct element access without wait
     @When("I enter text {string} in field with id4 {string}")
@@ -97,9 +106,11 @@ public class BadCheckoutSteps {
     }
 
     // INTENTIONAL BAD EXAMPLE
+    // INTENTIONAL BAD EXAMPLE
     // [S7]  "finishIt" — completely non-descriptive
     // [S2]  Locator "[data-test='finish']" hardcoded again (same as above)
     // [S8]  Variable x
+    // [S12] Direct click without wait
     // [S12] Direct click without wait
     @When("I finishIt the order")
     public void iFinishItTheOrder() {
@@ -110,6 +121,7 @@ public class BadCheckoutSteps {
     // [S9]  Logs mismatch instead of asserting
     // [S2]  ".complete-header" hardcoded — same as iCompleteFullCheckoutFlow
     // [S8]  Variable tmp
+    // [S12] Direct element access without wait
     // [S12] Direct element access without wait
     @Then("checkDone with message {string}")
     public void checkDoneWithMessage(String expected) {
@@ -122,6 +134,8 @@ public class BadCheckoutSteps {
 
     // [S10] Duplicate summary-visible check — same pattern as BadInventorySteps
     // [S2]  ".summary_total_label" hardcoded
+    // [S9]  No assertion that total format is correct
+    // [S12] Direct element access without wait
     // [S9]  No assertion that total format is correct
     // [S12] Direct element access without wait
     @Then("I am on the checkout overview page with total")
@@ -147,6 +161,7 @@ public class BadCheckoutSteps {
     }
 
     // [S10] Duplicate of BadLoginSteps.elementWithCssHasText — same body
+    // [S12] Direct element access without wait
     // [S12] Direct element access without wait
     @Then("element with css5 {string} has text {string}")
     public void elementWithCss5HasText(String css, String expectedText) {
