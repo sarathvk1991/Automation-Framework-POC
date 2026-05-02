@@ -10,6 +10,9 @@ const TARGET_DIRS = [
 const OUTPUT_FILE = "sonar-custom-qa-issues.json";
 const LONG_METHOD_THRESHOLD = 40;
 
+const CONFIG_FILE = path.join(__dirname, "custom-qa-metrics-config.json");
+const config = JSON.parse(fs.readFileSync(CONFIG_FILE, "utf8"));
+
 const rules = [
   rule("customqa:hardcoded-test-data", "Hardcoded Test Data", "Hardcoded test data should be moved to config/test data files."),
   rule("customqa:repeated-locator", "Repeated Locator", "Repeated locators reduce maintainability."),
@@ -106,39 +109,11 @@ const metrics = {
   genericExceptionCount: 0
 };
 
-const hardcodedPatterns = [
-  "standard_user",
-  "secret_sauce",
-  "Sauce Labs Backpack",
-  "Sauce Labs Bike Light",
-  "Sarath",
-  "Tester",
-  "695001"
-];
+const hardcodedPatterns = config.hardcodedPatterns;
 
-const locatorPatterns = [
-  'By.id("user-name")',
-  'By.id("password")',
-  'By.id("login-button")',
-  'By.cssSelector(".shopping_cart_link")',
-  'By.id("checkout")',
-  'By.id("first-name")'
-];
+const locatorPatterns = config.locatorPatterns;
 
-const poorNamingPatterns = [
-  /\bdoIt\s*\(/,
-  /\babc\s*\(/,
-  /\bclick1\s*\(/,
-  /\btestThing\s*\(/,
-  /\bprocess\s*\(/,
-  /\bString\s+x\b/,
-  /\bString\s+y\b/,
-  /\bString\s+tmp\b/,
-  /\blogin_user\b/,
-  /\bcart_count\b/,
-  /\bvalidate_CART\b/,
-  /\bCheckoutNow\s*\(/
-];
+const poorNamingPatterns = config.poorNamingPatterns.map(p => new RegExp(p));
 
 const cucumberAnnotationPattern = /^\s*@(Given|When|Then|And|But)\s*\("(.+)"\)/;
 
