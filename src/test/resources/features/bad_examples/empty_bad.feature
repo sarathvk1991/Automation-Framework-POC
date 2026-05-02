@@ -1,3 +1,4 @@
+@wip @BAD_EXAMPLE
 Feature: Application Health Check
 
   Scenario: Application loads successfully
