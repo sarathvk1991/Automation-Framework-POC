@@ -8,7 +8,7 @@ Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catal
     When I navigate to the inventory page
     Then I should see at least one product listed
 
-  @smoke
+  @regression
   Scenario: Product names and prices are shown
     Given I am logged in as a standard user
     When I view the inventory page
@@ -17,7 +17,7 @@ Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catal
   @smoke @e2e @e2e
   Scenario: standard user logs into the application and sorts the product list by price low to high and confirms the cheapest item appears at the top of the page
     Given I am logged in as a standard user
-    When I select the "Price (low to high)" sort option
+    When I select the "Price (low to high)" sort option   
     Then the first product displayed should have the lowest price
 
   # Verify sort preference does not persist after logout
@@ -27,6 +27,17 @@ Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catal
     Given I am logged in and have sorted products by name Z to A
     When I log out and log back in
     Then the sort order should default to the original order
+
+  @regression
+  Scenario: Product sort options can be selected
+    Given I am logged in as a standard user
+    When I open the sort dropdown on the inventory page
+    Then I should see the available sort options
+
+    Examples:
+      | sort_option         |
+      | Name (A to Z)       |
+      | Price (low to high) |
 
   @smoke
   Scenario:

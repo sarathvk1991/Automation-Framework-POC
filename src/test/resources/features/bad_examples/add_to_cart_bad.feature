@@ -1,5 +1,5 @@
 @wip @BAD_EXAMPLE
-Feature: Add To Cart — Managing Cart State, Product Selection, and Removal Operations Throughout the Shopping Session
+Feature: SauceDemo Regression Tests — E2E Coverage for All User Flows Including Login Authentication and Cart Management
   # [LINT] name-length: Feature name exceeds 70-char maximum
 
   @smoke
@@ -7,6 +7,7 @@ Feature: Add To Cart — Managing Cart State, Product Selection, and Removal Ope
     Given I am logged in as a standard user
     When I click the add to cart button on any product
     Then the cart icon badge should update to show one item
+
 
   @smoke
   Scenario: Add a single product to the cart
@@ -22,6 +23,7 @@ Feature: Add To Cart — Managing Cart State, Product Selection, and Removal Ope
     And I remove the Sauce Labs Backpack from the cart
     Then the cart badge should display "1"
     And only the Sauce Labs Bike Light should remain in the cart
+    And I verify that the Sauce Labs Bike Light is visible in the cart with the correct price and the cart badge counter shows exactly one item remaining
 
   @smoke
   Scenario: Remove a product from the cart
