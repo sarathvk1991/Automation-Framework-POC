@@ -1,49 +1,35 @@
-# Intentional bad Gherkin examples for lint failure demo
-@wip @BAD_EXAMPLE @smoke
-Feature: Inventory Bad Feature
-# [LINT] name-length: Feature name exceeds 70-char maximum
+@wip @BAD_EXAMPLE
+Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catalogue for Authenticated Users
+  # [LINT] name-length: Feature name exceeds 70-char maximum
 
-  # ── Violation: no-homogenous-tags ───────────────────────────────────────────
-  # @smoke appears on every scenario below. It should be on the Feature.
-
-  # ── Violation: no-unnamed-scenarios ─────────────────────────────────────────
-  Scenario: View product inventory
+  @smoke
+  Scenario: Products are visible after login
     Given I am logged in as a standard user
-    When I am on the inventory page
-    Then products should be displayed
+    When I navigate to the inventory page
+    Then I should see at least one product listed
 
-  # ── Violation: no-dupe-scenario-names (first occurrence) ────────────────────
-  Scenario: Check inventory
+  @smoke
+  Scenario: Product names and prices are shown
     Given I am logged in as a standard user
-    When I am on the inventory page
-    Then products should be displayed
+    When I view the inventory page
+    Then each product should display a name and a price
 
-  # ── Violation: no-dupe-scenario-names (duplicate) ───────────────────────────
-  Scenario: Check inventory sorting by price
+  @smoke @e2e @e2e
+  Scenario: standard user logs into the application and sorts the product list by price low to high and confirms the cheapest item appears at the top of the page
     Given I am logged in as a standard user
-    When I sort products by price
-    Then products should be in order
+    When I select the "Price (low to high)" sort option
+    Then the first product displayed should have the lowest price
 
-  # ── Violation: no-duplicate-tags (@e2e twice) ────────────────────────────────
-  # ── Violation: name-length (Scenario name exceeds 90-char maximum) ───────────
-  @e2e
-  Scenario: User sorts inventory by price and adds cheapest product to cart
-    Given I am logged in as a standard user
-    When I sort products by price low to high
-    And I add the first product to the cart
-    Then the cart badge should show one item
+  # Verify sort preference does not persist after logout
+  @smoke
+  @wip # @regression
+  Scenario: Sort order resets on next login
+    Given I am logged in and have sorted products by name Z to A
+    When I log out and log back in
+    Then the sort order should default to the original order
 
-  # ── Violation: no-partially-commented-tag-lines ──────────────────────────────
-  @wip
-  Scenario: Empty inventory scenario
+  @smoke
+  Scenario:
     Given I am logged in as a standard user
-
-  # ── Violation: no-scenario-outlines-without-examples ────────────────────────
-  Scenario Outline: Sort inventory with different options
-    Given I am logged in as a standard user
-    When I sort products by "<sort_option>"
-    Then products should be in the expected order
-    Examples:
-      | sort_option        |
-      | Price (low to high)|
-      | Price (high to low)|
+    When I view the inventory page
+    Then the cart icon should show zero items
