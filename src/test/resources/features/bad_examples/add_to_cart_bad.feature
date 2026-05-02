@@ -1,64 +1,47 @@
-@wip @BAD_EXAMPLE
-Feature: SauceDemo Regression Tests — E2E Coverage for All User Flows Including Login Authentication and Cart Management
-  # [LINT] name-length: Feature name exceeds 70-char maximum
+@wip @BAD_EXAMPLE @smoke
+Feature: Shopping Cart: Add and Remove Products
 
-  @smoke
-  Scenario:
-  @smoke
-  Scenario:
+  Scenario: Cart badge updates when a product is added
     Given I am logged in as a standard user
     When I click the add to cart button on any product
     Then the cart icon badge should update to show one item
 
-
-  @smoke
-  Scenario: Add a single product to the cart
-  @smoke
-  Scenario: Add a single product to the cart
+  Scenario: Add Sauce Labs Backpack to cart shows badge of one
     Given I am logged in as a standard user
     When I add the Sauce Labs Backpack to the cart
     Then the cart badge should display "1"
-    When I add the Sauce Labs Backpack to the cart
-    Then the cart badge should display "1"
 
-  @smoke @regression @regression
-  Scenario: authenticated user adds the sauce labs backpack and the sauce labs bike light to the cart then removes the backpack and verifies the cart badge shows one item remaining
-  @smoke @regression @regression
-  Scenario: authenticated user adds the sauce labs backpack and the sauce labs bike light to the cart then removes the backpack and verifies the cart badge shows one item remaining
+  @regression
+  Scenario: Add two items then remove one leaves cart badge at one
     Given I am logged in as a standard user
     When I add the Sauce Labs Backpack to the cart
     And I add the Sauce Labs Bike Light to the cart
     And I remove the Sauce Labs Backpack from the cart
     Then the cart badge should display "1"
     And only the Sauce Labs Bike Light should remain in the cart
-    And I verify that the Sauce Labs Bike Light is visible in the cart with the correct price and the cart badge counter shows exactly one item remaining
 
-  @smoke
   Scenario: Remove a product from the cart
     Given I have two items in my cart on the inventory page
     When I click Remove on the Sauce Labs Backpack
     Then the cart badge should decrement to one
 
-  @smoke
-  @wip # @sanity
+  @wip
   Scenario: Cart retains items when navigating between pages
     Given I have added the Sauce Labs Backpack to my cart
     When I navigate to the about page and then return to inventory
     Then the Sauce Labs Backpack should still be in my cart
 
-  @smoke
-  Scenario: Add a single product to the cart
+  Scenario: Add Sauce Labs Fleece Jacket to cart shows badge of one
     Given I am logged in as a standard user
     When I add the Sauce Labs Fleece Jacket to the cart
     Then the cart badge should display "1"
-    When I add the Sauce Labs Fleece Jacket to the cart
-    Then the cart badge should display "1"
 
-  @smoke
-  Scenario Outline: Add items of various price ranges to the cart
-  @smoke
   Scenario Outline: Add items of various price ranges to the cart
     Given I am logged in as a standard user
     When I add "<product>" to the cart
     Then the cart badge should show "<expected_count>"
-    Then the cart badge should show "<expected_count>"
+
+    Examples:
+      | product               | expected_count |
+      | Sauce Labs Backpack   | 1              |
+      | Sauce Labs Bike Light | 1              |

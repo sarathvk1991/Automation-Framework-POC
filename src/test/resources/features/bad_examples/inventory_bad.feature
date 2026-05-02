@@ -1,17 +1,9 @@
 @wip @BAD_EXAMPLE
-Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catalogue for Authenticated Users
-  # [LINT] name-length: Feature name exceeds 70-char maximum
-@wip @BAD_EXAMPLE
-Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catalogue for Authenticated Users
-  # [LINT] name-length: Feature name exceeds 70-char maximum
+Feature: Inventory Page: Product Display and Sorting
 
   @smoke
   Scenario: Products are visible after login
-  @smoke
-  Scenario: Products are visible after login
     Given I am logged in as a standard user
-    When I navigate to the inventory page
-    Then I should see at least one product listed
     When I navigate to the inventory page
     Then I should see at least one product listed
 
@@ -20,20 +12,14 @@ Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catal
     Given I am logged in as a standard user
     When I view the inventory page
     Then each product should display a name and a price
-    When I view the inventory page
-    Then each product should display a name and a price
 
-  @smoke @e2e @e2e
-  Scenario: standard user logs into the application and sorts the product list by price low to high and confirms the cheapest item appears at the top of the page
-  @smoke @e2e @e2e
-  Scenario: standard user logs into the application and sorts the product list by price low to high and confirms the cheapest item appears at the top of the page
+  @smoke @e2e
+  Scenario: Price sort displays cheapest item at top of list
     Given I am logged in as a standard user
-    When I select the "Price (low to high)" sort option   
+    When I select the "Price (low to high)" sort option
     Then the first product displayed should have the lowest price
 
-  # Verify sort preference does not persist after logout
-  @smoke
-  @wip # @regression
+  @smoke @wip
   Scenario: Sort order resets on next login
     Given I am logged in and have sorted products by name Z to A
     When I log out and log back in
@@ -45,13 +31,8 @@ Feature: Inventory Page — Displaying, Sorting, and Filtering the Product Catal
     When I open the sort dropdown on the inventory page
     Then I should see the available sort options
 
-    Examples:
-      | sort_option         |
-      | Name (A to Z)       |
-      | Price (low to high) |
-
   @smoke
-  Scenario:
+  Scenario: Cart icon shows zero items on fresh login
     Given I am logged in as a standard user
     When I view the inventory page
     Then the cart icon should show zero items
