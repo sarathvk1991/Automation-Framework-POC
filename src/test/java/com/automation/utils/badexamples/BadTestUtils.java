@@ -44,11 +44,7 @@ import org.openqa.selenium.WebElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.UUID;
 
 public class BadTestUtils {

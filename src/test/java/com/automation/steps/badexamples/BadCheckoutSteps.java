@@ -22,7 +22,6 @@ package com.automation.steps.badexamples;
 
 import com.automation.base.DriverFactory;
 import com.automation.pages.badexamples.BadCartPage;
-import com.automation.pages.badexamples.BadCartPage;
 import com.automation.pages.badexamples.BadCheckoutPage;
 import com.automation.pages.badexamples.BadLoginPage;
 import com.automation.utils.TestData;
