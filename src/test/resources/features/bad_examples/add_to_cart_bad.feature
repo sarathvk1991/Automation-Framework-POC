@@ -1,47 +1,50 @@
+# Intentional bad Gherkin examples for lint failure demo
 @wip @BAD_EXAMPLE @smoke
-Feature: Shopping Cart: Add and Remove Products
+Feature: Add To Cart Bad Feature
+# [LINT] name-length: Feature name exceeds 70-char maximum
 
-  Scenario: Cart badge updates when a product is added
+  # ── Violation: no-homogenous-tags ───────────────────────────────────────────
+  # @smoke appears on every scenario below. It should be on the Feature.
+
+  # ── Violation: no-unnamed-scenarios ─────────────────────────────────────────
+  Scenario: Add a product to the cart
     Given I am logged in as a standard user
-    When I click the add to cart button on any product
-    Then the cart icon badge should update to show one item
+    When I add a product to the cart
+    Then the cart badge should update
 
-  Scenario: Add Sauce Labs Backpack to cart shows badge of one
+  # ── Violation: no-dupe-scenario-names (first occurrence) ────────────────────
+  Scenario: User adds product to cart
     Given I am logged in as a standard user
-    When I add the Sauce Labs Backpack to the cart
-    Then the cart badge should display "1"
+    When I add the backpack to the cart
+    Then the cart badge should show one item
 
+  # ── Violation: no-dupe-scenario-names (duplicate) ───────────────────────────
+  Scenario: User adds bike light to cart
+    Given I am logged in as a standard user
+    When I add the bike light to the cart
+    Then the cart badge should show one item
+
+  # ── Violation: no-duplicate-tags (@regression twice) ─────────────────────────
+  # ── Violation: name-length (Scenario name exceeds 90-char maximum) ───────────
   @regression
-  Scenario: Add two items then remove one leaves cart badge at one
+  Scenario: User adds multiple products then removes one and verifies cart count
     Given I am logged in as a standard user
-    When I add the Sauce Labs Backpack to the cart
-    And I add the Sauce Labs Bike Light to the cart
-    And I remove the Sauce Labs Backpack from the cart
-    Then the cart badge should display "1"
-    And only the Sauce Labs Bike Light should remain in the cart
+    When I add the backpack to the cart
+    And I add the bike light to the cart
+    And I remove the backpack from the cart
+    Then the cart badge should show one item
 
-  Scenario: Remove a product from the cart
-    Given I have two items in my cart on the inventory page
-    When I click Remove on the Sauce Labs Backpack
-    Then the cart badge should decrement to one
-
+  # ── Violation: no-partially-commented-tag-lines ──────────────────────────────
   @wip
-  Scenario: Cart retains items when navigating between pages
-    Given I have added the Sauce Labs Backpack to my cart
-    When I navigate to the about page and then return to inventory
-    Then the Sauce Labs Backpack should still be in my cart
-
-  Scenario: Add Sauce Labs Fleece Jacket to cart shows badge of one
+  Scenario: Empty cart scenario
     Given I am logged in as a standard user
-    When I add the Sauce Labs Fleece Jacket to the cart
-    Then the cart badge should display "1"
 
-  Scenario Outline: Add items of various price ranges to the cart
+  # ── Violation: no-scenario-outlines-without-examples ────────────────────────
+  Scenario Outline: Add different products to cart
     Given I am logged in as a standard user
     When I add "<product>" to the cart
-    Then the cart badge should show "<expected_count>"
-
+    Then the cart badge should show the correct count
     Examples:
-      | product               | expected_count |
-      | Sauce Labs Backpack   | 1              |
-      | Sauce Labs Bike Light | 1              |
+      | product              |
+      | Sauce Labs Backpack  |
+      | Sauce Labs Bike Light|

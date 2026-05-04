@@ -353,4 +353,5 @@ public class BadInventoryPage {
             prev = p;
         }
         return true;
-    }}
+    }
+}
