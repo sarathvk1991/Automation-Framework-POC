@@ -4,7 +4,8 @@
     "lint:gherkin:bad": "find src/test/resources/features/bad_examples -name '*.feature' | xargs gherkin-lint",
     "lint:gherkin:json": "find src/test/resources/features -name '*.feature' | xargs gherkin-lint -f json > gherkin-lint-report.json 2>&1 || true",
     "lint:gherkin:html": "npm run lint:gherkin:json && node scripts/generate-gherkin-html-report.js",
-    "custom:qa-metrics": "node scripts/custom-qa-metrics.js"
+    "custom:qa-metrics": "node scripts/custom-qa-metrics.js",
+    "sonar:html": "node scripts/generate-sonar-html-report.js"
   },
   "devDependencies": {
     "gherkin-lint": "4.2.4"
