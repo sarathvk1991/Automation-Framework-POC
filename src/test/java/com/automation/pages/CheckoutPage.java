@@ -8,7 +8,9 @@ import org.openqa.selenium.WebElement;
 
 public class CheckoutPage extends BasePage {
 
-    private static final By FIRST_NAME_FIELD  = By.id("first-name");
+    private static final String FIRST_NAME_ID = "first-name";
+
+    private static final By FIRST_NAME_FIELD  = By.id(FIRST_NAME_ID);
     private static final By LAST_NAME_FIELD   = By.id("last-name");
     private static final By POSTAL_CODE_FIELD = By.id("postal-code");
     private static final By CONTINUE_BUTTON   = By.cssSelector("[data-test='continue']");
