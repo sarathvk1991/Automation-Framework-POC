@@ -15,8 +15,8 @@ Feature: Checkout Process
   Scenario: User successfully completes checkout with a single item
     When the user adds "Sauce Labs Backpack" to the cart
     And the user navigates to the cart
-    And the user proceeds to checkout
-    And the user enters checkout details with first name "John", last name "Doe", and postal code "12345"
+    And the user proceeds to place an order
+    And the user enters order details with first name "John", last name "Doe", and postal code "12345"
     And the user continues to order overview
     Then the order total should be displayed
     When the user finishes the order
@@ -29,8 +29,8 @@ Feature: Checkout Process
     When the user adds "Sauce Labs Backpack" to the cart
     And the user adds "Sauce Labs Bolt T-Shirt" to the cart
     And the user navigates to the cart
-    And the user proceeds to checkout
-    And the user enters checkout details with first name "Jane", last name "Smith", and postal code "67890"
+    And the user proceeds to place an order
+    And the user enters order details with first name "Jane", last name "Smith", and postal code "67890"
     And the user continues to order overview
     Then the order total should be displayed
     When the user finishes the order
@@ -42,6 +42,6 @@ Feature: Checkout Process
   Scenario: Checkout fails when required fields are missing
     When the user adds "Sauce Labs Backpack" to the cart
     And the user navigates to the cart
-    And the user proceeds to checkout
-    And the user continues without entering checkout details
-    Then the checkout error "Error: First Name is required" should be displayed
+    And the user proceeds to place an order
+    And the user continues without entering order details
+    Then the order error "Error: First Name is required" should be displayed
