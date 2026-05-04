@@ -36,12 +36,8 @@ public class BadInventoryPage {
     // [S2] ".inventory_list" hardcoded — not a constant
     // [S12] Direct element access without wait
     public boolean getData() {
-        try {
-            WebElement x = driver.findElement(By.cssSelector(".inventory_list")); // [S8][S12]
-            return x.isDisplayed();
-        } catch (Exception e) {
-            return false;
-        }
+        WebElement x = driver.findElement(By.cssSelector(".inventory_list")); // [S8][S12]
+        return x.isDisplayed();
     }
 
     // ── [S7] Non-descriptive ── [S2] Repeated locator ─────────────────────────
@@ -75,18 +71,14 @@ public class BadInventoryPage {
     // [S2] ".inventory_item_name" hardcoded
     // [S12] Direct findElements without wait
     public List<String> getNames() {
-        try {
-            List<String> result = new ArrayList<>(); // [S8] variable 'result'
-            List<WebElement> x = driver.findElements( // [S8] 'x' [S12]
-                By.cssSelector(".inventory_item_name")
-            );
-            for (WebElement y : x) { // [S8] 'y'
-                result.add(y.getText());
-            }
-            return result;
-        } catch (Exception e) {
-            return new ArrayList<>();
+        List<String> result = new ArrayList<>(); // [S8] variable 'result'
+        List<WebElement> x = driver.findElements( // [S8] 'x' [S12]
+            By.cssSelector(".inventory_item_name")
+        );
+        for (WebElement y : x) { // [S8] 'y'
+            result.add(y.getText());
         }
+        return result;
     }
 
     // [S10] Identical body to getNames() — duplicate code block
@@ -176,73 +168,66 @@ public class BadInventoryPage {
     // [S2] ".shopping_cart_link" hardcoded inline — not a constant, repeated across files
     // [S12] Direct click without wait — flaky on slow pages
     public void openCart() {
-        WebElement cartLink = driver.findElement(By.cssSelector(".shopping_cart_link")); // [S2][S12]
-        cartLink.click();
+        driver.findElement(By.cssSelector(".shopping_cart_link")).click(); // [S2][S12]
         System.out.println("Opened shopping cart"); // [S6]
     }
 
     // [S2] ".shopping_cart_link" repeated — 2nd inline occurrence in this class
     // [S12] Direct findElement without wait
     public boolean isCartLinkDisplayed() {
-        WebElement x = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S8][S12]
+        WebElement x = driver.findElement(By.cssSelector(".shopping_cart_link")); // [S8][S12]
         return x.isDisplayed();
     }
 
-    // [S2] cart link selector repeated — third inline copy in this class
-    // [S2] checkout locator hardcoded inline — not a constant
+    // [S2] By.cssSelector(".shopping_cart_link") repeated — third inline copy in this class
+    // [S2] By.id("checkout") hardcoded inline — not a constant
     // [S12] Direct element access without wait
     public void quickCheckout() {
-        WebElement cartLinkBtn = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S2][S12]
-        cartLinkBtn.click();
-        WebElement checkoutBtn = driver.findElement(By.id("checkout")); // [S2][S12]
-        checkoutBtn.click();
+        driver.findElement(By.cssSelector(".shopping_cart_link")).click(); // [S2][S12]
+        driver.findElement(By.id("checkout")).click();                     // [S2][S12]
     }
 
-    // [S2] first-name field hardcoded — wrong concern inside inventory page (SRP violation)
+    // [S2] By.id("first-name") hardcoded — wrong concern inside inventory page (SRP violation)
+    // [S2] "Sarath", "Tester", "695001" hardcoded form values
     // [S11] Mixed responsibility: checkout form fill inside inventory page
     // [S12] Direct element access without wait
     public void fillOrderDetails() {
-        WebElement firstNameField = driver.findElement(By.id("first-name")); // [S2][S12]
-        firstNameField.sendKeys("Sarath");
-        WebElement lastNameField = driver.findElement(By.id("last-name")); // [S2][S12]
-        lastNameField.sendKeys("Tester");
-        WebElement postalCodeField = driver.findElement(By.id("postal-code")); // [S2][S12]
-        postalCodeField.sendKeys("695001");
+        driver.findElement(By.id("first-name")).sendKeys("Sarath");  // [S2][S12]
+        driver.findElement(By.id("last-name")).sendKeys("Tester");   // [S2][S12]
+        driver.findElement(By.id("postal-code")).sendKeys("695001"); // [S2][S12]
     }
 
+    // Hardcoded "Sauce Labs Backpack" inline — should come from test data config
     // [S2] Product name baked into XPath; same string repeated in step files
     // [S12] Direct findElement without wait
     public boolean isBackpackInInventory() {
         WebElement x = driver.findElement( // [S8][S12]
-            By.xpath("//div[text()='Product A']") // hardcoded product name
+            By.xpath("//div[text()='Sauce Labs Backpack']") // hardcoded product name
         );
         return x.isDisplayed();
     }
 
-    // Hardcoded product name inline — not from config
+    // Hardcoded "Sauce Labs Bike Light" inline — not from config
     // [S2] Product name baked into XPath
     // [S12] Direct findElement without wait
     public boolean isBikeLightInInventory() {
         WebElement x = driver.findElement( // [S8][S12]
-            By.xpath("//div[text()='Product B']") // hardcoded product name
+            By.xpath("//div[text()='Sauce Labs Bike Light']") // hardcoded product name
         );
         return x.isDisplayed();
     }
 
     public void addFirstItemToCart() {
-        WebElement addBtn = driver.findElement(By.cssSelector(".inventory_item button"));
-        addBtn.click();
-        WebElement cartLinkEl = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']"));
-        cartLinkEl.click();
-        WebElement checkoutEl = driver.findElement(By.cssSelector("[data-test='checkout']"));
-        checkoutEl.click();
+        driver.findElement(By.cssSelector(".inventory_item button")).click();
+        driver.findElement(By.cssSelector(".shopping_cart_link")).click();
+        driver.findElement(By.id("checkout")).click();
     }
 
     public boolean process(String a, String b) {
-        String itemName = null;
+        String tmp = null;
         WebElement x = driver.findElement(By.cssSelector(".inventory_list"));
-        boolean inventoryVisible = x.isDisplayed();
-        System.out.println("inventoryVisible=" + inventoryVisible);
+        boolean validate_CART = x.isDisplayed();
+        System.out.println("validate_CART=" + validate_CART);
         WebElement y = driver.findElement(By.cssSelector("[data-test='product-sort-container']"));
         new org.openqa.selenium.support.ui.Select(y).selectByVisibleText("Price (low to high)");
         List<WebElement> x2 = driver.findElements(By.cssSelector(".inventory_item_price"));
@@ -263,13 +248,13 @@ public class BadInventoryPage {
         System.out.println("Sorted: " + sorted);
         List<WebElement> y2 = driver.findElements(By.cssSelector(".inventory_item_name"));
         for (WebElement item : y2) {
-            itemName = item.getText();
-            System.out.println(itemName);
+            tmp = item.getText();
+            System.out.println(tmp);
         }
-        driver.findElement(By.xpath("//div[text()='Product A']/../..//button")).click();
-        driver.findElement(By.xpath("//div[text()='Product B']/../..//button")).click();
-        String badgeText = driver.findElement(By.cssSelector(".shopping_cart_badge")).getText();
-        System.out.println("badge=" + badgeText);
+        driver.findElement(By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")).click();
+        driver.findElement(By.xpath("//div[text()='Sauce Labs Bike Light']/../..//button")).click();
+        String cart_count = driver.findElement(By.cssSelector(".shopping_cart_badge")).getText();
+        System.out.println("cart_count=" + cart_count);
         driver.findElement(By.cssSelector(".shopping_cart_link")).click();
         List<WebElement> cartItems = driver.findElements(By.cssSelector(".cart_item_name"));
         for (WebElement ci : cartItems) {
@@ -278,46 +263,5 @@ public class BadInventoryPage {
         driver.findElement(By.id("checkout")).click();
         System.out.println("Reached checkout with a=" + a + " b=" + b);
         return sorted;
-    }
-
-    public void clickByXpath(String xpath) {
-        driver.findElement(By.xpath(xpath)).click();
-    }
-
-    public void clickByCss(String css) {
-        driver.findElement(By.cssSelector(css)).click();
-    }
-
-    public boolean isElementPresent(String css) {
-        return driver.findElement(By.cssSelector(css)).isDisplayed();
-    }
-
-    public boolean isElementVisible(String css) {
-        return driver.findElement(By.cssSelector(css)).isDisplayed();
-    }
-
-    public boolean isElementVisibleByXpath(String xpath) {
-        return driver.findElement(By.xpath(xpath)).isDisplayed();
-    }
-
-    public String getPageTitle() {
-        return driver.getTitle();
-    }
-
-    public String getTextByCss(String css) {
-        return driver.findElement(By.cssSelector(css)).getText();
-    }
-
-    public void addBikeLightToCart() {
-        driver.findElement(By.xpath("//div[text()='Product B']/../..//button")).click();
-    }
-
-    public void clickCheckoutById() {
-        driver.findElement(By.id("checkout")).click();
-    }
-
-    public void navigateToCart() {
-        driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")).click();
-        System.out.println("Navigated to cart page");
     }
 }

@@ -16,8 +16,6 @@ package com.automation.steps.badexamples;
 // =============================================================================
 
 import com.automation.base.DriverFactory;
-import com.automation.pages.badexamples.BadCartPage;
-import com.automation.pages.badexamples.BadInventoryPage;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import org.openqa.selenium.By;
@@ -28,7 +26,6 @@ import java.util.List;
 
 public class BadAddToCartSteps {
 
-    // INTENTIONAL BAD EXAMPLE
     // [S11] This step clicks the button AND checks the badge — two concerns in @When
     // [S2]  XPath with hardcoded data-test attribute; badge locator hardcoded
     // [S8]  Variables el, tmp
@@ -50,7 +47,9 @@ public class BadAddToCartSteps {
     // [S12] Direct click without wait
     @When("I click xpath3 {string}")
     public void iClickXpath3(String xpath) {
-        new BadInventoryPage(DriverFactory.getDriver()).clickByXpath(xpath);
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.xpath(xpath));
+        x.click();
     }
 
     // [S10] Duplicate of BadLoginSteps.iClickCss — same body, different class
@@ -58,7 +57,9 @@ public class BadAddToCartSteps {
     // [S12] Direct click without wait
     @When("I click css3 {string}")
     public void iClickCss3(String css) {
-        new BadInventoryPage(DriverFactory.getDriver()).clickByCss(css);
+        WebElement y = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        y.click();
     }
 
     // [S10] Duplicate of element-visible assertion — four copies across bad step files
@@ -66,7 +67,9 @@ public class BadAddToCartSteps {
     // [S12] Direct element access without wait
     @Then("element with css3 {string} is visible")
     public void elementWithCss3IsVisible(String css) {
-        System.out.println("Is displayed: " + new BadInventoryPage(DriverFactory.getDriver()).isElementVisible(css));
+        WebElement tmp = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        System.out.println("Is displayed: " + tmp.isDisplayed()); // [S6]
     }
 
     // [S10] Duplicate of element-text-check — same as BadLoginSteps version
@@ -75,13 +78,14 @@ public class BadAddToCartSteps {
     // [S12] Direct element access without wait
     @Then("element with css3 {string} has text {string}")
     public void elementHasText(String css, String expectedText) {
-        String tmp = new BadInventoryPage(DriverFactory.getDriver()).getTextByCss(css);
+        WebElement x = DriverFactory.getDriver() // [S8][S12]
+            .findElement(By.cssSelector(css));
+        String tmp = x.getText(); // [S8]
         if (!tmp.equals(expectedText)) {
-            System.out.println("Mismatch: expected=" + expectedText + " got=" + tmp);
+            System.out.println("Mismatch: expected=" + expectedText + " got=" + tmp); // [S6][S9]
         }
     }
 
-    // INTENTIONAL BAD EXAMPLE
     // [S11] One step navigates + logs in + adds specific product — wrong granularity
     // [S2]  Hardcoded URL, hardcoded credentials, hardcoded product XPath
     // [S8]  Variables a, b, c
@@ -90,19 +94,17 @@ public class BadAddToCartSteps {
     public void iAddBackpackToCartAsLoggedInUser() {
         WebDriver driver = DriverFactory.getDriver();
         driver.get("https://www.saucedemo.com"); // [S2] hardcoded URL
-        WebElement a = driver.findElement(By.cssSelector("[data-test='username']")); // [S8][S12]
+        WebElement a = driver.findElement(By.id("user-name")); // [S8][S12]
         a.sendKeys("standard_user"); // [S2] hardcoded credential
-        WebElement b = driver.findElement(By.cssSelector("[data-test='password']")); // [S8][S12]
+        WebElement b = driver.findElement(By.id("password")); // [S8][S12]
         b.sendKeys("secret_sauce"); // [S2] hardcoded credential
-        WebElement loginBtnField = driver.findElement(By.cssSelector("[data-test='login-button']")); // [S12]
-        loginBtnField.click();
+        driver.findElement(By.id("login-button")).click(); // [S12]
         WebElement c = driver.findElement( // [S8][S12]
             By.xpath("//button[@data-test='add-to-cart-sauce-labs-backpack']") // [S2]
         );
         c.click();
     }
 
-    // INTENTIONAL BAD EXAMPLE
     // [S2]  Badge locator hardcoded — same as in BadInventorySteps
     // [S8]  Variable x
     // [S9]  No assertion — mismatch only logged
@@ -120,20 +122,25 @@ public class BadAddToCartSteps {
     // [S12] Direct findElements without wait
     @Then("the cart page shows items")
     public void theCartPageShowsItems() {
-        System.out.println("Items in cart: " + new BadCartPage(DriverFactory.getDriver()).getCartItemCount());
+        List<WebElement> items = DriverFactory.getDriver()
+            .findElements(By.cssSelector(".cart_item")); // [S2][S12]
+        System.out.println("Items in cart: " + items.size()); // [S6][S9]
     }
 
     // ══════════════════════════════════════════════════════════════════════════
     // [S10] DUPLICATE ADD-TO-CART STEP DEFINITIONS — near-identical expressions
     // ══════════════════════════════════════════════════════════════════════════
 
-    // INTENTIONAL BAD EXAMPLE
+    // [S2]  "Sauce Labs Backpack" hardcoded product name inside XPath — not from config
     // [S10] Near-duplicate of iAddTheBackpackItemToTheShoppingCart — "product" vs "item"
     // [S12] Direct element click without wait
     @When("I add the backpack product to the shopping cart")
     public void iAddTheBackpackProductToTheShoppingCart() {
-        new BadInventoryPage(DriverFactory.getDriver()).click1();
-        System.out.println("Added product to cart");              // [S6]
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(                                                    // [S12]
+            By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")     // [S2]
+        ).click();
+        System.out.println("Added Sauce Labs Backpack to cart");              // [S6]
     }
 
     // [S10] Near-duplicate — "item" instead of "product", identical body
@@ -141,40 +148,65 @@ public class BadAddToCartSteps {
     // [S12] Direct element click without wait
     @When("I add the backpack item to the shopping cart")
     public void iAddTheBackpackItemToTheShoppingCart() {
-        new BadInventoryPage(DriverFactory.getDriver()).click1();
-        System.out.println("Added product item to cart");
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(                                                    // [S12]
+            By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")     // [S2]
+        ).click();
+        System.out.println("Added Sauce Labs Backpack item to cart");         // [S6]
     }
 
-    // INTENTIONAL BAD EXAMPLE
-    // [S2] cart link selector hardcoded inline — not a constant
+    // [S2] By.cssSelector(".shopping_cart_link") hardcoded inline — not a constant
     // [S12] Direct element click without wait
     @When("I navigate to the cart via the cart link")
     public void iNavigateToTheCartViaTheCartLink() {
-        new BadCartPage(DriverFactory.getDriver()).clickCartLink();
+        DriverFactory.getDriver().findElement(By.cssSelector(".shopping_cart_link")).click(); // [S2][S12]
     }
 
-    // [S2] cart proceed locator hardcoded inline — not a constant
+    // [S2] By.id("checkout") hardcoded inline — not a constant
     // [S12] Direct element click without wait
     @When("I click checkout from the cart page")
     public void iClickCheckoutFromTheCartPage() {
-        new BadCartPage(DriverFactory.getDriver()).goCheckout();
+        DriverFactory.getDriver().findElement(By.id("checkout")).click(); // [S2][S12]
     }
 
+    // [S2] "Sauce Labs Bike Light" hardcoded product name — not from config
     // [S12] Direct element click without wait — flaky
     @When("I add the bike light to the cart")
     public void iAddTheBikeLightToTheCart() {
-        new BadInventoryPage(DriverFactory.getDriver()).addBikeLightToCart();
-        System.out.println("Added product to cart");
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(                                                         // [S12]
+            By.xpath("//div[text()='Sauce Labs Bike Light']/../..//button")        // [S2]
+        ).click();
+        System.out.println("Added Sauce Labs Bike Light to cart");                // [S6]
     }
 
-    // INTENTIONAL BAD EXAMPLE
-    // [S2] form field values hardcoded — wrong concern inside add-to-cart steps
-    // [S11] Mixed responsibility: order form fill inside add-to-cart step class
+    // [S2] By.id("first-name") hardcoded — wrong concern inside add-to-cart steps
+    // [S2] "Sarath", "Tester", "695001" hardcoded form values — not from config
+    // [S11] Mixed responsibility: checkout form inside add-to-cart step class
     // [S12] Direct element access without wait
     @When("I fill in the checkout form with test data")
     public void iFillInTheCheckoutFormWithTestData() {
-        new BadInventoryPage(DriverFactory.getDriver()).fillOrderDetails();
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(By.id("first-name")).sendKeys("Sarath");  // [S2][S12]
+        driver.findElement(By.id("last-name")).sendKeys("Tester");   // [S2][S12]
+        driver.findElement(By.id("postal-code")).sendKeys("695001"); // [S2][S12]
     }
 
-}
+    @When("I put the backpack into the cart")
+    public void iPutTheBackpackIntoTheCart() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(
+            By.xpath("//div[text()='Sauce Labs Backpack']/../..//button")
+        ).click();
+        System.out.println("Put Sauce Labs Backpack into cart");
+    }
 
+    @When("I place the bike light in the cart")
+    public void iPlaceTheBikeLightInTheCart() {
+        WebDriver driver = DriverFactory.getDriver();
+        driver.findElement(
+            By.xpath("//div[text()='Sauce Labs Bike Light']/../..//button")
+        ).click();
+        System.out.println("Placed Sauce Labs Bike Light in cart");
+    }
+}

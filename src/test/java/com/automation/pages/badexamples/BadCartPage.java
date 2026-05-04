@@ -37,18 +37,14 @@ public class BadCartPage {
     // [S8] variables x, y, tmp
     // [S12] Direct findElements with no explicit wait — unstable in slow environments
     public List<String> getStuff() {
-        try {
-            List<String> tmp = new ArrayList<>(); // [S8]
-            List<WebElement> x = driver.findElements( // [S8][S12]
-                By.cssSelector(".cart_item_name")
-            );
-            for (WebElement y : x) { // [S8]
-                tmp.add(y.getText());
-            }
-            return tmp;
-        } catch (Exception e) {
-            return new ArrayList<>();
+        List<String> tmp = new ArrayList<>(); // [S8]
+        List<WebElement> x = driver.findElements( // [S8][S12]
+            By.cssSelector(".cart_item_name")
+        );
+        for (WebElement y : x) { // [S8]
+            tmp.add(y.getText());
         }
+        return tmp;
     }
 
     // ── [S10] Duplicate bodies ── [S13] Name vs behaviour mismatch ────────────
@@ -89,34 +85,29 @@ public class BadCartPage {
     // [S2] ".cart_item" and ".cart_item_name" repeated (same as getStuff above)
     // [S12] All interactions direct — no wait
     public String doEverything(String expected) {
-        try {
-            String foundItem = null; // [S8][S9]
-            // Concern 1: check cart title is visible
-            WebElement title = driver.findElement(By.cssSelector("span.title")); // [S2][S12]
-            System.out.println("Title: " + title.getText()); // [S6]
-            // Concern 2: count items
-            List<WebElement> items = driver.findElements(By.cssSelector(".cart_item")); // [S2][S12]
-            System.out.println("Cart has " + items.size() + " items"); // [S6]
-            // Concern 3: find specific item name
-            List<WebElement> names = driver.findElements(By.cssSelector(".cart_item_name")); // [S2]
-            for (WebElement x : names) { // [S8]
-                if (x.getText().contains(expected)) {
-                    foundItem = x.getText(); // [S8]
-                }
+        String tmp = null; // [S8][S9]
+        // Concern 1: check cart title is visible
+        WebElement title = driver.findElement(By.cssSelector("span.title")); // [S2][S12]
+        System.out.println("Title: " + title.getText()); // [S6]
+        // Concern 2: count items
+        List<WebElement> items = driver.findElements(By.cssSelector(".cart_item")); // [S2][S12]
+        System.out.println("Cart has " + items.size() + " items"); // [S6]
+        // Concern 3: find specific item name
+        List<WebElement> names = driver.findElements(By.cssSelector(".cart_item_name")); // [S2]
+        for (WebElement x : names) { // [S8]
+            if (x.getText().contains(expected)) {
+                tmp = x.getText(); // [S8]
             }
-            // Concern 4: click checkout
-            driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
-            return foundItem; // [S9] may return null
-        } catch (Exception e) {
-            return null;
         }
+        // Concern 4: click checkout
+        driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
+        return tmp; // [S9] may return null
     }
 
     // [S2] "[data-test='checkout']" hardcoded — already used in doEverything
     // [S12] Direct click without wait
     public void goCheckout() {
-        WebElement checkoutBtn = driver.findElement(By.cssSelector("[data-test='checkout']")); // [S2][S12]
-        checkoutBtn.click();
+        driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
     }
 
     // [S2] ".cart_item" repeated a third time in this class
@@ -137,9 +128,9 @@ public class BadCartPage {
     public String doIt() {
         WebElement x = driver.findElement(By.cssSelector(".cart_list"));       // [S8][S12]
         WebElement y = driver.findElement(By.cssSelector(".cart_item_name"));  // [S8][S12]
-        String itemText = y.getText();                                               // [S8]
-        System.out.println(x.isDisplayed() + " item: " + itemText);                // [S6]
-        return itemText;
+        String tmp = y.getText();                                               // [S8]
+        System.out.println(x.isDisplayed() + " item: " + tmp);                // [S6]
+        return tmp;
     }
 
     // [S7]  "process" — process what? same vague name already used in BadCheckoutPage
@@ -166,22 +157,24 @@ public class BadCartPage {
         return true;
     }
 
-    // [S2] checkout locator hardcoded inline — not a constant
+    // [S2] By.id("checkout") hardcoded inline — not a constant
     // [S12] Direct element click without wait
     public void proceedToCheckout() {
         driver.findElement(By.id("checkout")).click(); // [S2][S12]
     }
 
-    // [S2] cart link selector hardcoded inline — not a constant
-    // [S2] checkout locator repeated — second inline copy in this class
+    // [S2] By.cssSelector(".shopping_cart_link") hardcoded inline — not a constant
+    // [S2] By.id("checkout") repeated — second inline copy in this class
     // [S12] Direct element access without wait
     public boolean isCartAccessible() {
-        WebElement x = driver.findElement(By.cssSelector("[data-test='shopping-cart-link']")); // [S8][S12]
+        WebElement x = driver.findElement(By.cssSelector(".shopping_cart_link")); // [S8][S12]
         x.click();
-        driver.findElement(By.cssSelector("[data-test='checkout']")).click(); // [S2][S12]
+        driver.findElement(By.id("checkout")).click(); // [S2][S12]
         return true;
     }
 
+    // [S2] "Sauce Labs Backpack" hardcoded product name — should come from test data
+    // [S2] "Sauce Labs Bike Light" hardcoded product name — should come from test data
     // [S12] Direct findElement without wait — flaky
     public boolean verifyExpectedItems() {
         WebElement backpack = driver.findElement(                                   // [S12]
@@ -196,15 +189,6 @@ public class BadCartPage {
     }
 
     public String getFirstItemPrice() {
-        WebElement priceEl = driver.findElement(By.cssSelector(".inventory_item_price"));
-        return priceEl.getText();
-    }
-
-    public int getCartItemCount() {
-        return driver.findElements(By.cssSelector(".cart_item")).size();
-    }
-
-    public void clickCartLink() {
-        driver.findElement(By.cssSelector(".shopping_cart_link")).click();
+        return driver.findElement(By.cssSelector(".inventory_item_price")).getText();
     }
 }
