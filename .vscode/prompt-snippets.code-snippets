@@ -1,0 +1,428 @@
+{
+  "Create Feature Prompt": {
+    "prefix": "create-feature",
+    "description": "Insert Copilot prompt for generating a Gherkin feature file",
+    "body": [
+      "Use the prompt template at prompts/generate/generate-feature.md.",
+      "",
+      "Requirement:",
+      "$1",
+      "",
+      "Target file:",
+      "src/test/resources/features/$2.feature",
+      "",
+      "Generate the full feature file content."
+    ]
+  },
+
+  "Create Step Definitions Prompt": {
+    "prefix": "create-steps",
+    "description": "Insert Copilot prompt for generating Cucumber step definitions",
+    "body": [
+      "Use the prompt template at prompts/generate/generate-step-definitions.md.",
+      "",
+      "Feature file path:",
+      "src/test/resources/features/$1.feature",
+      "",
+      "Step definition class name:",
+      "$2Steps",
+      "",
+      "Relevant page object(s):",
+      "$3Page",
+      "",
+      "Generate the full step definition class."
+    ]
+  },
+
+  "Create Page Object Prompt": {
+    "prefix": "create-page",
+    "description": "Insert Copilot prompt for generating a Selenium Page Object class",
+    "body": [
+      "Use the prompt template at prompts/generate/generate-page-object.md.",
+      "",
+      "Page class name:",
+      "$1Page",
+      "",
+      "Page description / fields and actions to support:",
+      "$2",
+      "",
+      "Generate the full page object class."
+    ]
+  },
+
+  "Create Test Data Prompt": {
+    "prefix": "create-test-data",
+    "description": "Insert Copilot prompt for generating a test data constants or config class",
+    "body": [
+      "Use the prompt template at prompts/generate/generate-test-data.md.",
+      "",
+      "Target class name:",
+      "$1",
+      "",
+      "Data keys / fields needed:",
+      "$2",
+      "",
+      "Context (what test uses this data):",
+      "$3",
+      "",
+      "Generate the full test data class."
+    ]
+  },
+
+  "Fix Gherkin Lint Prompt": {
+    "prefix": "fix-gherkin",
+    "description": "Insert Copilot prompt for fixing Gherkin lint violations",
+    "body": [
+      "Use the prompt template at prompts/fix/fix-gherkin-lint.md.",
+      "",
+      "Feature file path:",
+      "src/test/resources/features/$1.feature",
+      "",
+      "Lint issues:",
+      "$2",
+      "",
+      "Fix only the reported lint violations without changing business logic."
+    ]
+  },
+
+  "Fix Custom QA Rule Prompt": {
+    "prefix": "fix-custom-rule",
+    "description": "Insert Copilot prompt for fixing a specific custom QA rule violation",
+    "body": [
+      "Use the prompt template at prompts/fix/fix-custom-qa-rule.md.",
+      "",
+      "Rule name:",
+      "$1",
+      "",
+      "Affected file(s):",
+      "$2",
+      "",
+      "Issue details:",
+      "$3",
+      "",
+      "Fix only violations of the specified rule."
+    ]
+  },
+
+  "Fix Sonar Issues Prompt": {
+    "prefix": "fix-sonar",
+    "description": "Insert Copilot prompt for fixing SonarQube issues in Java files",
+    "body": [
+      "Use the prompt template at prompts/fix/fix-sonar-issues.md.",
+      "",
+      "Affected file(s):",
+      "$1",
+      "",
+      "SonarQube issues:",
+      "$2",
+      "",
+      "Fix the reported code smells and bugs without suppressing issues."
+    ]
+  },
+
+  "Fix Build Error Prompt": {
+    "prefix": "fix-build",
+    "description": "Insert Copilot prompt for fixing Maven build or compilation errors",
+    "body": [
+      "Use the prompt template at prompts/fix/fix-build-error.md.",
+      "",
+      "Build log:",
+      "$1",
+      "",
+      "Failing file(s):",
+      "$2",
+      "",
+      "Diagnose the root cause and apply a minimal targeted fix."
+    ]
+  },
+
+  "Analyze Gherkin Lint Report Prompt": {
+    "prefix": "analyze-gherkin",
+    "description": "Insert Copilot prompt for analyzing a Gherkin lint report",
+    "body": [
+      "Use the prompt template at prompts/analysis/analyze-gherkin-lint-report.md.",
+      "",
+      "Lint report output:",
+      "$1",
+      "",
+      "Feature file(s) in scope (optional):",
+      "$2",
+      "",
+      "Summarize violations by rule. Do not suggest fixes."
+    ]
+  },
+
+  "Analyze Custom QA Report Prompt": {
+    "prefix": "analyze-custom-qa",
+    "description": "Insert Copilot prompt for analyzing a custom QA metrics report",
+    "body": [
+      "Use the prompt template at prompts/analysis/analyze-custom-qa-report.md.",
+      "",
+      "Custom QA metrics output:",
+      "$1",
+      "",
+      "File(s) in scope (optional):",
+      "$2",
+      "",
+      "Summarize violations by rule and surface underperforming metrics. Do not suggest fixes."
+    ]
+  },
+
+  "Analyze Sonar Report Prompt": {
+    "prefix": "analyze-sonar",
+    "description": "Insert Copilot prompt for analyzing a SonarQube report",
+    "body": [
+      "Use the prompt template at prompts/analysis/analyze-sonar-report.md.",
+      "",
+      "SonarQube issues:",
+      "$1",
+      "",
+      "File(s) in scope (optional):",
+      "$2",
+      "",
+      "Group by severity and rule. Highlight risk areas. Do not suggest fixes."
+    ]
+  },
+
+  "Validate Feature File Prompt": {
+    "prefix": "validate-feature",
+    "description": "Insert Copilot prompt for validating a generated Gherkin feature file",
+    "body": [
+      "Use the prompt template at prompts/validate/validate-generated-feature.md.",
+      "",
+      "Feature file path:",
+      "src/test/resources/features/$1.feature",
+      "",
+      "Gherkin lint output:",
+      "$2",
+      "",
+      "Run all validation checks and return a pass/fail table."
+    ]
+  },
+
+  "Validate Framework Quality Prompt": {
+    "prefix": "validate-quality",
+    "description": "Insert Copilot prompt for running a full framework quality gate check",
+    "body": [
+      "Use the prompt template at prompts/validate/validate-framework-quality.md.",
+      "",
+      "Build log:",
+      "$1",
+      "",
+      "Gherkin lint output:",
+      "$2",
+      "",
+      "Custom QA metrics output:",
+      "$3",
+      "",
+      "SonarQube issues (optional):",
+      "$4",
+      "",
+      "Return overall quality gate status and list any blockers."
+    ]
+  },
+
+  "Refactor Step Definitions Prompt": {
+    "prefix": "refactor-steps",
+    "description": "Insert Copilot prompt for refactoring Cucumber step definitions",
+    "body": [
+      "Use the prompt template at prompts/refactor/refactor-step-definitions.md.",
+      "",
+      "File(s) to refactor:",
+      "$1",
+      "",
+      "Reason for refactor:",
+      "$2",
+      "",
+      "Refactor for reusability and thin glue. Do not change step text or break bindings."
+    ]
+  },
+
+  "Refactor Page Object Prompt": {
+    "prefix": "refactor-page",
+    "description": "Insert Copilot prompt for refactoring a Selenium Page Object class",
+    "body": [
+      "Use the prompt template at prompts/refactor/refactor-page-object.md.",
+      "",
+      "File(s) to refactor:",
+      "$1",
+      "",
+      "Reason for refactor:",
+      "$2",
+      "",
+      "Consolidate locators and extract helpers. Do not change the public API."
+    ]
+  },
+
+  "Refactor Test Data Prompt": {
+    "prefix": "refactor-test-data",
+    "description": "Insert Copilot prompt for refactoring test data organisation",
+    "body": [
+      "Use the prompt template at prompts/refactor/refactor-test-data.md.",
+      "",
+      "File(s) to refactor:",
+      "$1",
+      "",
+      "Reason for refactor:",
+      "$2",
+      "",
+      "Remove duplication and improve naming. Do not change data values."
+    ]
+  },
+
+  "Debug Test Failure Prompt": {
+    "prefix": "debug-test",
+    "description": "Insert Copilot prompt for debugging a failing Selenium/Cucumber test",
+    "body": [
+      "Use the prompt template at prompts/debug/debug-test-failure.md.",
+      "",
+      "Failing scenario name:",
+      "$1",
+      "",
+      "Error log / stack trace:",
+      "$2",
+      "",
+      "Relevant file(s):",
+      "$3",
+      "",
+      "Diagnose the root cause. Do not modify files."
+    ]
+  },
+
+  "Debug Pipeline Failure Prompt": {
+    "prefix": "debug-pipeline",
+    "description": "Insert Copilot prompt for debugging a Jenkins pipeline failure",
+    "body": [
+      "Use the prompt template at prompts/debug/debug-pipeline-failure.md.",
+      "",
+      "Failing stage:",
+      "$1",
+      "",
+      "Pipeline log:",
+      "$2",
+      "",
+      "Identify the root cause and earliest failing stage. Do not modify files."
+    ]
+  },
+
+  "Debug Sonar Failure Prompt": {
+    "prefix": "debug-sonar",
+    "description": "Insert Copilot prompt for debugging a SonarQube analysis or quality gate failure",
+    "body": [
+      "Use the prompt template at prompts/debug/debug-sonar-failure.md.",
+      "",
+      "SonarQube log / sonar:sonar output:",
+      "$1",
+      "",
+      "Sonar properties / config (optional):",
+      "$2",
+      "",
+      "Diagnose the failure. Distinguish analysis failure from quality gate failure."
+    ]
+  },
+
+  "Debug Flaky Test Prompt": {
+    "prefix": "debug-flaky",
+    "description": "Insert Copilot prompt for debugging an intermittently failing Selenium test",
+    "body": [
+      "Use the prompt template at prompts/debug/debug-flaky-test.md.",
+      "",
+      "Failing scenario name:",
+      "$1",
+      "",
+      "Error log from a failing run:",
+      "$2",
+      "",
+      "Failure frequency (e.g. 3 out of 10 runs):",
+      "$3",
+      "",
+      "Diagnose the instability root cause. Do not suggest retries or test suppression."
+    ]
+  },
+
+  "Create Custom QA Metrics Script Prompt": {
+    "prefix": "create-custom-qa",
+    "description": "Insert Copilot prompt for generating the custom QA metrics script from scratch",
+    "body": [
+      "Use the prompt template at prompts/custom-qa/generate-custom-qa-metrics.md.",
+      "",
+      "Website / project under test:",
+      "$1",
+      "",
+      "Target source directories to scan:",
+      "$2",
+      "",
+      "Generate scripts/custom-qa-metrics.js. All patterns must come from config."
+    ]
+  },
+
+  "Update Custom QA Metrics Script Prompt": {
+    "prefix": "update-custom-qa",
+    "description": "Insert Copilot prompt for adding or updating a rule in the custom QA metrics script",
+    "body": [
+      "Use the prompt template at prompts/custom-qa/update-custom-qa-metrics.md.",
+      "",
+      "Rule or metric to add / update:",
+      "$1",
+      "",
+      "Description of what it should detect:",
+      "$2",
+      "",
+      "Update only the requested rule. Preserve all existing rules and thresholds."
+    ]
+  },
+
+  "Create Custom QA Config Prompt": {
+    "prefix": "create-custom-config",
+    "description": "Insert Copilot prompt for generating custom-qa-metrics-config.json for a new project",
+    "body": [
+      "Use the prompt template at prompts/custom-qa/generate-custom-qa-config.md.",
+      "",
+      "Website / project under test:",
+      "$1",
+      "",
+      "Source files to scan:",
+      "$2",
+      "",
+      "Generate custom-qa-metrics-config.json. Derive all patterns from provided files only."
+    ]
+  },
+
+  "Update Custom QA Config Prompt": {
+    "prefix": "update-custom-config",
+    "description": "Insert Copilot prompt for updating custom-qa-metrics-config.json for a new module or page",
+    "body": [
+      "Use the prompt template at prompts/custom-qa/update-custom-qa-config.md.",
+      "",
+      "New page / module / website being added:",
+      "$1",
+      "",
+      "Source files to scan:",
+      "$2",
+      "",
+      "Add new patterns derived from provided files. Remove stale patterns only if confirmed absent."
+    ]
+  },
+
+  "Debug Custom QA Metrics Prompt": {
+    "prefix": "debug-custom-qa",
+    "description": "Insert Copilot prompt for debugging a custom QA metrics false positive, false negative, or script failure",
+    "body": [
+      "Use the prompt template at prompts/custom-qa/debug-custom-qa-metrics.md.",
+      "",
+      "Rule name (if known):",
+      "$1",
+      "",
+      "Script error or unexpected output:",
+      "$2",
+      "",
+      "Expected behaviour:",
+      "$3",
+      "",
+      "Actual behaviour:",
+      "$4",
+      "",
+      "Classify the issue type first, then identify root cause. Do not modify files."
+    ]
+  }
+}
