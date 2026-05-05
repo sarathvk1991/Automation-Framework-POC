@@ -106,13 +106,17 @@ const metrics = {
   poorNamingCount: 0,
 
   totalCatchBlocks: 0,
-  genericExceptionCount: 0
+  genericExceptionCount: 0,
+
+  totalPageMethods: 0,
+  duplicatePageMethods: 0,
+
+  totalMethods: 0,
+  totalMethodLines: 0
 };
 
 const hardcodedPatterns = config.hardcodedPatterns;
-
 const locatorPatterns = config.locatorPatterns;
-
 const poorNamingPatterns = config.poorNamingPatterns.map(p => new RegExp(p));
 
 const cucumberAnnotationPattern = /^\s*@(Given|When|Then|And|But)\s*\("(.+)"\)/;
@@ -131,6 +135,7 @@ allFiles.forEach(filePath => {
   detectNonReusableSteps(filePath, lines);
   detectDuplicateStepDefinitions(filePath, lines);
   detectDuplicateUtilityMethods(filePath, lines);
+  detectDuplicatePageObjectMethods(filePath, lines);
   detectLongMethods(filePath, lines);
   collectNamingChecks(lines);
 });
@@ -139,7 +144,12 @@ function detectHardcodedTestData(filePath, lines) {
   hardcodedPatterns.forEach(pattern => {
     lines.forEach((line, index) => {
       if (line.includes(pattern)) {
-        issues.push(issue("customqa:hardcoded-test-data", filePath, index + 1, `Hardcoded test data found: ${pattern}`));
+        issues.push(issue(
+          "customqa:hardcoded-test-data",
+          filePath,
+          index + 1,
+          `Hardcoded test data found: ${pattern}`
+        ));
       }
     });
   });
@@ -149,7 +159,12 @@ function detectRepeatedLocators(filePath, lines) {
   locatorPatterns.forEach(pattern => {
     lines.forEach((line, index) => {
       if (line.includes(pattern)) {
-        issues.push(issue("customqa:repeated-locator", filePath, index + 1, `Repeated locator found: ${pattern}`));
+        issues.push(issue(
+          "customqa:repeated-locator",
+          filePath,
+          index + 1,
+          `Repeated locator found: ${pattern}`
+        ));
       }
     });
   });
@@ -163,7 +178,12 @@ function detectGenericExceptions(filePath, lines) {
 
     if (line.includes("catch (Exception")) {
       metrics.genericExceptionCount++;
-      issues.push(issue("customqa:generic-exception", filePath, index + 1, "Generic exception handling found."));
+      issues.push(issue(
+        "customqa:generic-exception",
+        filePath,
+        index + 1,
+        "Generic exception handling found."
+      ));
     }
   });
 }
@@ -173,7 +193,12 @@ function detectPoorNaming(filePath, lines) {
     lines.forEach((line, index) => {
       if (pattern.test(line)) {
         metrics.poorNamingCount++;
-        issues.push(issue("customqa:poor-naming", filePath, index + 1, "Poor naming convention detected."));
+        issues.push(issue(
+          "customqa:poor-naming",
+          filePath,
+          index + 1,
+          "Poor naming convention detected."
+        ));
       }
     });
   });
@@ -306,6 +331,40 @@ function detectDuplicateUtilityMethods(filePath, lines) {
   }
 }
 
+function detectDuplicatePageObjectMethods(filePath, lines) {
+  if (!filePath.includes(`pages${path.sep}`)) return;
+
+  const methodFingerprints = new Map();
+
+  for (let i = 0; i < lines.length; i++) {
+    if (!isMethodDeclaration(lines[i])) continue;
+
+    const methodEnd = findMethodEnd(lines, i);
+    if (methodEnd === -1) continue;
+
+    metrics.totalPageMethods++;
+
+    const body = lines
+      .slice(i, methodEnd + 1)
+      .map(normalizeLineForDuplication)
+      .filter(Boolean)
+      .join("|");
+
+    if (!body) {
+      i = methodEnd;
+      continue;
+    }
+
+    if (methodFingerprints.has(body)) {
+      metrics.duplicatePageMethods++;
+    } else {
+      methodFingerprints.set(body, i + 1);
+    }
+
+    i = methodEnd;
+  }
+}
+
 function detectLongMethods(filePath, lines) {
   for (let i = 0; i < lines.length; i++) {
     if (!isMethodDeclaration(lines[i])) continue;
@@ -314,6 +373,9 @@ function detectLongMethods(filePath, lines) {
     if (methodEnd === -1) continue;
 
     const methodLength = methodEnd - i + 1;
+
+    metrics.totalMethods++;
+    metrics.totalMethodLines += methodLength;
 
     if (methodLength >= LONG_METHOD_THRESHOLD) {
       issues.push(issue(
@@ -421,6 +483,15 @@ const exceptionHandlingCoveragePercentage = percentage(
   metrics.totalCatchBlocks
 );
 
+const duplicatePageObjectLogicPercentage = percentage(
+  metrics.duplicatePageMethods,
+  metrics.totalPageMethods
+);
+
+const avgMethodLength = metrics.totalMethods === 0
+  ? "0.00"
+  : (metrics.totalMethodLines / metrics.totalMethods).toFixed(2);
+
 const namingConsistencyScore = namingCompliancePercentage;
 
 console.log("Custom QA calculated metrics:");
@@ -432,6 +503,14 @@ console.log(`Total Naming Checks: ${metrics.totalNamingChecks}`);
 console.log(`Poor Naming Count: ${metrics.poorNamingCount}`);
 console.log(`Naming Convention Compliance %: ${namingCompliancePercentage}%`);
 console.log(`Naming Consistency Score: ${namingConsistencyScore}%`);
+
+console.log(`Total Page Object Methods: ${metrics.totalPageMethods}`);
+console.log(`Duplicate Page Object Methods: ${metrics.duplicatePageMethods}`);
+console.log(`Duplicate Logic in Page Objects %: ${duplicatePageObjectLogicPercentage}%`);
+
+console.log(`Total Methods: ${metrics.totalMethods}`);
+console.log(`Total Method Lines: ${metrics.totalMethodLines}`);
+console.log(`Avg Method Length: ${avgMethodLength} lines`);
 
 console.log(`Total Catch Blocks: ${metrics.totalCatchBlocks}`);
 console.log(`Generic Exception Count: ${metrics.genericExceptionCount}`);
