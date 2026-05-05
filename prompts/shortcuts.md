@@ -59,6 +59,7 @@ Use these commands when working with GitHub Copilot to:
 
 | Command | Template |
 |---|---|
+| `/refactor-feature` | `prompts/refactor/refactor-feature.md` |
 | `/refactor-steps` | `prompts/refactor/refactor-step-definitions.md` |
 | `/refactor-page` | `prompts/refactor/refactor-page-object.md` |
 | `/refactor-test-data` | `prompts/refactor/refactor-test-data.md` |
