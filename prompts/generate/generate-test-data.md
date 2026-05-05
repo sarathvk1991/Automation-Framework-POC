@@ -48,6 +48,9 @@ Choose the appropriate pattern based on the data type:
 - Do not duplicate keys across multiple test data classes
 - Prefer meaningful constant names over generic names like DATA1, VALUE1
 - Generated code must not introduce custom QA metric violations
+- Do not modify config.properties automatically.
+- If new config keys are required, list them separately but do not update files.
+- Test data generation must not introduce side effects in environment configuration.
 
 ---
 

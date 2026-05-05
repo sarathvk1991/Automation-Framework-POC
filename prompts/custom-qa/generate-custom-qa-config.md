@@ -48,6 +48,17 @@ Do not invent patterns — only include values found in `{{TARGET_FILES}}`.
 - Do not duplicate patterns that are already generic framework rules in the script
 - Avoid overly generic patterns (e.g. single words) that may cause widespread false positives
 - Ensure output remains compatible with SonarQube external issues ingestion
+- Only use patterns explicitly present in {{TARGET_FILES}} input.
+- Do not scan the repository beyond the provided input.
+- Do not infer or expand patterns from other files.
+- Do not modify existing config files — output JSON only.
+- Do not include AUT-specific values unless explicitly present in the input.
+- If insufficient input is provided, ask for clarification instead of scanning the codebase.
+- Locator patterns must be valid strings exactly matching selectors or literals from input.
+- Do not wrap selectors in partial Java code unless the input contains that exact Java code.
+- Do not include semicolons or full Java statements unless explicitly present in input.
+- Prefer raw selector strings (e.g., [data-test='username']) unless input explicitly contains Java code.
+- Avoid excessive escaping in JSON output.
 
 ---
 

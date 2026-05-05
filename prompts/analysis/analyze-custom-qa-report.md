@@ -28,6 +28,8 @@ Analyze the custom QA metrics report above. Summarize violations by rule, surfac
 
 Do not modify any files. Do not suggest code changes unless explicitly asked.
 
+Explicitly calculate metric status using provided values. Do not omit metrics even if all are compliant.
+
 ---
 
 ## CONSTRAINTS
@@ -42,6 +44,9 @@ Do not modify any files. Do not suggest code changes unless explicitly asked.
 - Treat any metric below 50% as poor and highlight it explicitly
 - Highlight imbalance (e.g. high violations in few files vs spread across many files)
 - Base all conclusions strictly on provided input — do not assume missing data
+- Metrics Summary table MUST include Score (%), Threshold (%), and Status (Pass/Fail).
+- Do not replace numeric metrics with generic "Status" labels.
+- Always compute Pass/Fail based on threshold comparison.
 
 ---
 
