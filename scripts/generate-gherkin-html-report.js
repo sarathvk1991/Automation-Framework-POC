@@ -1,7 +1,9 @@
 const fs = require('fs');
+const path = require('path');
 
 const reportPath = 'gherkin-lint-report.json';
 const htmlReportPath = 'gherkin-lint-report.html';
+const featureRootPath = 'src/test/resources/features';
 
 if (!fs.existsSync(reportPath)) {
     console.error('gherkin-lint-report.json not found');
@@ -15,13 +17,16 @@ const metrics = {
     totalFiles: data.length,
     passedFiles: 0,
     totalIssues: 0,
+
     scenarioNamingViolations: 0,
     missingStepsOrEmptyScenarios: 0,
     taggingViolations: 0,
     duplicateScenarios: 0,
     scenarioSizeViolations: 0,
-    scenarioLengthTotal: 0,
-    scenarioLengthCount: 0
+
+    totalScenarios: 0,
+    totalScenarioSteps: 0,
+    maxScenarioLength: 0
 };
 
 function getErrors(file) {
@@ -48,6 +53,7 @@ function isMissingStepsOrEmptyScenario(error) {
 
     return (
         rule.includes('no-empty-scenario') ||
+        rule.includes('no-empty-scenarios') ||
         rule.includes('no-files-without-scenarios') ||
         message.includes('empty scenario') ||
         message.includes('missing step') ||
@@ -79,15 +85,98 @@ function isScenarioSizeViolation(error) {
     return rule === 'scenario-size';
 }
 
-function extractScenarioLength(error) {
-    const message = normalize(error.message);
-
-    const matches = message.match(/\d+/g);
-    if (!matches || matches.length === 0) {
-        return null;
+function getFeatureFiles(directory) {
+    if (!fs.existsSync(directory)) {
+        return [];
     }
 
-    return Number(matches[matches.length - 1]);
+    const entries = fs.readdirSync(directory, { withFileTypes: true });
+    const files = [];
+
+    entries.forEach(entry => {
+        const fullPath = path.join(directory, entry.name);
+
+        if (entry.isDirectory()) {
+            files.push(...getFeatureFiles(fullPath));
+        } else if (entry.isFile() && entry.name.endsWith('.feature')) {
+            files.push(fullPath);
+        }
+    });
+
+    return files;
+}
+
+function isScenarioLine(line) {
+    const trimmed = line.trim();
+
+    return (
+        trimmed.startsWith('Scenario:') ||
+        trimmed.startsWith('Scenario Outline:')
+    );
+}
+
+function isStepLine(line) {
+    const trimmed = line.trim();
+
+    return /^(Given|When|Then|And|But)\b/.test(trimmed);
+}
+
+function isNonScenarioSection(line) {
+    const trimmed = line.trim();
+
+    return (
+        trimmed.startsWith('Feature:') ||
+        trimmed.startsWith('Background:') ||
+        trimmed.startsWith('Examples:')
+    );
+}
+
+function calculateScenarioLengthMetrics() {
+    const featureFiles = getFeatureFiles(featureRootPath);
+
+    featureFiles.forEach(filePath => {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const lines = content.split(/\r?\n/);
+
+        let insideScenario = false;
+        let currentScenarioStepCount = 0;
+
+        lines.forEach(line => {
+            if (isScenarioLine(line)) {
+                if (insideScenario) {
+                    recordScenarioLength(currentScenarioStepCount);
+                }
+
+                insideScenario = true;
+                currentScenarioStepCount = 0;
+                return;
+            }
+
+            if (insideScenario && isNonScenarioSection(line)) {
+                recordScenarioLength(currentScenarioStepCount);
+                insideScenario = false;
+                currentScenarioStepCount = 0;
+                return;
+            }
+
+            if (insideScenario && isStepLine(line)) {
+                currentScenarioStepCount++;
+            }
+        });
+
+        if (insideScenario) {
+            recordScenarioLength(currentScenarioStepCount);
+        }
+    });
+}
+
+function recordScenarioLength(stepCount) {
+    metrics.totalScenarios++;
+    metrics.totalScenarioSteps += stepCount;
+
+    if (stepCount > metrics.maxScenarioLength) {
+        metrics.maxScenarioLength = stepCount;
+    }
 }
 
 data.forEach(file => {
@@ -118,15 +207,11 @@ data.forEach(file => {
 
         if (isScenarioSizeViolation(error)) {
             metrics.scenarioSizeViolations++;
-
-            const scenarioLength = extractScenarioLength(error);
-            if (scenarioLength !== null) {
-                metrics.scenarioLengthTotal += scenarioLength;
-                metrics.scenarioLengthCount++;
-            }
         }
     });
 });
+
+calculateScenarioLengthMetrics();
 
 const compliantFeaturePercentage = metrics.totalFiles === 0
     ? '0.00'
@@ -136,9 +221,9 @@ const taggingCompliancePercentage = metrics.totalFiles === 0
     ? '0.00'
     : (((metrics.totalFiles - metrics.taggingViolations) / metrics.totalFiles) * 100).toFixed(2);
 
-const avgScenarioLength = metrics.scenarioLengthCount === 0
-    ? 'N/A'
-    : (metrics.scenarioLengthTotal / metrics.scenarioLengthCount).toFixed(2);
+const avgScenarioLength = metrics.totalScenarios === 0
+    ? '0.00'
+    : (metrics.totalScenarioSteps / metrics.totalScenarios).toFixed(2);
 
 console.log('Gherkin Lint Metrics:');
 console.log(`Lint Violations Count: ${metrics.totalIssues}`);
@@ -147,7 +232,9 @@ console.log(`Scenario Naming Violations: ${metrics.scenarioNamingViolations}`);
 console.log(`Missing Steps / Empty Scenarios: ${metrics.missingStepsOrEmptyScenarios}`);
 console.log(`Tagging Compliance %: ${taggingCompliancePercentage}%`);
 console.log(`Duplicate Scenarios: ${metrics.duplicateScenarios}`);
-console.log(`Avg Scenario Length: ${avgScenarioLength}`);
+console.log(`Total Scenarios: ${metrics.totalScenarios}`);
+console.log(`Avg Scenario Length: ${avgScenarioLength} steps`);
+console.log(`Max Scenario Length: ${metrics.maxScenarioLength} steps`);
 console.log(`Scenario Size Violations: ${metrics.scenarioSizeViolations}`);
 
 let html = `
@@ -219,7 +306,9 @@ let html = `
         <p>Missing Steps / Empty Scenarios: ${metrics.missingStepsOrEmptyScenarios}</p>
         <p>Tagging Compliance %: ${taggingCompliancePercentage}%</p>
         <p>Duplicate Scenarios: ${metrics.duplicateScenarios}</p>
-        <p>Avg Scenario Length: ${avgScenarioLength}</p>
+        <p>Total Scenarios: ${metrics.totalScenarios}</p>
+        <p>Avg Scenario Length: ${avgScenarioLength} steps</p>
+        <p>Max Scenario Length: ${metrics.maxScenarioLength} steps</p>
         <p>Scenario Size Violations: ${metrics.scenarioSizeViolations}</p>
         <p>Status: <span class="${metrics.totalIssues > 0 ? 'fail' : 'pass'}">${metrics.totalIssues > 0 ? 'FAILED' : 'PASSED'}</span></p>
     </div>
