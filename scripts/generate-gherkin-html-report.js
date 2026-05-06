@@ -18,10 +18,13 @@ const metrics = {
     passedFiles: 0,
     totalIssues: 0,
 
+    featureNamingViolations: 0,
     scenarioNamingViolations: 0,
     missingStepsOrEmptyScenarios: 0,
     taggingViolations: 0,
     duplicateScenarios: 0,
+    formattingViolations: 0,
+    structureViolations: 0,
     scenarioSizeViolations: 0,
 
     totalScenarios: 0,
@@ -37,14 +40,25 @@ function normalize(value) {
     return String(value || '').toLowerCase();
 }
 
+function isFeatureNamingViolation(error) {
+    const rule = normalize(error.rule);
+    const message = normalize(error.message);
+
+    return (
+        rule === 'no-unnamed-features' ||
+        (rule === 'name-length' && message.includes('feature name'))
+    );
+}
+
 function isScenarioNamingViolation(error) {
     const rule = normalize(error.rule);
     const message = normalize(error.message);
 
     return (
-        rule === 'name-length' &&
-        message.includes('scenario')
-    ) || message.includes('scenario name');
+        rule === 'no-unnamed-scenarios' ||
+        rule === 'no-dupe-scenario-names' ||
+        (rule === 'name-length' && message.includes('scenario name'))
+    );
 }
 
 function isMissingStepsOrEmptyScenario(error) {
@@ -52,9 +66,10 @@ function isMissingStepsOrEmptyScenario(error) {
     const message = normalize(error.message);
 
     return (
-        rule.includes('no-empty-scenario') ||
-        rule.includes('no-empty-scenarios') ||
-        rule.includes('no-files-without-scenarios') ||
+        rule === 'no-empty-file' ||
+        rule === 'no-files-without-scenarios' ||
+        rule === 'no-empty-scenarios' ||
+        rule === 'no-scenario-outlines-without-examples' ||
         message.includes('empty scenario') ||
         message.includes('missing step') ||
         message.includes('no steps')
@@ -65,24 +80,41 @@ function isTaggingViolation(error) {
     const rule = normalize(error.rule);
     const message = normalize(error.message);
 
-    return rule.includes('tag') || message.includes('tag');
+    return (
+        rule === 'no-duplicate-tags' ||
+        rule === 'no-homogenous-tags' ||
+        rule === 'no-partially-commented-tag-lines' ||
+        rule.includes('tag') ||
+        message.includes('tag')
+    );
 }
 
 function isDuplicateScenario(error) {
+    return normalize(error.rule) === 'no-dupe-scenario-names';
+}
+
+function isFormattingViolation(error) {
     const rule = normalize(error.rule);
-    const message = normalize(error.message);
 
     return (
-        rule.includes('no-dupe-scenario-names') ||
-        rule.includes('duplicate-scenario') ||
-        message.includes('duplicate scenario')
+        rule === 'indentation' ||
+        rule === 'no-multiple-empty-lines' ||
+        rule === 'no-trailing-spaces' ||
+        rule === 'new-line-at-eof'
+    );
+}
+
+function isStructureViolation(error) {
+    const rule = normalize(error.rule);
+
+    return (
+        rule === 'one-feature-per-file' ||
+        rule === 'up-to-one-background-per-file'
     );
 }
 
 function isScenarioSizeViolation(error) {
-    const rule = normalize(error.rule);
-
-    return rule === 'scenario-size';
+    return normalize(error.rule) === 'scenario-size';
 }
 
 function getFeatureFiles(directory) {
@@ -131,6 +163,15 @@ function isNonScenarioSection(line) {
     );
 }
 
+function recordScenarioLength(stepCount) {
+    metrics.totalScenarios += 1;
+    metrics.totalScenarioSteps += stepCount;
+
+    if (stepCount > metrics.maxScenarioLength) {
+        metrics.maxScenarioLength = stepCount;
+    }
+}
+
 function calculateScenarioLengthMetrics() {
     const featureFiles = getFeatureFiles(featureRootPath);
 
@@ -160,7 +201,7 @@ function calculateScenarioLengthMetrics() {
             }
 
             if (insideScenario && isStepLine(line)) {
-                currentScenarioStepCount++;
+                currentScenarioStepCount += 1;
             }
         });
 
@@ -170,43 +211,46 @@ function calculateScenarioLengthMetrics() {
     });
 }
 
-function recordScenarioLength(stepCount) {
-    metrics.totalScenarios++;
-    metrics.totalScenarioSteps += stepCount;
-
-    if (stepCount > metrics.maxScenarioLength) {
-        metrics.maxScenarioLength = stepCount;
-    }
-}
-
 data.forEach(file => {
     const errors = getErrors(file);
 
     metrics.totalIssues += errors.length;
 
     if (errors.length === 0) {
-        metrics.passedFiles++;
+        metrics.passedFiles += 1;
     }
 
     errors.forEach(error => {
+        if (isFeatureNamingViolation(error)) {
+            metrics.featureNamingViolations += 1;
+        }
+
         if (isScenarioNamingViolation(error)) {
-            metrics.scenarioNamingViolations++;
+            metrics.scenarioNamingViolations += 1;
         }
 
         if (isMissingStepsOrEmptyScenario(error)) {
-            metrics.missingStepsOrEmptyScenarios++;
+            metrics.missingStepsOrEmptyScenarios += 1;
         }
 
         if (isTaggingViolation(error)) {
-            metrics.taggingViolations++;
+            metrics.taggingViolations += 1;
         }
 
         if (isDuplicateScenario(error)) {
-            metrics.duplicateScenarios++;
+            metrics.duplicateScenarios += 1;
+        }
+
+        if (isFormattingViolation(error)) {
+            metrics.formattingViolations += 1;
+        }
+
+        if (isStructureViolation(error)) {
+            metrics.structureViolations += 1;
         }
 
         if (isScenarioSizeViolation(error)) {
-            metrics.scenarioSizeViolations++;
+            metrics.scenarioSizeViolations += 1;
         }
     });
 });
@@ -228,10 +272,14 @@ const avgScenarioLength = metrics.totalScenarios === 0
 console.log('Gherkin Lint Metrics:');
 console.log(`Lint Violations Count: ${metrics.totalIssues}`);
 console.log(`% Compliant Feature Files: ${compliantFeaturePercentage}%`);
+console.log(`Feature Naming Violations: ${metrics.featureNamingViolations}`);
 console.log(`Scenario Naming Violations: ${metrics.scenarioNamingViolations}`);
 console.log(`Missing Steps / Empty Scenarios: ${metrics.missingStepsOrEmptyScenarios}`);
 console.log(`Tagging Compliance %: ${taggingCompliancePercentage}%`);
+console.log(`Tagging Violations: ${metrics.taggingViolations}`);
 console.log(`Duplicate Scenarios: ${metrics.duplicateScenarios}`);
+console.log(`Formatting Violations: ${metrics.formattingViolations}`);
+console.log(`Structure Violations: ${metrics.structureViolations}`);
 console.log(`Total Scenarios: ${metrics.totalScenarios}`);
 console.log(`Avg Scenario Length: ${avgScenarioLength} steps`);
 console.log(`Max Scenario Length: ${metrics.maxScenarioLength} steps`);
@@ -292,6 +340,14 @@ let html = `
         th {
             background: #f3f4f6;
         }
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 8px 24px;
+        }
+        .metric-grid p {
+            margin: 4px 0;
+        }
     </style>
 </head>
 <body>
@@ -299,18 +355,24 @@ let html = `
 
     <div class="summary">
         <h2>Summary</h2>
-        <p>Total Files Scanned: ${metrics.totalFiles}</p>
-        <p>Total Issues Found: <span class="${metrics.totalIssues > 0 ? 'fail' : 'pass'}">${metrics.totalIssues}</span></p>
-        <p>% Compliant Feature Files: ${compliantFeaturePercentage}%</p>
-        <p>Scenario Naming Violations: ${metrics.scenarioNamingViolations}</p>
-        <p>Missing Steps / Empty Scenarios: ${metrics.missingStepsOrEmptyScenarios}</p>
-        <p>Tagging Compliance %: ${taggingCompliancePercentage}%</p>
-        <p>Duplicate Scenarios: ${metrics.duplicateScenarios}</p>
-        <p>Total Scenarios: ${metrics.totalScenarios}</p>
-        <p>Avg Scenario Length: ${avgScenarioLength} steps</p>
-        <p>Max Scenario Length: ${metrics.maxScenarioLength} steps</p>
-        <p>Scenario Size Violations: ${metrics.scenarioSizeViolations}</p>
-        <p>Status: <span class="${metrics.totalIssues > 0 ? 'fail' : 'pass'}">${metrics.totalIssues > 0 ? 'FAILED' : 'PASSED'}</span></p>
+        <div class="metric-grid">
+            <p>Total Files Scanned: ${metrics.totalFiles}</p>
+            <p>Total Issues Found: <span class="${metrics.totalIssues > 0 ? 'fail' : 'pass'}">${metrics.totalIssues}</span></p>
+            <p>% Compliant Feature Files: ${compliantFeaturePercentage}%</p>
+            <p>Feature Naming Violations: ${metrics.featureNamingViolations}</p>
+            <p>Scenario Naming Violations: ${metrics.scenarioNamingViolations}</p>
+            <p>Missing Steps / Empty Scenarios: ${metrics.missingStepsOrEmptyScenarios}</p>
+            <p>Tagging Compliance %: ${taggingCompliancePercentage}%</p>
+            <p>Tagging Violations: ${metrics.taggingViolations}</p>
+            <p>Duplicate Scenarios: ${metrics.duplicateScenarios}</p>
+            <p>Formatting Violations: ${metrics.formattingViolations}</p>
+            <p>Structure Violations: ${metrics.structureViolations}</p>
+            <p>Total Scenarios: ${metrics.totalScenarios}</p>
+            <p>Avg Scenario Length: ${avgScenarioLength} steps</p>
+            <p>Max Scenario Length: ${metrics.maxScenarioLength} steps</p>
+            <p>Scenario Size Violations: ${metrics.scenarioSizeViolations}</p>
+            <p>Status: <span class="${metrics.totalIssues > 0 ? 'fail' : 'pass'}">${metrics.totalIssues > 0 ? 'FAILED' : 'PASSED'}</span></p>
+        </div>
     </div>
 `;
 
