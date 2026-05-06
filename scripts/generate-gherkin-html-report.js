@@ -1,7 +1,9 @@
 const fs = require('fs');
+const path = require('path');
 
 const reportPath = 'gherkin-lint-report.json';
 const htmlReportPath = 'gherkin-lint-report.html';
+const featureRootPath = 'src/test/resources/features';
 
 if (!fs.existsSync(reportPath)) {
     console.error('gherkin-lint-report.json not found');
@@ -11,7 +13,229 @@ if (!fs.existsSync(reportPath)) {
 const rawReport = fs.readFileSync(reportPath, 'utf8').trim();
 const data = rawReport ? JSON.parse(rawReport) : [];
 
-let totalIssues = 0;
+const metrics = {
+    totalFiles: data.length,
+    passedFiles: 0,
+    totalIssues: 0,
+
+    scenarioNamingViolations: 0,
+    missingStepsOrEmptyScenarios: 0,
+    taggingViolations: 0,
+    duplicateScenarios: 0,
+    scenarioSizeViolations: 0,
+
+    totalScenarios: 0,
+    totalScenarioSteps: 0,
+    maxScenarioLength: 0
+};
+
+function getErrors(file) {
+    return Array.isArray(file.errors) ? file.errors : [];
+}
+
+function normalize(value) {
+    return String(value || '').toLowerCase();
+}
+
+function isScenarioNamingViolation(error) {
+    const rule = normalize(error.rule);
+    const message = normalize(error.message);
+
+    return (
+        rule === 'name-length' &&
+        message.includes('scenario')
+    ) || message.includes('scenario name');
+}
+
+function isMissingStepsOrEmptyScenario(error) {
+    const rule = normalize(error.rule);
+    const message = normalize(error.message);
+
+    return (
+        rule.includes('no-empty-scenario') ||
+        rule.includes('no-empty-scenarios') ||
+        rule.includes('no-files-without-scenarios') ||
+        message.includes('empty scenario') ||
+        message.includes('missing step') ||
+        message.includes('no steps')
+    );
+}
+
+function isTaggingViolation(error) {
+    const rule = normalize(error.rule);
+    const message = normalize(error.message);
+
+    return rule.includes('tag') || message.includes('tag');
+}
+
+function isDuplicateScenario(error) {
+    const rule = normalize(error.rule);
+    const message = normalize(error.message);
+
+    return (
+        rule.includes('no-dupe-scenario-names') ||
+        rule.includes('duplicate-scenario') ||
+        message.includes('duplicate scenario')
+    );
+}
+
+function isScenarioSizeViolation(error) {
+    const rule = normalize(error.rule);
+
+    return rule === 'scenario-size';
+}
+
+function getFeatureFiles(directory) {
+    if (!fs.existsSync(directory)) {
+        return [];
+    }
+
+    const entries = fs.readdirSync(directory, { withFileTypes: true });
+    const files = [];
+
+    entries.forEach(entry => {
+        const fullPath = path.join(directory, entry.name);
+
+        if (entry.isDirectory()) {
+            files.push(...getFeatureFiles(fullPath));
+        } else if (entry.isFile() && entry.name.endsWith('.feature')) {
+            files.push(fullPath);
+        }
+    });
+
+    return files;
+}
+
+function isScenarioLine(line) {
+    const trimmed = line.trim();
+
+    return (
+        trimmed.startsWith('Scenario:') ||
+        trimmed.startsWith('Scenario Outline:')
+    );
+}
+
+function isStepLine(line) {
+    const trimmed = line.trim();
+
+    return /^(Given|When|Then|And|But)\b/.test(trimmed);
+}
+
+function isNonScenarioSection(line) {
+    const trimmed = line.trim();
+
+    return (
+        trimmed.startsWith('Feature:') ||
+        trimmed.startsWith('Background:') ||
+        trimmed.startsWith('Examples:')
+    );
+}
+
+function calculateScenarioLengthMetrics() {
+    const featureFiles = getFeatureFiles(featureRootPath);
+
+    featureFiles.forEach(filePath => {
+        const content = fs.readFileSync(filePath, 'utf8');
+        const lines = content.split(/\r?\n/);
+
+        let insideScenario = false;
+        let currentScenarioStepCount = 0;
+
+        lines.forEach(line => {
+            if (isScenarioLine(line)) {
+                if (insideScenario) {
+                    recordScenarioLength(currentScenarioStepCount);
+                }
+
+                insideScenario = true;
+                currentScenarioStepCount = 0;
+                return;
+            }
+
+            if (insideScenario && isNonScenarioSection(line)) {
+                recordScenarioLength(currentScenarioStepCount);
+                insideScenario = false;
+                currentScenarioStepCount = 0;
+                return;
+            }
+
+            if (insideScenario && isStepLine(line)) {
+                currentScenarioStepCount++;
+            }
+        });
+
+        if (insideScenario) {
+            recordScenarioLength(currentScenarioStepCount);
+        }
+    });
+}
+
+function recordScenarioLength(stepCount) {
+    metrics.totalScenarios++;
+    metrics.totalScenarioSteps += stepCount;
+
+    if (stepCount > metrics.maxScenarioLength) {
+        metrics.maxScenarioLength = stepCount;
+    }
+}
+
+data.forEach(file => {
+    const errors = getErrors(file);
+
+    metrics.totalIssues += errors.length;
+
+    if (errors.length === 0) {
+        metrics.passedFiles++;
+    }
+
+    errors.forEach(error => {
+        if (isScenarioNamingViolation(error)) {
+            metrics.scenarioNamingViolations++;
+        }
+
+        if (isMissingStepsOrEmptyScenario(error)) {
+            metrics.missingStepsOrEmptyScenarios++;
+        }
+
+        if (isTaggingViolation(error)) {
+            metrics.taggingViolations++;
+        }
+
+        if (isDuplicateScenario(error)) {
+            metrics.duplicateScenarios++;
+        }
+
+        if (isScenarioSizeViolation(error)) {
+            metrics.scenarioSizeViolations++;
+        }
+    });
+});
+
+calculateScenarioLengthMetrics();
+
+const compliantFeaturePercentage = metrics.totalFiles === 0
+    ? '0.00'
+    : ((metrics.passedFiles / metrics.totalFiles) * 100).toFixed(2);
+
+const taggingCompliancePercentage = metrics.totalFiles === 0
+    ? '0.00'
+    : (((metrics.totalFiles - metrics.taggingViolations) / metrics.totalFiles) * 100).toFixed(2);
+
+const avgScenarioLength = metrics.totalScenarios === 0
+    ? '0.00'
+    : (metrics.totalScenarioSteps / metrics.totalScenarios).toFixed(2);
+
+console.log('Gherkin Lint Metrics:');
+console.log(`Lint Violations Count: ${metrics.totalIssues}`);
+console.log(`% Compliant Feature Files: ${compliantFeaturePercentage}%`);
+console.log(`Scenario Naming Violations: ${metrics.scenarioNamingViolations}`);
+console.log(`Missing Steps / Empty Scenarios: ${metrics.missingStepsOrEmptyScenarios}`);
+console.log(`Tagging Compliance %: ${taggingCompliancePercentage}%`);
+console.log(`Duplicate Scenarios: ${metrics.duplicateScenarios}`);
+console.log(`Total Scenarios: ${metrics.totalScenarios}`);
+console.log(`Avg Scenario Length: ${avgScenarioLength} steps`);
+console.log(`Max Scenario Length: ${metrics.maxScenarioLength} steps`);
+console.log(`Scenario Size Violations: ${metrics.scenarioSizeViolations}`);
 
 let html = `
 <!DOCTYPE html>
@@ -47,12 +271,6 @@ let html = `
             margin-bottom: 12px;
             color: #111827;
         }
-        .issue {
-            border-left: 4px solid #dc2626;
-            background: #fff1f2;
-            padding: 10px;
-            margin: 8px 0;
-        }
         .pass {
             color: #15803d;
             font-weight: bold;
@@ -78,30 +296,33 @@ let html = `
 </head>
 <body>
     <h1>Gherkin Lint Report</h1>
-`;
 
-data.forEach(file => {
-    if (file.errors) {
-        totalIssues += file.errors.length;
-    }
-});
-
-html += `
     <div class="summary">
         <h2>Summary</h2>
-        <p>Total Files Scanned: ${data.length}</p>
-        <p>Total Issues Found: <span class="${totalIssues > 0 ? 'fail' : 'pass'}">${totalIssues}</span></p>
-        <p>Status: <span class="${totalIssues > 0 ? 'fail' : 'pass'}">${totalIssues > 0 ? 'FAILED' : 'PASSED'}</span></p>
+        <p>Total Files Scanned: ${metrics.totalFiles}</p>
+        <p>Total Issues Found: <span class="${metrics.totalIssues > 0 ? 'fail' : 'pass'}">${metrics.totalIssues}</span></p>
+        <p>% Compliant Feature Files: ${compliantFeaturePercentage}%</p>
+        <p>Scenario Naming Violations: ${metrics.scenarioNamingViolations}</p>
+        <p>Missing Steps / Empty Scenarios: ${metrics.missingStepsOrEmptyScenarios}</p>
+        <p>Tagging Compliance %: ${taggingCompliancePercentage}%</p>
+        <p>Duplicate Scenarios: ${metrics.duplicateScenarios}</p>
+        <p>Total Scenarios: ${metrics.totalScenarios}</p>
+        <p>Avg Scenario Length: ${avgScenarioLength} steps</p>
+        <p>Max Scenario Length: ${metrics.maxScenarioLength} steps</p>
+        <p>Scenario Size Violations: ${metrics.scenarioSizeViolations}</p>
+        <p>Status: <span class="${metrics.totalIssues > 0 ? 'fail' : 'pass'}">${metrics.totalIssues > 0 ? 'FAILED' : 'PASSED'}</span></p>
     </div>
 `;
 
 data.forEach(file => {
+    const errors = getErrors(file);
+
     html += `
     <div class="file">
         <h2>${file.filePath}</h2>
     `;
 
-    if (!file.errors || file.errors.length === 0) {
+    if (errors.length === 0) {
         html += `<p class="pass">No issues found</p>`;
     } else {
         html += `
@@ -116,7 +337,7 @@ data.forEach(file => {
             <tbody>
         `;
 
-        file.errors.forEach(error => {
+        errors.forEach(error => {
             html += `
                 <tr>
                     <td>${error.line || '-'}</td>
@@ -144,6 +365,6 @@ fs.writeFileSync(htmlReportPath, html);
 
 console.log(`HTML report generated: ${htmlReportPath}`);
 
-if (totalIssues > 0) {
+if (metrics.totalIssues > 0) {
     process.exit(1);
 }
