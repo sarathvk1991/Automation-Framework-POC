@@ -47,6 +47,9 @@ Add new patterns derived from the provided files. Remove stale patterns only if 
 - If a pattern is ambiguous or risky to add without more context, flag it rather than adding it silently
 - Do not remove patterns unless verified across all modules, not just provided files
 - Ensure output remains compatible with SonarQube external issues ingestion
+- Do not modify custom-qa-metrics-config.json unless the user explicitly says “apply the update”.
+- If the user says “do not modify files”, return the proposed JSON changes only.
+- Treat “update config” as a proposal unless file modification is explicitly authorized.
 
 ---
 

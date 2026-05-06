@@ -39,6 +39,9 @@ Do not modify any files unless explicitly asked. If the log is insufficient, sta
 - Keep recommendations minimal and targeted to the identified failure
 - Distinguish between analysis failure and quality gate failure
 - If root cause cannot be determined with high confidence, explicitly state uncertainty
+- Do not assume 0-based vs 1-based indexing is the root cause of textRange errors unless explicitly indicated in the log.
+- Validate whether startColumn < endColumn and whether the range fits within the actual line length before concluding.
+- If multiple causes are possible, list them instead of asserting a single cause.
 
 **Causes to investigate:**
 
