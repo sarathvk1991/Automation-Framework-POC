@@ -8,6 +8,12 @@ pipeline {
         nodejs 'node-18'
     }
 
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+        timeout(time: 10, unit: 'MINUTES')
+    }
+
     parameters {
         choice(
             name: 'BRANCH_NAME',
@@ -50,13 +56,6 @@ pipeline {
             steps {
                 sh 'npm run lint:gherkin:html'
             }
-
-            post {
-                always {
-                    archiveArtifacts artifacts: 'gherkin-lint-report.html, gherkin-lint-report.json',
-                                     allowEmptyArchive: true
-                }
-            }
         }
 
         stage('Custom QA Metrics') {
@@ -72,13 +71,6 @@ pipeline {
                     ls -la sonar-custom-qa-issues.json
                 '''
             }
-
-            post {
-                always {
-                    archiveArtifacts artifacts: 'sonar-custom-qa-issues.json',
-                                     allowEmptyArchive: true
-                }
-            }
         }
 
         stage('Maven Build and SonarQube Analysis') {
@@ -90,9 +82,9 @@ pipeline {
 
             steps {
                 withSonarQubeEnv('sonarqube-docker') {
+
                     sh '''
-                        mvn clean verify \
-                          -Dheadless=true \
+                        mvn clean verify -Dheadless=true \
                           org.sonarsource.scanner.maven:sonar-maven-plugin:4.0.0.4121:sonar \
                           -Dsonar.projectKey=automation-framework \
                           -Dsonar.projectName=Automation-framework \
@@ -105,8 +97,6 @@ pipeline {
                 }
             }
         }
-        
-      
 
         stage('SonarQube Quality Gate') {
             when {
@@ -125,20 +115,36 @@ pipeline {
 
     post {
         always {
+
             echo 'Downloading SonarQube readability (Maintainability) report'
 
-            withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+            withCredentials([
+                string(
+                    credentialsId: 'sonar-token',
+                    variable: 'SONAR_TOKEN'
+                )
+            ]) {
+
                 sh '''
                     curl -s -u ${SONAR_TOKEN}: \
                     "http://localhost:9000/api/issues/search?componentKeys=automation-framework&resolved=false&ps=500" \
                     -o sonar-readability-report.json
 
-                    npm run sonar:html
+                    npm run sonar:html || true
                 '''
             }
 
-            archiveArtifacts artifacts: 'sonar-readability-report.json, sonar-readability-report.html',
-                             fingerprint: true
+            archiveArtifacts(
+                artifacts: '''
+                    gherkin-lint-report.html,
+                    gherkin-lint-report.json,
+                    sonar-custom-qa-issues.json,
+                    sonar-readability-report.json,
+                    sonar-readability-report.html
+                ''',
+                allowEmptyArchive: true,
+                fingerprint: true
+            )
         }
     }
 }
