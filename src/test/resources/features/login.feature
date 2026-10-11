@@ -15,6 +15,11 @@ Feature: User Authentication — Login
     Then the user should land on the dashboard
 
   # ── Invalid credentials ──────────────────────────────────────────────────────
+  # INTENTIONAL FAILURE (Jenkins reporting demo): the expected error_message in
+  # the first Examples row below is deliberately wrong, causing that one
+  # generated scenario to fail deterministically at the assertEquals in
+  # LoginSteps#theLoginErrorShouldBeDisplayed. Revert this row to restore the
+  # correct expectation.
 
   @negative @regression
   Scenario Outline: Login is rejected for invalid credentials
@@ -24,7 +29,7 @@ Feature: User Authentication — Login
 
     Examples:
       | username      | password     | error_message                                                                  |
-      | standard_user | wrong_pass   | Epic sadface: Username and password do not match any user in this service      |
+      | standard_user | wrong_pass   | INTENTIONAL FAILURE: deliberately wrong expected message for Jenkins demo       |
       | unknown_user  | secret_sauce | Epic sadface: Username and password do not match any user in this service      |
       | standard_user |              | Epic sadface: Password is required                                             |
       |               | secret_sauce | Epic sadface: Username is required                                             |

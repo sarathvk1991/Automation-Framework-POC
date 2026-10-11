@@ -32,11 +32,14 @@ import static io.cucumber.junit.platform.engine.Constants.SNIPPET_TYPE_PROPERTY_
         key   = GLUE_PROPERTY_NAME,
         value = "com.automation.base,com.automation.steps")
 
-// Tag filter: @wip scenarios are excluded by default so in-progress work never
-// blocks the pipeline. Override at runtime with -Dcucumber.filter.tags="...".
+// Tag filter: scoped to @login for the Jenkins failure-reporting demo on the
+// demo-login-failure branch, so only the User Authentication — Login feature
+// runs (all other feature files carry their own distinct top-level tag and
+// are excluded). Revert to "not @wip" when merging this demo back out.
+// Override at runtime with -Dcucumber.filter.tags="...".
 @ConfigurationParameter(
         key   = FILTER_TAGS_PROPERTY_NAME,
-        value = "not @wip")
+        value = "@login")
 
 // Snippet style: camelCase matches the Java method naming convention, so generated
 // step snippets paste cleanly into step definition classes without renaming.
